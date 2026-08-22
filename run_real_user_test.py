@@ -8,40 +8,10 @@ from flask import Flask
 
 from app import create_app
 from app.config import Config
-from app.db import get_db
 
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_DATABASE = (ROOT / "instance" / "real-user-test.sqlite3").resolve()
-
-CONTAMINATION_CHECKS = (
-    ("demo users", "SELECT COUNT(*) AS count FROM users WHERE is_demo = 1 OR id LIKE 'demo_%'"),
-    ("demo administrator", "SELECT COUNT(*) AS count FROM admins WHERE id = 'admin_demo'"),
-    ("Fixture tags", "SELECT COUNT(*) AS count FROM tags WHERE data_mode = 'fixture'"),
-    (
-        "Fixture connections",
-        "SELECT COUNT(*) AS count FROM external_connections WHERE data_mode = 'fixture'",
-    ),
-    ("Fixture merchant events", "SELECT COUNT(*) AS count FROM events WHERE host_type = 'merchant'"),
-)
-
-
-def _assert_real_user_only(app: Flask) -> None:
-    """Refuse to run against a database contaminated by demo or Fixture rows."""
-    with app.app_context():
-        db = get_db()
-        contamination = [
-            label
-            for label, query in CONTAMINATION_CHECKS
-            if db.execute(query).fetchone()["count"]
-        ]
-    if contamination:
-        joined = ", ".join(contamination)
-        raise RuntimeError(
-            f"Real-user test database contains prohibited data: {joined}. "
-            "Select a fresh dedicated database instead of reusing a demo database."
-        )
-
 
 def create_real_user_test_app(database_path: str | Path = DEFAULT_DATABASE) -> Flask:
     """Create the loopback-only app profile backed by a dedicated real-user database."""
@@ -53,14 +23,13 @@ def create_real_user_test_app(database_path: str | Path = DEFAULT_DATABASE) -> F
             "DATABASE": str(database),
             "DEBUG": False,
             "DEMO_MODE": False,
+            "REAL_USER_ONLY": True,
             "SECRET_KEY": secrets.token_urlsafe(48),
             "SESSION_COOKIE_SECURE": False,
             "TESTING": False,
         },
     )
-    app = create_app(config)
-    _assert_real_user_only(app)
-    return app
+    return create_app(config)
 
 
 def _port(value: str) -> int:

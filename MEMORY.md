@@ -44,3 +44,12 @@
 - Registration persists all submitted profile fields, establishes the session, and redirects to `/profile/connections`; production copy does not invite Fixture loading.
 - Real phone verification remains unavailable. Never set `phone_verified` automatically or claim event-host eligibility without a real verification provider and consent flow.
 - The Vercel demo remains ephemeral and separate. A public persistent real-user environment requires an explicitly selected managed database and a verified migration before any deployment or DNS change.
+
+## 2026-08-23: Persistent real-user deployment preparation
+
+- The isolated Vercel project is `dwwww/realtags-real-user` (`prj_wdpE2Y4LPRVZAINBbURC33Rjj57s`). It is separate from `realtags-prize-demo` and `realtags-demo`.
+- The target managed store is a dedicated Turso database in `iad1`, accessed through the pinned `turso-serverless==0.1.0` DB-API driver while local development continues to use `sqlite3`.
+- Hosted startup requires paired `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`, `DEMO_MODE=0`, `REAL_USER_ONLY=1`, a non-default `FLASK_SECRET_KEY`, and `SESSION_COOKIE_SECURE=1`. Record only these names, never their values.
+- The Vercel project already has the four non-database runtime variables configured for Production and Preview. A generated local `.env.local` was removed without being read; never run `vercel env pull` in this worktree.
+- Turso provisioning is pending the account owner's human acceptance of Vercel Marketplace and Turso legal terms. No database resource, deployment, custom domain, or DNS record has been created or changed yet.
+- The intended custom hostname is `app.davidwang.space`, leaving `realtags.davidwang.space`, the GitHub Pages blog and `/tags/`, and `tags.davidwang.space` unchanged.

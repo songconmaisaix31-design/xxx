@@ -146,6 +146,24 @@ class RealUserEnvironmentTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "prohibited data"):
             create_real_user_test_app(demo_database)
 
+    def test_real_user_only_mode_rejects_demo_mode_before_seeding(self) -> None:
+        database = Path(self.temp_dir.name) / "must-stay-empty.sqlite3"
+        unsafe_config = type(
+            "UnsafeRealUserConfig",
+            (Config,),
+            {
+                "DATABASE": str(database),
+                "DEMO_MODE": True,
+                "REAL_USER_ONLY": True,
+                "SECRET_KEY": "test-only-secret",
+                "TESTING": True,
+            },
+        )
+
+        with self.assertRaisesRegex(RuntimeError, "cannot run with DEMO_MODE"):
+            create_app(unsafe_config)
+        self.assertFalse(database.exists())
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

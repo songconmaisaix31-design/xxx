@@ -1,13 +1,33 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from urllib.parse import urlsplit
 from uuid import uuid4
 
+import turso_serverless
 from flask import current_app, g
+from turso_serverless import Connection as TursoConnection
 from werkzeug.security import generate_password_hash
+
+from .config import DEVELOPMENT_SECRET_KEY
+
+
+DatabaseConnection = sqlite3.Connection | TursoConnection
+
+CONTAMINATION_CHECKS = (
+    ("demo users", "SELECT COUNT(*) AS count FROM users WHERE is_demo = 1 OR id LIKE 'demo_%'"),
+    ("demo administrator", "SELECT COUNT(*) AS count FROM admins WHERE id = 'admin_demo'"),
+    ("Fixture tags", "SELECT COUNT(*) AS count FROM tags WHERE data_mode = 'fixture'"),
+    (
+        "Fixture connections",
+        "SELECT COUNT(*) AS count FROM external_connections WHERE data_mode = 'fixture'",
+    ),
+    ("Fixture merchant events", "SELECT COUNT(*) AS count FROM events WHERE host_type = 'merchant'"),
+)
 
 
 SCHEMA = """
@@ -198,12 +218,60 @@ def utcnow() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def get_db() -> sqlite3.Connection:
+def _turso_settings() -> tuple[str, str] | None:
+    """Return paired Turso settings without copying them into Flask config."""
+    database_url = os.environ.get("TURSO_DATABASE_URL")
+    auth_token = os.environ.get("TURSO_AUTH_TOKEN")
+    if bool(database_url) != bool(auth_token):
+        raise RuntimeError(
+            "TURSO_DATABASE_URL and TURSO_AUTH_TOKEN must be configured together."
+        )
+    if not database_url or not auth_token:
+        return None
+    parsed = urlsplit(database_url)
+    if (
+        parsed.scheme not in {"https", "libsql", "turso"}
+        or not parsed.hostname
+        or parsed.username
+        or parsed.password
+        or parsed.query
+        or parsed.fragment
+    ):
+        raise RuntimeError("TURSO_DATABASE_URL must be a credential-free TLS Turso URL.")
+    if not auth_token.strip():
+        raise RuntimeError("TURSO_AUTH_TOKEN cannot be blank.")
+    return database_url, auth_token
+
+
+def _validate_turso_runtime() -> None:
+    """Fail closed when the remote database is paired with unsafe app settings."""
+    if current_app.config.get("DEMO_MODE", False):
+        raise RuntimeError("Turso real-user storage cannot run with DEMO_MODE enabled.")
+    if not current_app.config.get("REAL_USER_ONLY", False):
+        raise RuntimeError("Turso real-user storage requires REAL_USER_ONLY=1.")
+    if current_app.secret_key == DEVELOPMENT_SECRET_KEY:
+        raise RuntimeError("Turso real-user storage requires a deployment session secret.")
+    if not current_app.config.get("SESSION_COOKIE_SECURE", False):
+        raise RuntimeError("Turso real-user storage requires HTTPS-only session cookies.")
+
+
+def get_db() -> DatabaseConnection:
     if "db" not in g:
-        g.db = sqlite3.connect(current_app.config["DATABASE"])
-        g.db.row_factory = sqlite3.Row
+        turso_settings = _turso_settings()
+        if turso_settings is None:
+            g.db = sqlite3.connect(current_app.config["DATABASE"])
+            g.db.row_factory = sqlite3.Row
+        else:
+            database_url, auth_token = turso_settings
+            g.db = turso_serverless.connect(database_url, auth_token=auth_token)
+            g.db.row_factory = turso_serverless.Row
         g.db.execute("PRAGMA foreign_keys = ON")
     return g.db
+
+
+def is_integrity_error(error: Exception) -> bool:
+    """Recognize constraint failures from either supported DB-API backend."""
+    return isinstance(error, (sqlite3.IntegrityError, turso_serverless.IntegrityError))
 
 
 def close_db(_: object | None = None) -> None:
@@ -221,9 +289,27 @@ def init_db() -> None:
         _seed_admin(db)
         db.commit()
         _seed_database(db)
+    if current_app.config.get("REAL_USER_ONLY", False):
+        assert_real_user_only(db)
 
 
-def _migrate_schema(db: sqlite3.Connection) -> None:
+def assert_real_user_only(db: DatabaseConnection | None = None) -> None:
+    """Reject databases containing Demo, Fixture, or merchant-seed records."""
+    connection = db or get_db()
+    contamination = [
+        label
+        for label, query in CONTAMINATION_CHECKS
+        if connection.execute(query).fetchone()["count"]
+    ]
+    if contamination:
+        joined = ", ".join(contamination)
+        raise RuntimeError(
+            f"Real-user database contains prohibited data: {joined}. "
+            "Select a fresh dedicated database instead of reusing a demo database."
+        )
+
+
+def _migrate_schema(db: DatabaseConnection) -> None:
     """Apply additive account and moderation migrations to existing databases."""
     user_columns = {row["name"] for row in db.execute("PRAGMA table_info(users)").fetchall()}
     if "is_demo" not in user_columns:
@@ -286,7 +372,7 @@ def _migrate_schema(db: sqlite3.Connection) -> None:
     )
 
 
-def _make_connection_refresh_nullable(db: sqlite3.Connection) -> None:
+def _make_connection_refresh_nullable(db: DatabaseConnection) -> None:
     """Rebuild the legacy table so a first failed attempt has no fake success time."""
     db.execute("DROP TABLE IF EXISTS external_connections_v2")
     db.execute(
@@ -321,7 +407,7 @@ def _make_connection_refresh_nullable(db: sqlite3.Connection) -> None:
     db.execute("ALTER TABLE external_connections_v2 RENAME TO external_connections")
 
 
-def _seed_admin(db: sqlite3.Connection) -> None:
+def _seed_admin(db: DatabaseConnection) -> None:
     if db.execute("SELECT 1 FROM admins WHERE email = ?", ("admin@realtags.local",)).fetchone():
         return
     db.execute(
@@ -332,6 +418,9 @@ def _seed_admin(db: sqlite3.Connection) -> None:
 
 
 def init_app(app) -> None:
+    if app.config.get("REAL_USER_ONLY", False) and app.config.get("DEMO_MODE", False):
+        raise RuntimeError("REAL_USER_ONLY cannot run with DEMO_MODE enabled.")
+
     @app.before_request
     def refresh_due_events() -> None:
         # Request-time processing keeps the demo deterministic. Production must also
@@ -341,11 +430,14 @@ def init_app(app) -> None:
         refresh_event_statuses()
 
     with app.app_context():
-        Path(app.config["DATABASE"]).parent.mkdir(parents=True, exist_ok=True)
+        if _turso_settings() is None:
+            Path(app.config["DATABASE"]).parent.mkdir(parents=True, exist_ok=True)
+        else:
+            _validate_turso_runtime()
         init_db()
 
 
-def _insert_user(db: sqlite3.Connection, user: dict) -> None:
+def _insert_user(db: DatabaseConnection, user: dict) -> None:
     db.execute(
         """INSERT INTO users (
             id, email, password_hash, anonymous_alias, birth_year, gender, match_gender,
@@ -361,7 +453,7 @@ def _insert_user(db: sqlite3.Connection, user: dict) -> None:
 
 
 def _insert_tag(
-    db: sqlite3.Connection,
+    db: DatabaseConnection,
     user_id: str,
     tag_id: str,
     category: str,
@@ -393,7 +485,7 @@ def _insert_tag(
     )
 
 
-def _seed_behavior_tags(db: sqlite3.Connection, user_id: str, languages: list[str], sports: list[str],
+def _seed_behavior_tags(db: DatabaseConnection, user_id: str, languages: list[str], sports: list[str],
                         learning_hours: list[int], sport_hours: list[int], streak: int, weekly_times: int) -> None:
     """Seed a 12-tag source-labelled behavior profile; all tags remain self_only."""
     _insert_tag(db, user_id, "lang_learning", "学习", "在学语种", {"items": languages}, "duolingo")
@@ -410,7 +502,7 @@ def _seed_behavior_tags(db: sqlite3.Connection, user_id: str, languages: list[st
     _insert_tag(db, user_id, "active_time_overlap", "复合", "活跃时间画像", {"hours": sorted(set(learning_hours) | set(sport_hours))}, "derived", evidence_kind="derived")
 
 
-def _seed_offline_fixture(db: sqlite3.Connection, user_id: str) -> None:
+def _seed_offline_fixture(db: DatabaseConnection, user_id: str) -> None:
     from .services.data_sources.fixtures import OFFLINE_FIXTURE_VERSION, offline_fixture_tags
 
     tags = offline_fixture_tags(user_id)
@@ -440,7 +532,7 @@ def _seed_offline_fixture(db: sqlite3.Connection, user_id: str) -> None:
         )
 
 
-def _upgrade_legacy_demo_fixture(db: sqlite3.Connection) -> None:
+def _upgrade_legacy_demo_fixture(db: DatabaseConnection) -> None:
     from .services.data_sources.fixtures import OFFLINE_FIXTURE_VERSION
 
     snapshot_count = db.execute(
@@ -457,7 +549,7 @@ def _upgrade_legacy_demo_fixture(db: sqlite3.Connection) -> None:
     _seed_offline_fixture(db, "demo_001")
 
 
-def _seed_database(db: sqlite3.Connection) -> None:
+def _seed_database(db: DatabaseConnection) -> None:
     if db.execute("SELECT 1 FROM users WHERE id = 'demo_001'").fetchone():
         # Keep the checked-in demo state repairable across schema/code updates.
         _upgrade_legacy_demo_fixture(db)
@@ -514,7 +606,7 @@ def _seed_database(db: sqlite3.Connection) -> None:
     db.commit()
 
 
-def _insert_seed_event(db: sqlite3.Connection, event_id: str, host_type: str, host_id: str, title: str,
+def _insert_seed_event(db: DatabaseConnection, event_id: str, host_type: str, host_id: str, title: str,
                        poi_id: str, start: datetime, min_size: int, max_size: int, tags: list[str],
                        signup_mode: str, status: str, benefit: dict | None, description: str) -> None:
     poi = {"poi_001": ("知味里·静安店", "上海市静安区愚园路 88 号"),
@@ -528,7 +620,7 @@ def _insert_seed_event(db: sqlite3.Connection, event_id: str, host_type: str, ho
     )
 
 
-def _ensure_seed_group_conversation(db: sqlite3.Connection, event_id: str) -> None:
+def _ensure_seed_group_conversation(db: DatabaseConnection, event_id: str) -> None:
     conversation_id = f"group_{event_id}"
     existing = db.execute("SELECT id FROM conversations WHERE event_id = ? AND type = 'event_group'", (event_id,)).fetchone()
     if existing:

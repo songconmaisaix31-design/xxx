@@ -11,7 +11,7 @@ from flask import abort, current_app, flash, redirect, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from ..constants import CITIES, GENDERS, INTERESTS, MATCH_GENDERS, MBTIS, PURPOSES, SCHEDULES, ZODIACS
-from ..db import get_db, utcnow
+from ..db import get_db, is_integrity_error, utcnow
 
 
 class ValidationError(ValueError):
@@ -125,7 +125,7 @@ def create_user(form) -> str:
         )
         get_db().commit()
     except Exception as error:
-        if "UNIQUE constraint failed: users.email" in str(error):
+        if is_integrity_error(error) and "users.email" in str(error):
             raise ValidationError("该邮箱已注册。") from error
         raise
     return user_id
