@@ -11,8 +11,11 @@ from .db import close_db, init_app as init_db
 from .security import csrf_token, init_app as init_security
 
 
-def create_app(config: type[Config] = Config) -> Flask:
-    app = Flask(__name__, instance_relative_config=True)
+def create_app(config: type[Config] = Config, *, instance_path: str | None = None) -> Flask:
+    if instance_path is None:
+        app = Flask(__name__, instance_relative_config=True)
+    else:
+        app = Flask(__name__, instance_relative_config=True, instance_path=instance_path)
     app.config.from_object(config)
     app.config.setdefault("DATABASE", str(Path(app.instance_path) / "realtags.sqlite3"))
     if not app.config.get("SECRET_KEY"):
@@ -45,6 +48,7 @@ def create_app(config: type[Config] = Config) -> Flask:
         return {
             "current_user": current_user(),
             "demo_mode": app.config["DEMO_MODE"],
+            "ephemeral_demo": app.config["EPHEMERAL_DEMO"],
             "csrf_token": csrf_token,
         }
 

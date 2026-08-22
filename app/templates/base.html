@@ -42,6 +42,13 @@
     </div>
   </header>
 
+  {% if ephemeral_demo %}
+    <aside class="hosted-demo-notice" role="note">
+      <strong>线上演示</strong>
+      <span>状态可能在冷启动时重置，请勿输入敏感信息。</span>
+    </aside>
+  {% endif %}
+
   <main id="main-content" class="page-shell" tabindex="-1">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}

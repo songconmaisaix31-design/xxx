@@ -1,0 +1,13 @@
+.git/
+.github/
+.venv/
+.vercel/
+instance/
+tests/
+docs/qa/
+docs/design-audit/
+app/static/qa/
+prototype.html
+prototype2.0.html
+__pycache__/
+*.py[cod]

@@ -236,6 +236,21 @@ body :is(.merchant-benefit, .coupon-panel, .danger-outline) {
   color: var(--text);
 }
 
+.hosted-demo-notice {
+  width: min(1120px, calc(100% - 32px));
+  margin: 12px auto 0;
+  padding: 10px 14px;
+  border: 2.5px solid var(--text);
+  border-radius: 11px;
+  background: var(--surface2);
+  box-shadow: 3px 4px 0 var(--text);
+  color: var(--text);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-size: 12px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   body *,
   body *::before,
