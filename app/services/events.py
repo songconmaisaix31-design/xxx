@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import hashlib
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
@@ -76,6 +77,7 @@ def _event_summary(event: dict, user_id: str) -> dict:
     event["gender_counts"] = genders
     event["is_merchant"] = event["host_type"] == "merchant"
     event["required_tag_labels"] = [EVENT_TAGS[tag] for tag in event["required_tags"]]
+    event["is_low_match"] = event["raw_score"] < 0.40
     event["start_at_display"] = _parse_datetime(event["start_at"]).astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M")
     event.pop("host_id", None)
     return event
@@ -249,6 +251,9 @@ def _form_values(form) -> dict:
 
 
 def create_user_event(user_id: str, form) -> str:
+    user = get_user(user_id)
+    if not user or not user["phone_verified"]:
+        raise ValidationError("发起线下饭局前需完成手机号验证；Demo 可使用明确标识的模拟验证。")
     values = _form_values(form)
     poi = POIS[values["poi_id"]]
     event_id = f"event_{uuid4().hex[:12]}"
@@ -299,6 +304,13 @@ def signup_for_event(event_id: str, user_id: str) -> str:
         raise ValidationError("活动人数已满。")
     if event["viewer_membership"]:
         raise ValidationError("你已报名此活动。")
+    if event["gender_policy"] == "same_gender" and event["host_type"] == "user":
+        host = get_user(
+            get_db().execute("SELECT host_id FROM events WHERE id = ?", (event_id,)).fetchone()["host_id"]
+        )
+        applicant = get_user(user_id)
+        if not host or not applicant or host["gender"] != applicant["gender"]:
+            raise ValidationError("该饭局仅接受与发起人同性别的报名者。")
     if _event_overlap(event, user_id):
         raise ValidationError("该时段与已报名活动冲突。")
     score = event_match_score(user_id, event["required_tags"])
@@ -380,8 +392,8 @@ def _form_group(event: dict) -> None:
         (conversation_id, body, utcnow()),
     )
     if event["merchant_benefit"]:
+        code = _event_redeem_code(event["id"])
         for member in members:
-            code = f"{event['id'][-4:].upper()}-{member['user_id'][-4:].upper()}"
             db.execute(
                 """INSERT INTO event_coupons (id, event_id, user_id, benefit_json, redeem_code, status, issued_at)
                    VALUES (?, ?, ?, ?, ?, 'issued', ?)""",
@@ -394,11 +406,15 @@ def _form_group(event: dict) -> None:
         )
 
 
+def _event_redeem_code(event_id: str) -> str:
+    return f"TABLE-{hashlib.sha256(event_id.encode()).hexdigest()[:8].upper()}"
+
+
 def refresh_event_statuses(now: datetime | None = None) -> int:
     now = now or datetime.now(timezone.utc)
     db = get_db()
     changed = 0
-    rows = db.execute("SELECT * FROM events WHERE status IN ('recruiting', 'formed', 'ongoing')").fetchall()
+    rows = db.execute("SELECT * FROM events WHERE status IN ('recruiting', 'formed', 'ongoing', 'ended')").fetchall()
     for row in rows:
         event = _decode_event(row)
         start = _parse_datetime(event["start_at"])
@@ -418,8 +434,12 @@ def refresh_event_statuses(now: datetime | None = None) -> int:
         if event["status"] in ("formed", "ongoing") and start + timedelta(hours=3) <= now:
             db.execute("UPDATE events SET status = 'ended' WHERE id = ?", (event["id"],))
             changed += 1
-        if start + timedelta(days=7) <= now:
-            db.execute("UPDATE conversations SET archived_at = ? WHERE event_id = ? AND archived_at IS NULL", (utcnow(), event["id"]))
+        if start + timedelta(hours=3, days=7) <= now:
+            archived = db.execute(
+                "UPDATE conversations SET archived_at = ? WHERE event_id = ? AND archived_at IS NULL",
+                (utcnow(), event["id"]),
+            ).rowcount
+            changed += archived
     if changed:
         db.commit()
     return changed
@@ -458,9 +478,39 @@ def viewer_coupon(event_id: str, user_id: str) -> dict | None:
     return coupon
 
 
-def redeem_coupon(event_id: str, user_id: str, redeem_code: str) -> None:
+def redeem_coupon(
+    event_id: str,
+    user_id: str,
+    redeem_code: str,
+    now: datetime | None = None,
+) -> None:
     coupon = viewer_coupon(event_id, user_id)
     if not coupon or coupon["status"] != "issued" or coupon["redeem_code"] != redeem_code:
         raise ValidationError("核销码无效或已使用。")
-    get_db().execute("UPDATE event_coupons SET status = 'redeemed', redeemed_at = ? WHERE id = ?", (utcnow(), coupon["id"]))
+    event = _decode_event(get_db().execute("SELECT * FROM events WHERE id = ?", (event_id,)).fetchone())
+    if not event or not event["merchant_benefit"]:
+        raise ValidationError("该活动没有可核销的商家权益。")
+    current_time = now or datetime.now(timezone.utc)
+    start = _parse_datetime(event["start_at"])
+    if not start - timedelta(hours=1) <= current_time <= start + timedelta(hours=3):
+        raise ValidationError("核销码仅在本次饭局时间窗口内有效。")
+    get_db().execute(
+        """UPDATE event_coupons SET status = 'redeemed', redeemed_at = ?
+           WHERE event_id = ? AND redeem_code = ? AND status = 'issued'""",
+        (utcnow(), event_id, redeem_code),
+    )
+    get_db().commit()
+
+
+def demo_redeem_coupon(event_id: str, user_id: str, redeem_code: str) -> None:
+    if not current_app.config["DEMO_MODE"]:
+        raise ValidationError("演示核销只在 DEMO_MODE 中可用。")
+    coupon = viewer_coupon(event_id, user_id)
+    if not coupon or coupon["status"] != "issued" or coupon["redeem_code"] != redeem_code:
+        raise ValidationError("核销码无效或已使用。")
+    get_db().execute(
+        """UPDATE event_coupons SET status = 'redeemed', redeemed_at = ?
+           WHERE event_id = ? AND redeem_code = ? AND status = 'issued'""",
+        (utcnow(), event_id, redeem_code),
+    )
     get_db().commit()

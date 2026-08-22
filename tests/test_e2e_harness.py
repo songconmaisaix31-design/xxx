@@ -32,6 +32,7 @@ class MvpWorkflowHarness(unittest.TestCase):
                 "DATABASE": str(Path(self.temp_dir.name) / "harness.sqlite3"),
                 "SECRET_KEY": "harness-secret",
                 "DEMO_MODE": True,
+                "CSRF_ENABLED": False,
             },
         )
         self.app = create_app(config)
@@ -170,8 +171,8 @@ class MvpWorkflowHarness(unittest.TestCase):
         self.assertIn("L3 已解锁标签", l3)
 
         # Five is the deterministic maximum common-point count of the seeded pair.
-        for _ in range(4):
-            self.assertEqual(first.post(f"/conversations/{conversation_id}/tools/unlock").status_code, 302)
+        for _ in range(5):
+            self.assertEqual(first.post(f"/conversations/{conversation_id}/demo/unlock").status_code, 302)
         l4 = first.get(f"/conversations/{conversation_id}").get_data(as_text=True)
         self.assertIn("交换联系方式", l4)
 
@@ -317,6 +318,7 @@ class RegisteredUserMatchChatHarness(unittest.TestCase):
                 "DATABASE": str(Path(self.temp_dir.name) / "registered-users.sqlite3"),
                 "SECRET_KEY": "registered-users-secret",
                 "DEMO_MODE": False,
+                "CSRF_ENABLED": False,
             },
         )
         self.app = create_app(config)
@@ -392,7 +394,7 @@ class RegisteredUserMatchChatHarness(unittest.TestCase):
         )
         account_directory = admin.get("/admin/").get_data(as_text=True)
         self.assertIn("real-one@example.test", account_directory)
-        self.assertIn("真实账户", account_directory)
+        self.assertIn("注册账户", account_directory)
 
         forged = first.post(
             f"/matches/{second_id}/start",

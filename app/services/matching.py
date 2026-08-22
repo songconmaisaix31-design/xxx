@@ -26,6 +26,22 @@ def _set_similarity(left: Iterable[str], right: Iterable[str]) -> float:
     return len(left_set & right_set) / len(union) if union else 0.0
 
 
+def _numeric_similarity(left: int | float | None, right: int | float | None, upper_bound: float) -> float:
+    if left is None or right is None or upper_bound <= 0:
+        return 0.0
+    return max(0.0, 1.0 - abs(float(left) - float(right)) / upper_bound)
+
+
+def _tier_similarity(left: str | None, right: str | None, levels: tuple[str, ...]) -> float:
+    if left not in levels or right not in levels or len(levels) < 2:
+        return 0.0
+    return 1.0 - abs(levels.index(left) - levels.index(right)) / (len(levels) - 1)
+
+
+def _time_similarity(left: Iterable[int], right: Iterable[int]) -> float:
+    return _set_similarity(left, right)
+
+
 def _tag_values(user_id: str) -> dict[str, dict]:
     values = {}
     for tag in profile_tags(user_id):
@@ -53,17 +69,59 @@ def _mbti_similarity(left: str, right: str) -> float:
 
 
 def _active_time_similarity(left: dict, left_tags: dict, right: dict, right_tags: dict) -> float:
-    return _set_similarity(_hours(left, left_tags), _hours(right, right_tags))
+    return _time_similarity(_hours(left, left_tags), _hours(right, right_tags))
+
+
+def _number_value(tags: dict[str, dict], tag_id: str, key: str) -> int | float | None:
+    value = tags.get(tag_id, {}).get(key)
+    return value if isinstance(value, (int, float)) and not isinstance(value, bool) else None
+
+
+def _behavior_similarity(left_tags: dict[str, dict], right_tags: dict[str, dict]) -> float:
+    components: list[float] = []
+    for tag_id in ("lang_learning", "sport_primary"):
+        left, right = _list_value(left_tags, tag_id), _list_value(right_tags, tag_id)
+        if left or right:
+            components.append(_set_similarity(left, right))
+    numeric_tags = (
+        ("lang_streak", "days", 1000.0),
+        ("sport_weekly", "times", 7.0),
+        ("sport_total", "km", 1000.0),
+    )
+    for tag_id, key, upper_bound in numeric_tags:
+        left = _number_value(left_tags, tag_id, key)
+        right = _number_value(right_tags, tag_id, key)
+        if left is not None or right is not None:
+            components.append(_numeric_similarity(left, right, upper_bound))
+    tier_tags = (
+        ("learning_consistency", ("轻度", "稳定", "硬核")),
+        ("sport_intensity", ("入门", "进阶", "资深")),
+    )
+    for tag_id, levels in tier_tags:
+        left = left_tags.get(tag_id, {}).get("level")
+        right = right_tags.get(tag_id, {}).get("level")
+        if left is not None or right is not None:
+            components.append(_tier_similarity(left, right, levels))
+    return sum(components) / len(components) if components else 0.0
 
 
 def _has_external_tags(user_id: str) -> bool:
-    return bool(get_db().execute("SELECT 1 FROM tags WHERE user_id = ? AND verified = 1 LIMIT 1", (user_id,)).fetchone())
+    return bool(
+        get_db().execute(
+            "SELECT 1 FROM tags WHERE user_id = ? AND source IN ('duolingo', 'keep') LIMIT 1",
+            (user_id,),
+        ).fetchone()
+    )
 
 
 def is_hard_filter_match(viewer: dict, candidate: dict) -> bool:
     viewer_age = date.today().year - viewer["birth_year"]
     candidate_age = date.today().year - candidate["birth_year"]
     if not (18 <= viewer_age <= 100 and 18 <= candidate_age <= 100):
+        return False
+    if not viewer["match_age_min"] <= candidate_age <= viewer["match_age_max"]:
+        return False
+    if not candidate["match_age_min"] <= viewer_age <= candidate["match_age_max"]:
         return False
     viewer_accepts = viewer["match_gender"] == "any" or viewer["match_gender"] == candidate["gender"]
     candidate_accepts = candidate["match_gender"] == "any" or candidate["match_gender"] == viewer["gender"]
@@ -72,10 +130,7 @@ def is_hard_filter_match(viewer: dict, candidate: dict) -> bool:
 
 def calculate_match(viewer: dict, candidate: dict) -> dict:
     viewer_tags, candidate_tags = _tag_values(viewer["id"]), _tag_values(candidate["id"])
-    behavior = (
-        _set_similarity(_list_value(viewer_tags, "lang_learning"), _list_value(candidate_tags, "lang_learning"))
-        + _set_similarity(_list_value(viewer_tags, "sport_primary"), _list_value(candidate_tags, "sport_primary"))
-    ) / 2
+    behavior = _behavior_similarity(viewer_tags, candidate_tags)
     similarities = {
         "purpose": _set_similarity(viewer["purposes"], candidate["purposes"]),
         "behavior": behavior,
@@ -123,17 +178,28 @@ def event_match_score(user_id: str, required_tags: list[str]) -> dict:
     user = get_user(user_id)
     behavior_tags = _tag_values(user_id)
     known = set(user["interests"])
-    if "人工智能" in user["interests"]:
-        known.add("interest_ai")
-    if "创业" in user["interests"]:
-        known.add("identity_startup")
+    interest_map = {
+        "人工智能": "interest_ai",
+        "创业": "identity_startup",
+        "阅读": "interest_reading",
+        "美食": "interest_food",
+    }
+    known.update(interest_map[item] for item in user["interests"] if item in interest_map)
     language_map = {"英语": "lang_learning_en", "日语": "lang_learning_ja"}
     sport_map = {"跑步": "sport_running", "瑜伽": "sport_yoga"}
     known.update(language_map.get(item) for item in _list_value(behavior_tags, "lang_learning"))
     known.update(sport_map.get(item) for item in _list_value(behavior_tags, "sport_primary"))
     known.discard(None)
     matches = known & set(required_tags)
-    raw = len(matches) / len(required_tags) if required_tags else 0.0
+    def weight(tag_id: str) -> float:
+        if tag_id.startswith("identity_"):
+            return 0.30
+        if tag_id.startswith(("lang_", "sport_")):
+            return 0.25
+        return 0.20
+
+    total_weight = sum(weight(tag_id) for tag_id in required_tags)
+    raw = sum(weight(tag_id) for tag_id in matches) / total_weight if total_weight else 0.0
     return {"raw_score": raw, "display_score": round(60 + raw * 38), "common_tag_count": len(matches)}
 
 

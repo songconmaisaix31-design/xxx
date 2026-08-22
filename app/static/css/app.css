@@ -39,7 +39,7 @@ input, select, textarea { width: 100%; min-width: 0; min-height: 3rem; border: 1
 textarea { min-height: 7rem; resize: vertical; }
 input::placeholder, textarea::placeholder { color: #858b80; opacity: 1; }
 input:hover, select:hover, textarea:hover { border-color: #959b8c; }
-input:focus, select:focus, textarea:focus { border-color: var(--ink); outline: none; box-shadow: 0 0 0 3px rgba(201, 244, 90, 0.55); }
+input:focus, select:focus, textarea:focus { border-color: var(--ink); outline: 3px solid #5B4DFF; outline-offset: 2px; box-shadow: none; }
 input[type="checkbox"], input[type="radio"] { width: 1.15rem; min-height: 1.15rem; accent-color: var(--ink); }
 ::selection { background: var(--signal); color: var(--ink); }
 
@@ -57,7 +57,7 @@ ul, ol { margin: 0; padding: 0; }
 .skip-link:focus { transform: translateY(0); }
 .sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; clip-path: inset(50%) !important; white-space: nowrap !important; border: 0 !important; }
 
-.site-header { position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--line); background: rgba(251, 250, 245, 0.96); backdrop-filter: blur(14px); }
+.site-header { position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--line); background: #FFFFFF; backdrop-filter: none; }
 .header-inner { width: min(100% - 2.5rem, var(--page-width)); min-height: 4.85rem; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
 .brand { display: inline-flex; align-items: baseline; gap: 0.75rem; min-width: max-content; color: var(--ink); text-decoration: none; }
 .brand-name { font-family: var(--font-display); font-size: 1.08rem; font-weight: 850; letter-spacing: -0.04em; }
@@ -326,7 +326,7 @@ label small { font-weight: 450; }
 .toolbox button span { width: 2.3rem; color: var(--muted); font-size: 0.62rem; font-weight: 850; }
 .toolbox button:hover { border-color: var(--ink); background: var(--signal); }
 .toolbox .demo-tool { margin-top: 0.35rem; border-style: dashed; background: var(--soft); }
-.message-form { margin: 0.85rem 18.35rem 0 0; border: 1px solid var(--ink); border-radius: var(--radius-md); background: var(--paper); padding: 0.8rem; box-shadow: 0 0.9rem 2.5rem rgba(21, 23, 19, 0.12); }
+.message-form { margin: 0.85rem 18.35rem 0 0; border: 1px solid var(--ink); border-radius: var(--radius-md); background: var(--paper); padding: 0.8rem; box-shadow: 4px 5px 0 #17150F; }
 .message-form > label { display: flex; justify-content: space-between; padding: 0 0.25rem; }
 .message-form > label span { color: var(--muted); font-size: 0.7rem; font-weight: 500; }
 .composer-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.6rem; }

@@ -6,7 +6,7 @@
     <div class="profile-identity">
       <p class="eyebrow">PRIVATE PROFILE / 仅自己可见</p>
       <h1 id="profile-title">{{ user.anonymous_alias }}</h1>
-      <p>这些行为标签不会直接展示给匹配对象；来源和认证状态只用于建立可信的同频信号。</p>
+      <p>这些行为标签不会直接展示给匹配对象；来源和数据模式只用于建立可信的同频信号。</p>
     </div>
     <div class="profile-passport" aria-label="我的基础资料">
       <div class="profile-passport-head"><span>匿名资料护照</span><strong>{{ tags|length }} 个信号</strong></div>
@@ -16,28 +16,30 @@
         <div><dt>类型</dt><dd>{{ user.mbti }}</dd></div>
         <div><dt>目的</dt><dd>{{ user.purposes|join('、') }}</dd></div>
       </dl>
-      <p class="profile-verification"><span aria-hidden="true"></span>手机号验证：{{ '已完成（演示）' if user.phone_verified else '未完成' }}</p>
+      <p class="profile-verification"><span aria-hidden="true"></span>手机号验证：{{ '已完成（演示）' if user.phone_verified and demo_mode else '已完成' if user.phone_verified else '未完成' }}</p>
+      {% if demo_mode and not user.phone_verified %}<form method="post" action="{{ url_for('auth.demo_phone_verification') }}"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit">演示：完成手机号验证</button></form>{% endif %}
     </div>
     <a class="button profile-connections-action" href="{{ url_for('auth.connections') }}">管理数据连接</a>
   </section>
 
   <section class="content-section signal-ledger" aria-labelledby="tag-title">
     <div class="section-heading-line signal-ledger-heading">
-      <div><p class="eyebrow">VERIFIED BEHAVIOR SIGNALS</p><h2 id="tag-title">我的真实标签</h2><p>按来源折叠整理；需要时再展开详情，不再让每个标签占据一整张大卡。</p></div>
+      <div><p class="eyebrow">PROVENANCE-AWARE SIGNALS</p><h2 id="tag-title">我的真实标签</h2><p>按来源折叠整理；需要时再展开详情，不再让每个标签占据一整张大卡。</p></div>
       <span class="privacy-lock">SELF ONLY · 不会公开</span>
     </div>
     {% if tags %}
       <div class="signal-source-stack">
         {% for source_group in tags|groupby('source') %}
           {% set verified_count = source_group.list|selectattr('verified')|list|length %}
+          {% set group_mode = source_group.list[0].data_mode %}
           <details class="signal-source" data-source="{{ source_group.grouper }}"{% if loop.first %} open{% endif %}>
             <summary>
               <span class="signal-source-code">{{ source_group.grouper }}</span>
               <span class="signal-source-title">
-                <strong>{% if source_group.grouper == 'duolingo' %}多邻国学习信号{% elif source_group.grouper == 'keep' %}Keep 运动信号{% else %}综合行为信号{% endif %}</strong>
-                <small>{{ source_group.list|length }} 项 · {{ verified_count }} 项已认证</small>
+                <strong>{% if source_group.grouper == 'duolingo' %}多邻国学习信号{% elif source_group.grouper == 'keep' %}Keep 运动信号{% elif source_group.grouper == 'self_reported' %}注册自填标签{% else %}综合推导信号{% endif %}</strong>
+                <small>{{ source_group.list|length }} 项 · {% if group_mode == 'live' %}{{ verified_count }} 项 Live 已验证{% elif group_mode == 'fixture' %}Fixture 演示样例{% elif group_mode == 'self_reported' %}用户自填{% else %}系统推导{% endif %}</small>
               </span>
-              <span class="signal-source-state">{{ '已连接' if source_group.grouper in connections else '系统生成' }}</span>
+              <span class="signal-source-state">{{ 'LIVE' if group_mode == 'live' else 'FIXTURE' if group_mode == 'fixture' else 'SELF' if group_mode == 'self_reported' else 'DERIVED' }}</span>
               <span class="signal-source-toggle" aria-hidden="true">展开</span>
             </summary>
             <div class="signal-list">
@@ -63,7 +65,7 @@
                       <p class="tag-value">{{ tag.value }}</p>
                     {% endif %}
                   </div>
-                  <span class="signal-row-status status-dot {{ 'is-verified' if tag.verified else '' }}">{{ '已认证' if tag.verified else '自填' }}</span>
+                  <span class="signal-row-status status-dot {{ 'is-verified' if tag.verified else '' }}">{{ 'Live 已验证' if tag.verified else 'Fixture 样例' if tag.data_mode == 'fixture' else '用户自填' if tag.data_mode == 'self_reported' else '系统推导' }}</span>
                   <span class="visually-hidden">可见范围：{{ '仅自己可见' if tag.visibility == 'self_only' else tag.visibility }}</span>
                 </article>
               {% endfor %}
@@ -72,7 +74,7 @@
         {% endfor %}
       </div>
     {% else %}
-      <div class="empty-state"><span>NO SIGNALS YET</span><h3>还没有行为标签</h3><p>连接一个数据源后，已验证标签会出现在这里。</p><a class="button" href="{{ url_for('auth.connections') }}">连接数据源</a></div>
+      <div class="empty-state"><span>NO SIGNALS YET</span><h3>还没有行为标签</h3><p>连接一个数据源后，带来源与模式标识的标签会出现在这里。</p><a class="button" href="{{ url_for('auth.connections') }}">连接数据源</a></div>
     {% endif %}
   </section>
 {% endblock %}

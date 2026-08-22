@@ -5,34 +5,53 @@
  */
 
 :root {
-  --neo-ink: #12110e;
-  --neo-cream: #fbf7e8;
-  --neo-paper: #fffefa;
-  --neo-paper-deep: #f4efdd;
-  --neo-yellow: #ffe45c;
-  --neo-yellow-soft: #fff0a6;
-  --neo-purple: #5b48ff;
-  --neo-purple-dark: #3f2ee5;
-  --neo-green: #51d000;
-  --neo-green-dark: #319b00;
-  --neo-coral: #ff5f41;
-  --neo-coral-dark: #d93f25;
-  --neo-muted: #6d685c;
+  --bg: #FFFCF0;
+  --surface: #FFFFFF;
+  --surface2: #FFE95C;
+  --text: #17150F;
+  --dim: #6B675A;
+  --primary: #5B4DFF;
+  --accent: #58CC02;
+  --hot: #FF5A36;
+  --disabled: #EFEDE4;
+  --radius: 16px;
+  --radius-sm: 11px;
+  --pill: 999px;
+  --border: 2.5px solid #17150F;
+  --shadow: 6px 7px 0 #17150F;
+  --card-shadow: 4px 5px 0 #17150F;
+  --shadow-hover: 3px 4px 0 #17150F;
+  --shadow-active: 0 0 0 #17150F;
+  --focus: 3px solid #5B4DFF;
+
+  --neo-ink: var(--text);
+  --neo-cream: var(--bg);
+  --neo-paper: var(--surface);
+  --neo-paper-deep: var(--disabled);
+  --neo-yellow: var(--surface2);
+  --neo-yellow-soft: var(--surface2);
+  --neo-purple: var(--primary);
+  --neo-purple-dark: var(--primary);
+  --neo-green: var(--accent);
+  --neo-green-dark: var(--accent);
+  --neo-coral: var(--hot);
+  --neo-coral-dark: var(--hot);
+  --neo-muted: var(--dim);
   --neo-line: #d7d2c1;
-  --neo-border-thin: 2px;
-  --neo-border: 3px;
-  --neo-border-heavy: 5px;
-  --neo-radius-control: 0.72rem;
-  --neo-radius-card: 1.35rem;
-  --neo-radius-panel: 2rem;
-  --neo-radius-pill: 999px;
-  --neo-shadow-xs: 2px 2px 0 var(--neo-ink);
-  --neo-shadow-sm: 4px 4px 0 var(--neo-ink);
-  --neo-shadow-md: 7px 7px 0 var(--neo-ink);
-  --neo-shadow-lg: 11px 11px 0 var(--neo-ink);
-  --neo-shadow-purple: 7px 7px 0 var(--neo-purple);
-  --neo-shadow-yellow: 7px 7px 0 var(--neo-yellow);
-  --neo-shadow-green: 7px 7px 0 var(--neo-green);
+  --neo-border-thin: 2.5px;
+  --neo-border: 2.5px;
+  --neo-border-heavy: 2.5px;
+  --neo-radius-control: var(--radius-sm);
+  --neo-radius-card: var(--radius);
+  --neo-radius-panel: var(--radius);
+  --neo-radius-pill: var(--pill);
+  --neo-shadow-xs: var(--shadow-active);
+  --neo-shadow-sm: var(--card-shadow);
+  --neo-shadow-md: var(--card-shadow);
+  --neo-shadow-lg: var(--shadow);
+  --neo-shadow-purple: var(--shadow);
+  --neo-shadow-yellow: var(--shadow);
+  --neo-shadow-green: var(--shadow);
   --neo-space-1: 0.25rem;
   --neo-space-2: 0.5rem;
   --neo-space-3: 0.75rem;
@@ -45,8 +64,8 @@
   --neo-space-16: 4rem;
   --neo-space-20: 5rem;
   --neo-space-24: 6rem;
-  --neo-font-display: "Microsoft YaHei UI", "PingFang SC", "Noto Sans CJK SC", sans-serif;
-  --neo-font-body: "Microsoft YaHei UI", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+  --neo-font-display: "Archivo", "AlibabaPuHuiTi-3-105-Heavy", "PingFang SC", sans-serif;
+  --neo-font-body: "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
   --neo-font-mono: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
   --neo-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --neo-ease-spring: cubic-bezier(0.22, 1.35, 0.36, 1);
@@ -78,9 +97,9 @@ body {
   background-size: 640px 640px;
   color: var(--neo-ink);
   font-family: var(--neo-font-body);
-  font-size: 1rem;
-  font-weight: 520;
-  line-height: 1.62;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.6;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
@@ -120,21 +139,23 @@ h3,
 h4 {
   color: var(--neo-ink);
   font-family: var(--neo-font-display);
-  font-weight: 900;
-  letter-spacing: -0.055em;
-  line-height: 1.04;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 h1 {
-  font-size: clamp(2.8rem, 6.8vw, 6.4rem);
+  font-size: 23px;
+  letter-spacing: -0.02em;
 }
 
 h2 {
-  font-size: clamp(1.7rem, 3.2vw, 3rem);
+  font-size: 18px;
+  letter-spacing: -0.01em;
 }
 
 h3 {
-  font-size: clamp(1.15rem, 2vw, 1.55rem);
+  font-size: 16px;
+  letter-spacing: -0.01em;
 }
 
 p,
@@ -159,8 +180,8 @@ textarea {
 }
 
 :where(a, button, summary, input, select, textarea):focus-visible {
-  outline: 4px solid var(--neo-purple);
-  outline-offset: 4px;
+  outline: var(--focus);
+  outline-offset: 2px;
 }
 
 :where(button, .button, .nav-link, .mobile-dock-link, summary) {
@@ -197,15 +218,15 @@ textarea {
   top: 0;
   z-index: 100;
   border-bottom: var(--neo-border) solid var(--neo-ink);
-  background-color: rgba(251, 247, 232, 0.96);
-  backdrop-filter: blur(18px);
+  background-color: var(--neo-paper);
+  backdrop-filter: none;
   transition:
     box-shadow var(--neo-duration-base) var(--neo-ease-out),
     transform var(--neo-duration-base) var(--neo-ease-out);
 }
 
 .site-header.is-scrolled {
-  box-shadow: 0 5px 0 rgba(18, 17, 14, 0.13);
+  box-shadow: 0 5px 0 var(--neo-ink);
 }
 
 .header-inner {
@@ -236,14 +257,14 @@ textarea {
 }
 
 .brand:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 5px 5px 0 var(--neo-ink);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
 }
 
 .brand:active,
 .brand.is-pressed {
-  transform: translate(3px, 3px);
-  box-shadow: 1px 1px 0 var(--neo-ink);
+  transform: translate(3px, 4px);
+  box-shadow: var(--shadow-active);
 }
 
 .brand-name {
@@ -401,7 +422,7 @@ button {
   border: var(--neo-border) solid var(--neo-ink);
   border-radius: var(--neo-radius-pill);
   background-color: var(--neo-purple);
-  box-shadow: var(--neo-shadow-sm);
+  box-shadow: var(--shadow);
   color: #ffffff;
   font-size: 0.88rem;
   font-weight: 900;
@@ -419,7 +440,7 @@ button {
 button:hover {
   border-color: var(--neo-ink);
   background-color: var(--neo-yellow);
-  box-shadow: 6px 6px 0 var(--neo-ink);
+  box-shadow: var(--shadow-hover);
   color: var(--neo-ink);
   transform: translate(-2px, -2px);
 }
@@ -428,8 +449,8 @@ button:hover {
 button:active,
 .button.is-pressed,
 button.is-pressed {
-  box-shadow: 1px 1px 0 var(--neo-ink);
-  transform: translate(3px, 3px);
+  box-shadow: var(--shadow-active);
+  transform: translate(3px, 4px);
 }
 
 .button.secondary,
@@ -437,7 +458,7 @@ button.secondary,
 .secondary {
   border-color: var(--neo-ink);
   background-color: var(--neo-paper);
-  box-shadow: var(--neo-shadow-sm);
+  box-shadow: none;
   color: var(--neo-ink);
 }
 
@@ -571,11 +592,11 @@ textarea {
   min-height: 3.15rem;
   border: var(--neo-border) solid var(--neo-ink);
   border-radius: var(--neo-radius-control);
-  background-color: var(--neo-paper);
-  box-shadow: 3px 3px 0 rgba(18, 17, 14, 0.18);
+  background-color: var(--bg);
+  box-shadow: none;
   color: var(--neo-ink);
-  font-size: 1rem;
-  font-weight: 650;
+  font-size: 13.5px;
+  font-weight: 500;
   padding: 0.72rem 0.86rem;
   transition:
     background-color var(--neo-duration-fast) ease,
@@ -599,9 +620,10 @@ select:focus,
 textarea:focus {
   border-color: var(--neo-ink);
   background-color: #ffffff;
-  box-shadow: var(--neo-shadow-sm);
-  outline: none;
-  transform: translate(-1px, -1px);
+  box-shadow: none;
+  outline: var(--focus);
+  outline-offset: 2px;
+  transform: none;
 }
 
 input:invalid:not(:focus):not(:placeholder-shown),
@@ -970,7 +992,7 @@ fieldset {
   }
 
   50% {
-    box-shadow: 7px 7px 0 var(--neo-purple);
+    box-shadow: var(--neo-shadow-lg);
   }
 }
 

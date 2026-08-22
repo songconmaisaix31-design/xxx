@@ -1,0 +1,248 @@
+/*
+ * Runtime visual contract from PRD chapter 5.
+ * This file is intentionally loaded last so legacy layout layers cannot drift
+ * the canonical tokens, typography, borders, and interaction feedback.
+ */
+
+:root {
+  --neo-shadow-xs: var(--card-shadow);
+  --neo-shadow-sm: var(--card-shadow);
+  --neo-shadow-md: var(--card-shadow);
+  --neo-shadow-lg: var(--shadow);
+}
+
+body {
+  background-color: var(--bg);
+  background-image: none;
+  color: var(--text);
+  font-family: var(--neo-font-body);
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+body h1,
+body h2,
+body h3 {
+  font-family: var(--neo-font-display);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+body h1 {
+  font-size: 23px !important;
+  letter-spacing: -0.02em;
+}
+
+body h2 {
+  font-size: 18px !important;
+  letter-spacing: -0.01em;
+}
+
+body h3 {
+  font-size: 16px !important;
+  letter-spacing: -0.01em;
+}
+
+body :is(.signal-score, .match-score, .result-score, .event-score, .event-hero-score) strong {
+  font-size: 68px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+body :is(.unknown-points, .redeem-code) strong,
+body .unknown-points span {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+body :is(.home-hero, .auth-layout, .page-heading, .form-section, .profile-hero,
+  .source-card, .tag-card, .match-card, .match-result, .inbox-row,
+  .conversation-hero, .unlock-panel, .member-strip, .archive-notice,
+  .group-entry, .coupon-panel, .review-panel, .detail-panel, .message-stream,
+  .toolbox, .message-form, .danger-zone, .filter-bar, .event-row,
+  .event-detail-hero, .nearby-panel) {
+  border-color: var(--text);
+  border-width: 2.5px;
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  box-shadow: var(--card-shadow);
+}
+
+body :is(.home-hero, .auth-layout, .match-result, .conversation-hero, .event-detail-hero) {
+  box-shadow: var(--shadow);
+}
+
+body :is(.hero-copy, .protocol-panel) {
+  min-width: 0;
+  background-color: var(--surface);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 900px) {
+  body .home-hero {
+    width: 100%;
+    max-width: 100%;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  }
+
+  body .match-result {
+    width: 100%;
+    max-width: 100%;
+    grid-template-columns: minmax(0, 0.65fr) minmax(0, 1.35fr) minmax(0, 0.65fr);
+  }
+}
+
+body .hero-copy h1 span,
+body .protocol-panel :is(.signal-score strong, .protocol-step-number) {
+  color: var(--primary);
+}
+
+body .protocol-panel :is(.protocol-topline, .signal-score span, .protocol-steps strong,
+  .protocol-steps span, .protocol-foot) {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+body .auth-story,
+body.profile-page .profile-hero,
+body .result-signal,
+body .filter-bar,
+body .match-rules-panel {
+  background-color: var(--surface);
+  color: var(--text);
+}
+
+body .auth-story h1,
+body.profile-page .profile-identity h1,
+body .result-signal :is(.result-score strong, h1),
+body .match-rules-panel h2,
+body .match-rule-list > li > span {
+  color: var(--primary);
+}
+
+body .auth-story > p,
+body.profile-page .profile-identity > p:last-child,
+body .result-signal :is(p, small),
+body .filter-bar :is(label, .filter-heading, .filter-heading p),
+body .match-rules-panel :is(.protocol-topline, .match-rule-list strong, .match-rule-list p) {
+  color: var(--dim);
+  opacity: 1;
+}
+
+body .match-rule-list li {
+  border-color: var(--text);
+}
+
+body .privacy-boundary {
+  background-color: var(--surface);
+  color: var(--text);
+}
+
+body .privacy-boundary p {
+  color: var(--dim);
+}
+
+body .large-points span {
+  background-color: var(--surface2);
+}
+
+body.nearby-events-page .nearby-panel {
+  background-color: var(--surface);
+}
+
+body.nearby-events-page .nearby-copy > p:last-child {
+  color: var(--dim);
+}
+
+body :is(.tag-card, .match-card, .event-row, .inbox-row, .source-card):nth-child(n) {
+  background-color: var(--surface);
+}
+
+body :is(.badge, .status-pill, .privacy-lock, .choice-tile span, .distance-chip,
+  .event-tags em, .event-tags strong, .message, .source-code) {
+  border: var(--border);
+  border-radius: var(--pill);
+  box-shadow: var(--card-shadow);
+}
+
+body :is(.message, input, select, textarea) {
+  border-radius: var(--radius-sm);
+}
+
+body :is(input, select, textarea) {
+  min-height: 44px;
+  border: var(--border);
+  background-color: var(--bg);
+  box-shadow: none;
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+body :is(input, select, textarea):focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+
+body :is(.button, button) {
+  min-width: 44px;
+  min-height: 44px;
+  border: var(--border);
+  border-radius: var(--pill);
+  background-color: var(--primary);
+  box-shadow: var(--shadow);
+  color: #FFFFFF;
+  font-size: 14.5px;
+  font-weight: 600;
+  transition: background-color 140ms ease, box-shadow 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+body :is(.button, button):hover {
+  background-color: var(--surface2);
+  box-shadow: var(--shadow-hover);
+  color: var(--text);
+  transform: translateY(-2px);
+}
+
+body :is(.button, button):active,
+body :is(.button, button).is-pressed {
+  box-shadow: var(--shadow-active);
+  transform: translate(3px, 4px);
+}
+
+body :is(.button.secondary, button.secondary, .secondary) {
+  background-color: transparent;
+  box-shadow: none;
+  color: var(--dim);
+}
+
+body :is(.button, button):disabled,
+body :is(.button, button)[aria-disabled="true"] {
+  background-color: var(--disabled);
+  box-shadow: none;
+  color: var(--dim);
+}
+
+body :is(.status-success, .status-signal, .is-verified) {
+  background-color: var(--accent);
+  color: var(--text);
+}
+
+body :is(.merchant-benefit, .coupon-panel, .danger-outline) {
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body *,
+  body *::before,
+  body *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

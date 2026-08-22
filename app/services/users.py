@@ -99,6 +99,13 @@ def create_user(form) -> str:
     age = date.today().year - birth_year
     if not 18 <= age <= 100:
         raise ValidationError("目前仅支持 18 岁及以上用户注册。")
+    try:
+        match_age_min = int(form.get("match_age_min") or 18)
+        match_age_max = int(form.get("match_age_max") or 100)
+    except ValueError as error:
+        raise ValidationError("匹配年龄范围必须是有效数字。") from error
+    if not 18 <= match_age_min <= match_age_max <= 100:
+        raise ValidationError("匹配年龄范围须满足 18 ≤ 最小年龄 ≤ 最大年龄 ≤ 100。")
 
     gender = form.get("gender")
     match_gender = form.get("match_gender")
@@ -116,10 +123,12 @@ def create_user(form) -> str:
     try:
         get_db().execute(
             """INSERT INTO users (
-                id, email, password_hash, anonymous_alias, birth_year, gender, match_gender, city,
+                id, email, password_hash, anonymous_alias, birth_year, gender, match_gender,
+                match_age_min, match_age_max, city,
                 purposes_json, interests_json, mbti, zodiac, schedule, phone_verified, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)""",
-            (user_id, email, generate_password_hash(password), alias, birth_year, gender, match_gender, city,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)""",
+            (user_id, email, generate_password_hash(password), alias, birth_year, gender, match_gender,
+             match_age_min, match_age_max, city,
              json.dumps(purposes, ensure_ascii=False), json.dumps(interests, ensure_ascii=False), mbti, zodiac,
              schedule, utcnow()),
         )
@@ -131,12 +140,45 @@ def create_user(form) -> str:
     return user_id
 
 
+def _self_reported_tags(user: dict) -> list[dict]:
+    age = date.today().year - user["birth_year"]
+    age_range = "18–24" if age < 25 else "25–29" if age < 30 else "30–34" if age < 35 else "35+"
+    values = (
+        ("self_age", "基础", "年龄与偏好", {"age_range": age_range, "match_age_range": f"{user['match_age_min']}–{user['match_age_max']}"}),
+        ("self_gender", "基础", "性别与匹配偏好", {"gender": user["gender"], "match_gender": user["match_gender"]}),
+        ("self_city", "基础", "所在城市", {"value": user["city"]}),
+        ("self_purposes", "基础", "交友目的", {"items": user["purposes"]}),
+        ("self_interests", "基础", "兴趣爱好", {"items": user["interests"]}),
+        ("self_mbti", "基础", "MBTI", {"value": user["mbti"]}),
+        ("self_zodiac", "基础", "星座", {"value": user["zodiac"]}),
+        ("self_schedule", "基础", "作息类型", {"value": user["schedule"]}),
+    )
+    return [
+        {
+            "tag_id": tag_id,
+            "category": category,
+            "name": name,
+            "value": value,
+            "source": "self_reported",
+            "data_mode": "self_reported",
+            "verified": False,
+            "visibility": "self_only",
+            "updated_at": user["created_at"],
+        }
+        for tag_id, category, name, value in values
+    ]
+
+
 def profile_tags(user_id: str) -> list[dict]:
+    user = get_user(user_id)
+    if user is None:
+        return []
     rows = get_db().execute(
-        "SELECT tag_id, category, name, value_json, source, verified, visibility, updated_at FROM tags WHERE user_id = ? ORDER BY category, id",
+        """SELECT tag_id, category, name, value_json, source, data_mode, verified, visibility, updated_at
+           FROM tags WHERE user_id = ? ORDER BY category, id""",
         (user_id,),
     ).fetchall()
-    tags = []
+    tags = _self_reported_tags(user)
     for row in rows:
         tag = dict(row)
         tag["value"] = json.loads(tag.pop("value_json"))
@@ -147,6 +189,15 @@ def profile_tags(user_id: str) -> list[dict]:
 
 def source_connections(user_id: str) -> dict[str, dict]:
     rows = get_db().execute(
-        "SELECT source, status, refreshed_at FROM external_connections WHERE user_id = ?", (user_id,)
+        "SELECT source, status, data_mode, refreshed_at FROM external_connections WHERE user_id = ?", (user_id,)
     ).fetchall()
     return {row["source"]: dict(row) for row in rows}
+
+
+def verify_phone_for_demo(user_id: str) -> None:
+    if not current_app.config["DEMO_MODE"]:
+        raise ValidationError("演示手机号验证仅在 DEMO_MODE 中可用。")
+    result = get_db().execute("UPDATE users SET phone_verified = 1 WHERE id = ?", (user_id,))
+    if not result.rowcount:
+        raise ValidationError("用户不存在。")
+    get_db().commit()

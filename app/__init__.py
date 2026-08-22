@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import secrets
 from pathlib import Path
 
 import click
@@ -7,15 +8,21 @@ from flask import Flask
 
 from .config import Config
 from .db import close_db, init_app as init_db
+from .security import csrf_token, init_app as init_security
 
 
 def create_app(config: type[Config] = Config) -> Flask:
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config)
     app.config.setdefault("DATABASE", str(Path(app.instance_path) / "realtags.sqlite3"))
+    if not app.config.get("SECRET_KEY"):
+        if not app.config.get("TESTING") and not app.config.get("DEMO_MODE"):
+            raise RuntimeError("FLASK_SECRET_KEY is required when DEMO_MODE is disabled.")
+        app.config["SECRET_KEY"] = secrets.token_hex(32)
 
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
     app.teardown_appcontext(close_db)
+    init_security(app)
     init_db(app)
 
     from .routes.auth import bp as auth_bp
@@ -35,7 +42,11 @@ def create_app(config: type[Config] = Config) -> Flask:
     def inject_template_globals() -> dict:
         from .services.users import current_user
 
-        return {"current_user": current_user(), "demo_mode": app.config["DEMO_MODE"]}
+        return {
+            "current_user": current_user(),
+            "demo_mode": app.config["DEMO_MODE"],
+            "csrf_token": csrf_token,
+        }
 
     @app.cli.command("process-events")
     def process_events_command() -> None:

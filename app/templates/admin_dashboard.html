@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#12110e">
+  <meta name="theme-color" content="#17150F">
   <title>审核工作台 · 真实标签</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/brand-mark.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
@@ -11,12 +11,13 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-components.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-mobile.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-console.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/prd-contract.css') }}">
 </head>
 <body class="admin-page admin-dashboard-page">
   <main id="main-content" class="page-shell">
     <section class="page-heading" aria-labelledby="dashboard-title">
       <div><p class="eyebrow">TRUST &amp; SAFETY / ADMIN</p><h1 id="dashboard-title">审核工作台</h1><p>{{ admin.display_name }} · {{ admin.email }}</p></div>
-      <form method="post" action="{{ url_for('admin.logout') }}"><button class="button secondary" type="submit">退出后台</button></form>
+      <form method="post" action="{{ url_for('admin.logout') }}"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit">退出后台</button></form>
     </section>
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}<div class="flash flash-{{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">{{ message }}</div>{% endfor %}
@@ -61,7 +62,7 @@
           <thead><tr><th scope="col">账号邮箱</th><th scope="col">账户类型</th><th scope="col">匿名代号</th><th scope="col">城市</th><th scope="col">手机验证</th><th scope="col">注册时间</th><th scope="col">已授权数据源</th></tr></thead>
           <tbody>
             {% for user in registered_users %}
-              <tr><td data-label="账号邮箱">{{ user.email }}</td><td data-label="账户类型">{{ '演示账户' if user.is_demo else '真实账户' }}</td><td data-label="匿名代号">{{ user.anonymous_alias }}</td><td data-label="城市">{{ user.city }}</td><td data-label="手机验证">{{ '已验证' if user.phone_verified else '未验证' }}</td><td data-label="注册时间">{{ user.created_at }}</td><td data-label="已授权数据源">{{ user.authorized_source_count }}</td></tr>
+              <tr><td data-label="账号邮箱">{{ user.email }}</td><td data-label="账户类型">{{ '演示账户' if user.is_demo else '注册账户' }}</td><td data-label="匿名代号">{{ user.anonymous_alias }}</td><td data-label="城市">{{ user.city }}</td><td data-label="手机验证">{{ '已验证' if user.phone_verified else '未验证' }}</td><td data-label="注册时间">{{ user.created_at }}</td><td data-label="已授权数据源">{{ user.authorized_source_count }}</td></tr>
             {% else %}
               <tr><td class="admin-account-empty" colspan="7">未找到匹配的注册账户。</td></tr>
             {% endfor %}

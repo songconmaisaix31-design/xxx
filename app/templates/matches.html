@@ -22,6 +22,7 @@
         <p class="match-ready-copy">匹配会经过三个服务端步骤。你的原始记录、标签详情和匹配权重都不会发送给候选人。</p>
         {% if candidate_count %}
           <form class="match-start-form" method="post" action="{{ url_for('matches.search_start') }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <button class="button button-large" type="submit">开始匿名匹配</button>
           </form>
           <p class="match-start-note">点击后进入短暂的计算过程；匹配中可以随时取消。</p>

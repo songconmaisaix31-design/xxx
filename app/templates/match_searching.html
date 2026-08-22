@@ -46,11 +46,13 @@
 
     <div class="match-search-actions">
       <form method="post" action="{{ url_for('matches.search_complete') }}" data-match-complete>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
         <button class="text-link match-skip-button" type="submit">跳过等待，直接查看结果</button>
         <noscript><p>浏览器未启用 JavaScript，你仍然可以使用上面的按钮完成匹配。</p></noscript>
       </form>
       <form method="post" action="{{ url_for('matches.search_cancel') }}" data-match-cancel>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
         <button class="button secondary" type="submit">取消本次匹配</button>
       </form>

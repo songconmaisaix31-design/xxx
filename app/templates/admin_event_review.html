@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#12110e">
+  <meta name="theme-color" content="#17150F">
   <title>活动审核 · 真实标签</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/brand-mark.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-components.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-mobile.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-console.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/prd-contract.css') }}">
 </head>
 <body class="admin-page admin-review-page admin-event-review-page">
   <main id="main-content" class="page-shell">
@@ -38,10 +39,12 @@
         <div class="panel-heading"><span>02</span><h2>审核决定</h2></div>
         {% if event.status == 'pending_review' %}
           <form method="post" action="{{ url_for('admin.event_decision', event_id=event.id) }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="decision" value="approve">
             <button class="button button-block" type="submit">通过并开放报名</button>
           </form>
           <form method="post" action="{{ url_for('admin.event_decision', event_id=event.id) }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="decision" value="reject">
             <label for="rejection-reason">拒绝原因<textarea id="rejection-reason" required maxlength="500" name="rejection_reason"></textarea></label>
             <button class="button danger button-block" type="submit">拒绝活动</button>

@@ -9,11 +9,11 @@ from ..services.chat import report_subject
 from ..services.events import (
     cancel_event,
     create_user_event,
+    demo_redeem_coupon,
     demo_settle_event,
     get_event,
     list_events,
     parse_nearby_query,
-    redeem_coupon,
     review_applicants,
     review_signup,
     signup_for_event,
@@ -138,8 +138,10 @@ def demo_settle(event_id: str):
 @bp.post("/events/<event_id>/redeem")
 @login_required
 def redeem(event_id: str):
+    if not current_app.config["DEMO_MODE"]:
+        abort(404)
     try:
-        redeem_coupon(event_id, current_user()["id"], request.form.get("redeem_code", ""))
+        demo_redeem_coupon(event_id, current_user()["id"], request.form.get("redeem_code", ""))
     except ValidationError as error:
         flash(str(error), "error")
     else:

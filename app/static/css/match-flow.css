@@ -369,7 +369,7 @@
   border: var(--neo-border-heavy) solid var(--neo-ink);
   border-radius: 50%;
   background-color: var(--neo-paper);
-  box-shadow: 12px 12px 0 var(--neo-purple);
+  box-shadow: var(--shadow);
   animation: match-signal-pulse 1.35s var(--neo-ease-spring) infinite alternate;
 }
 
@@ -584,11 +584,11 @@
 
 @keyframes match-signal-pulse {
   from {
-    box-shadow: 8px 8px 0 var(--neo-purple);
+    box-shadow: var(--card-shadow);
     transform: translate(-2px, -2px) scale(0.97);
   }
   to {
-    box-shadow: 15px 15px 0 var(--neo-purple);
+    box-shadow: var(--shadow);
     transform: translate(-5px, -5px) scale(1.02);
   }
 }

@@ -2,22 +2,42 @@
 {% block title %}数据连接{% endblock %}
 {% block content %}
   <section class="page-heading" aria-labelledby="connections-title">
-    <div><p class="eyebrow">STEP 02 / VERIFIED SIGNALS</p><h1 id="connections-title">连接真实行为数据</h1><p>你决定连接哪些数据源。当前演示使用 Mock OAuth，后端已保留真实授权、刷新令牌和错误码的接入边界。</p></div>
+    <div><p class="eyebrow">STEP 02 / DATA PROVENANCE</p><h1 id="connections-title">连接行为数据</h1><p>有可用接口的走 Live；暂时没有稳定接口的使用 Fixture 完成 Demo。两种模式始终清楚标识，可随时覆盖同步。</p></div>
     <a class="text-link back-link" href="{{ url_for('auth.profile') }}">返回我的标签</a>
   </section>
+
   <section class="source-grid" aria-label="可连接的数据源">
-    {% for source, label in {'duolingo':'多邻国 Duolingo', 'keep':'Keep'}|items %}
-      {% set connection = connections.get(source) %}
-      <article class="source-card source-{{ source }}">
-        <div class="source-card-top"><span class="source-code">{{ 'DUO' if source == 'duolingo' else 'KEEP' }}</span><span class="status-pill {{ 'status-success' if connection and connection.status == 'connected' else 'status-neutral' }}">{{ '已连接' if connection and connection.status == 'connected' else '未连接' }}</span></div>
-        <div><p class="eyebrow">{{ source }}</p><h2>{{ label }}</h2><p>{{ '将语言学习习惯转化为已认证标签。' if source == 'duolingo' else '将运动频率与偏好转化为已认证标签。' }}</p></div>
-        <dl class="source-meta"><div><dt>数据用途</dt><dd>仅用于服务端匹配</dd></div><div><dt>最近同步</dt><dd>{{ connection.refreshed_at if connection else '尚未同步' }}</dd></div></dl>
-        <form method="post" action="{{ url_for('auth.authorize_source', source=source) }}">
-          <input type="hidden" name="authorization_code" value="demo-authorized">
-          <button class="button button-block {{ 'secondary' if connection else '' }}" type="submit">{{ '重新同步数据' if connection else '授权并同步' }}</button>
-        </form>
-      </article>
-    {% endfor %}
+    {% set duo = connections.get('duolingo') %}
+    <article class="source-card source-duolingo">
+      <div class="source-card-top"><span class="source-code">DUO</span><span class="status-pill {{ 'status-success' if duo else 'status-neutral' }}">{{ ('已同步 · ' ~ ('Live' if duo.data_mode == 'live' else 'Fixture')) if duo else '未连接' }}</span></div>
+      <div><p class="eyebrow">duolingo</p><h2>多邻国 Duolingo</h2><p>Live 只读取公开学习资料并立即转成最小标签，不保存原始响应。</p></div>
+      <dl class="source-meta"><div><dt>Live 输入</dt><dd>公开用户名，无需密码</dd></div><div><dt>最近同步</dt><dd>{{ duo.refreshed_at if duo else '尚未同步' }}</dd></div></dl>
+      <form method="post" action="{{ url_for('auth.authorize_source', source='duolingo') }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="mode" value="live">
+        <label for="duolingo-username">Duolingo 公开用户名<input id="duolingo-username" required minlength="2" maxlength="64" pattern="[A-Za-z0-9._-]+" name="identifier" autocomplete="off" placeholder="例如 public_username"><small>仅发起一次 HTTPS 只读查询；Live 不可用时不会伪装成功。</small></label>
+        <button class="button button-block" type="submit">同步 Live 标签</button>
+      </form>
+      <form method="post" action="{{ url_for('auth.authorize_source', source='duolingo') }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="mode" value="fixture">
+        <input type="hidden" name="authorization_code" value="demo-authorized">
+        <button class="button secondary button-block" type="submit">改用 Fixture 演示数据</button>
+      </form>
+    </article>
+
+    {% set keep = connections.get('keep') %}
+    <article class="source-card source-keep">
+      <div class="source-card-top"><span class="source-code">KEEP</span><span class="status-pill {{ 'status-success' if keep else 'status-neutral' }}">{{ '已同步 · Fixture' if keep else '未连接' }}</span></div>
+      <div><p class="eyebrow">keep / fixture</p><h2>Keep 运动</h2><p>当前没有通过验证的稳定授权接口，先用确定性 Fixture 跑通运动标签和匹配链路。</p></div>
+      <dl class="source-meta"><div><dt>当前模式</dt><dd>Mock / Fixture 占位</dd></div><div><dt>最近同步</dt><dd>{{ keep.refreshed_at if keep else '尚未同步' }}</dd></div></dl>
+      <form method="post" action="{{ url_for('auth.authorize_source', source='keep') }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="mode" value="fixture">
+        <input type="hidden" name="authorization_code" value="demo-authorized">
+        <button class="button secondary button-block" type="submit">同步 Fixture 标签</button>
+      </form>
+    </article>
   </section>
-  <aside class="inline-note"><strong>你的原始记录不会进入页面。</strong><span>页面只接收后端生成的标签、来源与认证状态，访问令牌不会保存在浏览器中。</span></aside>
+  <aside class="inline-note"><strong>Live 与 Mock 都能完成 Demo，但含义不同。</strong><span>Live 标签标记“已验证”；Fixture 标记“演示样例”。原始记录、密码和 token 不进入浏览器或数据库。</span></aside>
 {% endblock %}

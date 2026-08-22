@@ -16,10 +16,12 @@
       <div class="match-result-actions">
         {% if attempt_id %}
           <form method="post" action="{{ url_for('matches.start', candidate_id=match.candidate.id) }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
             <button class="button button-large" type="submit">开启匿名会话</button>
           </form>
           <form method="post" action="{{ url_for('matches.search_retry') }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
             <button class="button secondary button-large" type="submit">换一位</button>
           </form>

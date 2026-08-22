@@ -6,13 +6,13 @@
     <div class="hero-copy">
       <p class="eyebrow">真实行为数据 / 匿名匹配 / 兴趣饭局</p>
       <h1 id="home-title">先聊同频，<span>再决定要不要认识。</span></h1>
-      <p class="hero-lede">连接多邻国和 Keep 的行为数据，由服务端计算同频程度。匹配阶段只展示必要信号，身份信息随双方互动逐步解锁。</p>
+      <p class="hero-lede">连接 Duolingo Live 或 Keep Fixture 行为标签，由服务端计算同频程度。匹配阶段只展示必要信号，身份信息随双方互动逐步解锁。</p>
       <div class="action-row">
         {% if user %}
           <a class="button" href="{{ url_for('matches.index') }}">开始一次匿名匹配</a>
           <a class="button secondary" href="{{ url_for('events.index') }}">逛兴趣饭局</a>
         {% else %}
-          {% if demo_mode %}<form class="inline-form" method="post" action="{{ url_for('auth.demo_login') }}"><button class="button" type="submit">进入预置演示账号</button></form>{% endif %}
+          {% if demo_mode %}<form class="inline-form" method="post" action="{{ url_for('auth.demo_login') }}"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="button" type="submit">进入预置演示账号</button></form>{% endif %}
           <a class="button secondary" href="{{ url_for('auth.register') }}">注册新账号</a>
         {% endif %}
       </div>
@@ -83,9 +83,9 @@
       <article data-principle="verified" role="listitem">
         <div class="trust-node"><span class="principle-index">01</span><span>本人可见</span></div>
         <div class="principle-copy">
-          <p class="principle-kicker">VERIFIED SOURCE</p>
+          <p class="principle-kicker">SOURCE PROVENANCE</p>
           <h3>真实标签</h3>
-          <p>第三方数据仅对本人可见，并携带来源与认证状态。</p>
+          <p>第三方数据仅对本人可见，并明确标出 Live 或 Fixture 模式。</p>
           <ul class="principle-proof" aria-label="真实标签保障"><li>来源可追溯</li><li>原始记录不外发</li></ul>
         </div>
       </article>

@@ -7,6 +7,7 @@
     <aside class="privacy-note"><strong>默认最小披露</strong><p>基础资料只用于服务端匹配，不会出现在匿名匹配页。</p></aside>
   </section>
   <form class="structured-form" method="post" action="{{ url_for('auth.register') }}">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
     <section class="form-section" aria-labelledby="account-section-title">
       <div class="form-section-heading"><span>01</span><div><h2 id="account-section-title">账号与匿名身份</h2><p>带 * 的字段为完成注册的必要信息。</p></div></div>
       <div class="form-grid two">
@@ -23,6 +24,8 @@
         <label for="register-birth-year">出生年份 *<input id="register-birth-year" required type="number" min="1926" max="2008" name="birth_year" inputmode="numeric" placeholder="1998"></label>
         <label for="register-gender">性别 *<select id="register-gender" required name="gender"><option value="" selected disabled>请选择</option>{% for value in genders %}<option value="{{ value }}">{{ {'male':'男','female':'女','undisclosed':'不愿透露'}[value] }}</option>{% endfor %}</select></label>
         <label for="register-match-gender">希望匹配性别 *<select id="register-match-gender" required name="match_gender"><option value="" selected disabled>请选择</option>{% for value in match_genders %}<option value="{{ value }}">{{ {'male':'男','female':'女','any':'不限'}[value] }}</option>{% endfor %}</select></label>
+        <label for="register-match-age-min">希望匹配年龄（最小）<input id="register-match-age-min" type="number" min="18" max="100" name="match_age_min" value="18" inputmode="numeric"></label>
+        <label for="register-match-age-max">希望匹配年龄（最大）<input id="register-match-age-max" type="number" min="18" max="100" name="match_age_max" value="100" inputmode="numeric"></label>
         <label for="register-schedule">作息偏好<select id="register-schedule" name="schedule"><option value="">不填写</option>{% for value in schedules %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></label>
         <label for="register-mbti">MBTI（可选）<select id="register-mbti" name="mbti"><option value="">不填写</option>{% for value in mbtis %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></label>
         <label for="register-zodiac">星座（可选）<select id="register-zodiac" name="zodiac"><option value="">不填写</option>{% for value in zodiacs %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></label>

@@ -229,24 +229,32 @@ def relationship_progress(conversation_id: str) -> dict:
     if not conversation or conversation["type"] != "direct":
         return {"level": 0, "label": "群聊", "next_requirement": "使用破冰工具，让全桌都能自然开口。", "unlocked_points": []}
     members = _members(conversation_id)
-    counts = get_db().execute(
-        """SELECT sender_id, COUNT(*) AS count, COUNT(DISTINCT substr(created_at, 1, 10)) AS active_days
-           FROM messages WHERE conversation_id = ? AND message_type = 'text' GROUP BY sender_id""", (conversation_id,)
+    member_ids = [member["user_id"] for member in members]
+    activity = {member_id: set() for member_id in member_ids}
+    message_counts = {member_id: 0 for member_id in member_ids}
+    text_rows = get_db().execute(
+        """SELECT sender_id, substr(created_at, 1, 10) AS active_day
+           FROM messages WHERE conversation_id = ? AND message_type = 'text'""",
+        (conversation_id,),
     ).fetchall()
-    text_count = sum(row["count"] for row in counts)
-    both_spoke = len(counts) == 2 and all(row["count"] > 0 for row in counts)
-    active_days = max((row["active_days"] for row in counts), default=0)
+    for row in text_rows:
+        if row["sender_id"] in activity:
+            activity[row["sender_id"]].add(row["active_day"])
+            message_counts[row["sender_id"]] += 1
+    text_count = sum(message_counts.values())
+    both_spoke = all(message_counts[member_id] > 0 for member_id in member_ids)
+    mutual_active_days = len(set.intersection(*(activity[member_id] for member_id in member_ids))) if members else 0
     tool_count = get_db().execute(
         "SELECT COUNT(*) AS count FROM messages WHERE conversation_id = ? AND message_type = 'system_card' AND json_extract(metadata_json, '$.kind') IN ('dice', 'task_card', 'match_point')",
         (conversation_id,),
     ).fetchone()["count"]
     heat = text_count + tool_count * 3
     natural_level = 0
-    if both_spoke and heat >= 10:
+    if both_spoke and mutual_active_days >= 1 and text_count >= 10:
         natural_level = 1
-    if both_spoke and active_days >= 3:
+    if mutual_active_days >= 3:
         natural_level = 2
-    if both_spoke and active_days >= 7:
+    if mutual_active_days >= 7:
         natural_level = 3
     unlocked = get_db().execute(
         "SELECT content FROM messages WHERE conversation_id = ? AND json_extract(metadata_json, '$.kind') = 'match_point' ORDER BY id",
@@ -267,7 +275,10 @@ def relationship_progress(conversation_id: str) -> dict:
     )
     return {
         "level": min(level, 4), "label": labels[min(level, 4)], "next_requirement": next_requirements[min(level, 4)],
-        "heat": heat, "unlocked_points": [row["content"] for row in unlocked], "total_point_count": len(target_points),
+        "heat": heat,
+        "mutual_active_days": mutual_active_days,
+        "unlocked_points": [row["content"] for row in unlocked],
+        "total_point_count": len(target_points),
     }
 
 
@@ -356,13 +367,44 @@ def use_tool(conversation_id: str, user_id: str, tool: str) -> str:
         else:
             members = _members(conversation_id)
             points = _shared_points(members[0]["user_id"], members[1]["user_id"])
-            unlocked_count = get_db().execute(
-                "SELECT COUNT(*) AS count FROM messages WHERE conversation_id = ? AND json_extract(metadata_json, '$.kind') = 'match_point'",
+            db = get_db()
+            unlocked_count = db.execute(
+                """SELECT COUNT(*) AS count FROM messages
+                   WHERE conversation_id = ? AND json_extract(metadata_json, '$.kind') = 'match_point'""",
                 (conversation_id,),
             ).fetchone()["count"]
             if unlocked_count >= len(points):
                 raise ValidationError("全部匹配点已经解锁。")
-            content, metadata = f"匹配点已解锁：{points[unlocked_count]}", {"kind": "match_point", "index": unlocked_count}
+            latest_task = db.execute(
+                """SELECT id FROM messages
+                   WHERE conversation_id = ? AND json_extract(metadata_json, '$.kind') = 'match_point_task'
+                   ORDER BY id DESC LIMIT 1""",
+                (conversation_id,),
+            ).fetchone()
+            latest_point = db.execute(
+                """SELECT id FROM messages
+                   WHERE conversation_id = ? AND json_extract(metadata_json, '$.kind') = 'match_point'
+                   ORDER BY id DESC LIMIT 1""",
+                (conversation_id,),
+            ).fetchone()
+            if not latest_task or (latest_point and latest_point["id"] > latest_task["id"]):
+                prompt = random.choice(TASK_CARDS["价值观"] + TASK_CARDS["生活"])
+                content = f"匹配点协作任务：{prompt} 双方回答后再点击解锁。"
+                metadata = {"kind": "match_point_task", "index": unlocked_count}
+            else:
+                responders = db.execute(
+                    """SELECT COUNT(DISTINCT sender_id) AS count FROM messages
+                       WHERE conversation_id = ? AND message_type = 'text' AND id > ?""",
+                    (conversation_id, latest_task["id"]),
+                ).fetchone()["count"]
+                if responders < 2:
+                    raise ValidationError("匹配点任务需要双方都回答后才能解锁。")
+                progress = relationship_progress(conversation_id)
+                allowed_count = 0 if progress["level"] == 0 else 1 if progress["level"] == 1 else 2 if progress["level"] == 2 else len(points)
+                if unlocked_count >= allowed_count:
+                    raise ValidationError("继续积累共同活跃日后才能解锁下一个匹配点。")
+                content = f"匹配点已解锁：{points[unlocked_count]}"
+                metadata = {"kind": "match_point", "index": unlocked_count}
     else:
         raise ValidationError("未知的破冰工具。")
     _insert_system(conversation_id, content, metadata)
@@ -374,11 +416,39 @@ def advance_demo_progress(conversation_id: str, user_id: str) -> int:
     row = _ensure_interactive(conversation_id, user_id)
     if row["type"] != "direct":
         raise ValidationError("只有一对一会话可推进关系阶段。")
-    next_level = min(4, row["demo_progress_offset"] + 1)
+    if row["demo_progress_offset"] >= 3:
+        return 3
+    next_level = row["demo_progress_offset"] + 1
     get_db().execute("UPDATE conversations SET demo_progress_offset = ? WHERE id = ?", (next_level, conversation_id))
     _insert_system(conversation_id, f"演示模式：关系阶段已推进至 L{next_level}。", {"kind": "demo_progress"})
     get_db().commit()
     return next_level
+
+
+def demo_unlock_point(conversation_id: str, user_id: str) -> str:
+    from flask import current_app
+
+    if not current_app.config["DEMO_MODE"]:
+        raise ValidationError("演示解锁只在 DEMO_MODE 中可用。")
+    row = _ensure_interactive(conversation_id, user_id)
+    if row["type"] != "direct":
+        raise ValidationError("只有一对一会话可演示解锁匹配点。")
+    progress = relationship_progress(conversation_id)
+    if progress["level"] < 1:
+        raise ValidationError("请先把演示关系推进到 L1。")
+    members = _members(conversation_id)
+    points = _shared_points(members[0]["user_id"], members[1]["user_id"])
+    unlocked_count = len(progress["unlocked_points"])
+    if unlocked_count >= len(points):
+        raise ValidationError("全部匹配点已经解锁。")
+    content = f"演示模式 · 匹配点已解锁：{points[unlocked_count]}"
+    _insert_system(
+        conversation_id,
+        content,
+        {"kind": "match_point", "index": unlocked_count, "demo": True},
+    )
+    get_db().commit()
+    return content
 
 
 def report_subject(reporter_id: str, subject_type: str, subject_id: str, reason: str) -> None:

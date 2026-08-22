@@ -12,12 +12,13 @@
     <div class="auth-form-panel">
       <div class="form-heading"><p class="eyebrow">账号访问</p><h2 id="login-title">登录</h2><p>使用你的注册邮箱继续。</p></div>
       <form method="post" action="{{ url_for('auth.login') }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <label for="login-email">邮箱地址<input id="login-email" required type="email" name="email" autocomplete="email" inputmode="email" placeholder="name@example.com"></label>
         <label for="login-password">密码<input id="login-password" required type="password" name="password" autocomplete="current-password" placeholder="至少 8 位"></label>
         <button class="button button-block" type="submit">登录</button>
       </form>
       <div class="form-divider"><span>或快速体验</span></div>
-      {% if demo_mode %}<form method="post" action="{{ url_for('auth.demo_login') }}"><button class="button secondary button-block" type="submit">使用预置演示账号</button></form>{% endif %}
+      {% if demo_mode %}<form method="post" action="{{ url_for('auth.demo_login') }}"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="button secondary button-block" type="submit">使用预置演示账号</button></form>{% endif %}
       <p class="form-switch">没有账号？<a class="text-link" href="{{ url_for('auth.register') }}">创建匿名账号</a></p>
     </div>
   </section>

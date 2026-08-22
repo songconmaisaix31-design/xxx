@@ -13,6 +13,7 @@ from ..services.users import (
     profile_tags,
     set_current_user,
     source_connections,
+    verify_phone_for_demo,
 )
 
 bp = Blueprint("auth", __name__)
@@ -29,7 +30,7 @@ def register():
             flash(str(error), "error")
         else:
             set_current_user(user_id)
-            flash("注册成功。下一步可连接真实行为数据（当前为 mock 授权）。", "success")
+            flash("注册成功。下一步可选择 Duolingo Live 或明确标记的 Fixture 行为数据。", "success")
             return redirect(url_for("auth.connections"))
     return render_template(
         "register.html", cities=CITIES, genders=GENDERS, match_genders=MATCH_GENDERS,
@@ -84,14 +85,36 @@ def connections():
     return render_template("connections.html", user=user, connections=source_connections(user["id"]))
 
 
+@bp.post("/profile/phone-verification/demo")
+@login_required
+def demo_phone_verification():
+    if not current_app.config["DEMO_MODE"]:
+        abort(404)
+    try:
+        verify_phone_for_demo(current_user()["id"])
+    except ValidationError as error:
+        flash(str(error), "error")
+    else:
+        flash("演示手机号验证已完成；这不是短信服务验证结果。", "success")
+    return redirect(url_for("auth.profile"))
+
+
 @bp.post("/profile/connections/<source>/authorize")
 @login_required
 def authorize_source(source: str):
     user = current_user()
+    mode = request.form.get("mode", "fixture")
     try:
-        count = connect_source(user["id"], source, request.form.get("authorization_code", ""))
+        count = connect_source(
+            user["id"],
+            source,
+            request.form.get("authorization_code", ""),
+            mode=mode,
+            identifier=request.form.get("identifier", ""),
+        )
     except AdapterError as error:
         flash(f"{error.code}：{error}", "error")
     else:
-        flash(f"{source} 已连接，刷新了 {count} 个带来源标识的真实标签。", "success")
+        mode_label = "Live" if mode == "live" else "Fixture"
+        flash(f"{source} {mode_label} 已同步，刷新了 {count} 个带来源标识的标签。", "success")
     return redirect(url_for("auth.connections"))

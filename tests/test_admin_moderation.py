@@ -29,6 +29,7 @@ class AdminModerationTests(unittest.TestCase):
                 "DATABASE": str(Path(self.temp_dir.name) / "test.sqlite3"),
                 "SECRET_KEY": "admin-test",
                 "DEMO_MODE": True,
+                "CSRF_ENABLED": False,
             },
         )
         self.app = create_app(config)
@@ -242,6 +243,7 @@ class AdminModerationTests(unittest.TestCase):
                 "DATABASE": str(database),
                 "SECRET_KEY": "legacy-test",
                 "DEMO_MODE": True,
+                "CSRF_ENABLED": False,
             },
         )
         legacy_app = create_app(config)

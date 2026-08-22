@@ -27,6 +27,7 @@ class CoreFlowTests(unittest.TestCase):
                 "DATABASE": str(Path(self.temp_dir.name) / "test.sqlite3"),
                 "SECRET_KEY": "test",
                 "DEMO_MODE": True,
+                "CSRF_ENABLED": False,
             },
         )
         self.app = create_app(config)
@@ -208,6 +209,7 @@ class CoreFlowTests(unittest.TestCase):
                 "DATABASE": self.app.config["DATABASE"],
                 "SECRET_KEY": "test",
                 "DEMO_MODE": False,
+                "CSRF_ENABLED": False,
             },
         )
         production_app = create_app(production_config)

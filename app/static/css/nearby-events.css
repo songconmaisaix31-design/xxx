@@ -144,7 +144,7 @@
   .nearby-events-page .nearby-panel {
     grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
-    border-width: 3px;
+    border-width: 2.5px;
     border-radius: 1.05rem;
     box-shadow: var(--neo-shadow-md);
     padding: 1.15rem;

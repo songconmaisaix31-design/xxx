@@ -1,18 +1,20 @@
 # 真实标签 MVP：前端交接文档
 
+> 当前事实来源依次为 `docs/API_CONTRACT.md`、`产品需求文档_PRD.md` 第 5 章和当前服务端实现。Fixture、Live、Derived 与 Self 必须在数据和 UI 中保持可区分。
+
 ## 1. 交接结论
 
 本项目是传统多页面 Web 应用。前端接入应继续使用 Flask + Jinja2：后端通过路由取数后渲染完整 HTML，写操作使用普通 HTML `<form method="post">`，成功或失败后以 `flash` 消息和 302 跳转反馈。不要改造成 SPA，不要加入 React/Vue、前端路由、Hash 路由，也不要把页面收敛进一个 `index.html`。
 
 当前交付已经完成一套可直接使用的响应式视觉系统与全部页面的语义化结构。后续前端工作应在现有设计令牌和组件类之上扩展，不应改变表单 `name`、HTTP 方法、路由或后端传入变量。所有用户文本都按 Jinja 默认转义输出，禁止把文本内容用 `|safe` 直接插入 DOM。
 
-### V2 视觉重构说明
+### PRD 视觉收口说明
 
-当前界面已经升级为高反差的新粗野主义编辑板风格，完整规范见根目录 `brand-spec.md`。V2 仍然是传统 Flask 多页面应用：视觉层使用分层 CSS 和无依赖渐进增强脚本，所有核心跳转继续由普通链接完成，所有写操作继续由服务端表单完成。
+当前界面使用 PRD 第 5 章定义的玩具箱式新粗野主义，完整规范见根目录 `brand-spec.md`。项目仍是传统 Flask 多页面应用：视觉层使用分层 CSS 和无依赖渐进增强脚本，所有核心跳转继续由普通链接完成，所有写操作继续由服务端表单完成。
 
 | 层 | 文件 | 责任 |
 | --- | --- | --- |
-| 兼容基线 | `app/static/css/app.css` | 原有布局与无 V2 样式时的回退 |
+| 兼容基线 | `app/static/css/app.css` | 原有布局与分层样式失效时的回退 |
 | 视觉基础 | `app/static/css/brutalist-foundation.css` | 令牌、字体、页面外壳、控件、基础动效 |
 | 页面组件 | `app/static/css/brutalist-components.css` | 首页、资料、匹配、聊天、饭局和表单组件 |
 | 手机编排 | `app/static/css/brutalist-mobile.css` | 320–1100px 重排、触控、安全区、底部导航 |
@@ -21,6 +23,7 @@
 | 会话任务台 | `app/static/css/chat-mission-deck.css` | 对话工作区、系统任务卡、工具抽屉、举报/拉黑弹窗 |
 | 附近饭局 | `app/static/css/nearby-events.css` | 定位说明、距离筛选与附近状态 |
 | 管理后台 | `app/static/css/admin-console.css` | 独立审核队列、举报队列与审计日志 |
+| PRD 收口 | `app/static/css/prd-contract.css` | 最后加载，统一当前 token、字体、描边、硬投影、触控与强调色比例 |
 | 动效增强 | `app/static/js/motion.js` | 进入、按压、选择、计数、提交和页面离开反馈 |
 | 匹配时序 | `app/static/js/match-flow.js` | 只控制三阶段动画和普通 POST 提交，不计算结果 |
 | 会话增强 | `app/static/js/chat-mission-deck.js` | details 状态、字数、原生 dialog；不改变业务状态 |
@@ -35,7 +38,7 @@
 | Flask 工厂 | `app/__init__.py` |
 | 页面路由 | `app/routes/` |
 | Jinja 页面 | `app/templates/` |
-| 样式入口 | `base.html` 按顺序加载 `app.css`、三份 `brutalist-*.css` 与 `match-flow.css` |
+| 样式入口 | `base.html` 加载分层页面 CSS，并把 `prd-contract.css` 放在最后 |
 | 业务服务 | `app/services/` |
 | 启动 | `python run.py` |
 | 演示账号 | `demo@realtags.local` / `demo-password`，或首页一键进入 |
@@ -77,7 +80,7 @@ current_user  # dict 或 None
 
 `current_user` 的字段包括 `id`、`anonymous_alias`、`city`、`purposes`、`interests`、`mbti`、`zodiac`、`schedule`、`phone_verified`。它是**本人资料**；除了需要它的个人页，不能把这个对象错误地当作其他用户资料传递或展示。
 
-所有 POST 表单应保留原始 action 和 method。当前未增加 CSRF token 是 MVP 限制；正式上线时需要在 Flask 层引入 CSRF 防护，并在每个提交表单放入隐藏 token。
+所有 POST 表单必须保留原始 action、method 和隐藏字段 `_csrf_token`。应用默认在 session 中生成并验证 token；缺失、错误或跨 session token 返回 400。新增 POST 页面必须使用 `{{ csrf_token() }}`，不能关闭全局防护。
 
 ## 5. 页面数据契约与可视性边界
 
@@ -86,12 +89,12 @@ current_user  # dict 或 None
 `profile.html` 的 `tags` 是当前用户自己的完整标签。每条为：
 
 ```text
-tag_id, category, name, value, source, verified, visibility, updated_at
+tag_id, category, name, value, source, data_mode, verified, visibility, updated_at
 ```
 
-来源标记请保留：`duolingo`、`keep`、`derived`、`self`。`verified=true` 表示经第三方来源认证；所有 MVP 行为标签的 `visibility` 均为 `self_only`。在“我的标签”页展示来源徽标是产品真实性设计的一部分。当前后端在 L3 会话仍会返回对方全部标签，这与 `self_only` 契约冲突，属于 [P0 生产缺口](PRODUCTION_GAPS_AND_ROADMAP.md#p0-10-对齐标签可见性与真实披露)；前端不得进一步扩大披露范围，后端修复后应只渲染明确标记为可解锁且已获同意的标签。
+来源标记请保留：`duolingo`、`keep`、`derived`、`self`。`data_mode` 为 `live`、`fixture`、`derived` 或 `self_reported`；只有成功的 Live 外部请求可令 `verified=true`，Derived 始终未认证。所有行为标签的 `visibility` 均为 `self_only`。在“我的标签”页展示来源与模式徽标是产品真实性设计的一部分。
 
-`connections` 是按数据源索引的对象，例如 `connections.get('duolingo')`。授权表单当前必须提交隐藏值 `authorization_code=demo-authorized`；真实接入时前端改为 OAuth 回调后提交服务端所需的授权码，页面结构不需要改为 SPA。失败时 flash 中会含稳定错误码，例如 `authorization_denied` 或 `invalid_token`。
+`connections` 是按数据源索引的对象，例如 `connections.get('duolingo')`。Duolingo Live 表单提交 `mode=live` 与公开 `identifier`；Fixture 表单提交 `mode=fixture`。Keep 只接受 Fixture。失败时 flash 返回稳定错误码；页面不得请求、保存或渲染第三方密码、access token 或原始响应。
 
 ### 5.2 匿名匹配
 
@@ -182,6 +185,7 @@ alias, interest_tags  # 仅 1–2 个兴趣标签
 | `birth_year` | 是 | 18–100 岁 |
 | `gender` | 是 | `male` / `female` / `undisclosed` |
 | `match_gender` | 是 | `male` / `female` / `any` |
+| `match_age_min` / `match_age_max` | 否 | 默认 18–100；必须满足 `18 ≤ min ≤ max ≤ 100` |
 | `city` | 是 | 由模板 `cities` 提供 |
 | `purposes` | 是，多选 | 至少 1 个，由 `purposes` 提供 |
 | `interests` | 否，多选 | 由 `interests` 提供 |
@@ -189,7 +193,7 @@ alias, interest_tags  # 仅 1–2 个兴趣标签
 
 ### 6.2 连接数据源：`POST /profile/connections/<source>/authorize`
 
-`source` 仅接受 `duolingo` 和 `keep`。请求体为 `authorization_code`。成功后刷新该来源下的标签并跳转回连接页；失败会显示 Adapter 错误码和可读消息。不要在浏览器保存 access token。
+`source` 仅接受 `duolingo` 和 `keep`。Duolingo 接受 `mode=live&identifier=<public_username>` 或 `mode=fixture`；Keep 只接受 `mode=fixture`。成功后以事务方式替换该来源的规范化标签并刷新 Derived 标签；失败显示 Adapter 错误码和可读消息。不要在浏览器或数据库保存 access token、密码或原始响应。
 
 ### 6.3 聊天：`POST /conversations/<id>/messages`
 
@@ -212,7 +216,7 @@ alias, interest_tags  # 仅 1–2 个兴趣标签
 | name | 必填 | 规则 |
 | --- | --- | --- |
 | `title` | 是 | 2–60 字符 |
-| `poi_id` | 是 | 必须为后端下发 `pois` 中的真实餐厅 |
+| `poi_id` | 是 | 必须为后端下发的公开场所 Fixture 白名单项 |
 | `start_at` | 是 | 未来时间，分钟仅 00 或 30 |
 | `signup_deadline` | 否 | 留空默认开始前 2 小时；必须在现在与开始时间之间 |
 | `min_size` / `max_size` | 是 | `3 ≤ min_size ≤ max_size ≤ 10` |
@@ -267,22 +271,22 @@ pending_review ──approve──→ recruiting → formed → ongoing → ende
 
 ### 8.1 设计方向
 
-视觉语言为“可信关系实验板”：暖象牙纸面、粗黑边界、无模糊硬阴影，以及黄色、紫色、绿色、珊瑚色组成的清晰状态系统。紫色承担品牌与主要推进，黄色承担事实与步骤，绿色只代表允许继续、已认证或成功，珊瑚色只用于提醒和风险动作。
+视觉语言为“可信关系实验板”：暖白纸面、2.5px 黑边、零模糊硬阴影，以及受限使用的黄色、紫色、绿色和橙色。暖白与白卡约 60%，黑色约 25%，黄色约 10%，其余强调色合计约 5%；强调色不能作为大面积页面背景。
 
-V2 核心令牌位于 `app/static/css/brutalist-foundation.css` 的 `:root`；`app.css` 中的旧令牌仅作为回退：
+核心令牌位于 `app/static/css/brutalist-foundation.css`，`prd-contract.css` 最后收口：
 
 | 令牌 | 当前值 | 用途 |
 | --- | --- | --- |
-| `--neo-cream` | `#fbf7e8` | 全局暖象牙纸面 |
-| `--neo-paper` | `#fffefa` | 卡片、表单和列表表面 |
-| `--neo-ink` | `#12110e` | 主文字、粗边界和硬阴影 |
-| `--neo-muted` | `#6d685c` | 次级正文和元信息 |
-| `--neo-yellow` | `#ffe45c` | 事实、步骤和次行动 |
-| `--neo-purple` | `#5b48ff` | 品牌、主行动和当前阶段 |
-| `--neo-green` | `#51d000` | 认证、成功和匹配信号 |
-| `--neo-coral` | `#ff5f41` | 风险、提醒和危险行动 |
+| `--bg` | `#FFFCF0` | 全局暖白底 |
+| `--surface` | `#FFFFFF` | 卡片、表单和列表表面 |
+| `--text` | `#17150F` | 主文字、边界和硬阴影 |
+| `--dim` | `#6B675A` | 次级正文和元信息 |
+| `--surface2` | `#FFE95C` | 选中、高亮、chip |
+| `--primary` | `#5B4DFF` | 主行动、焦点和关键数字 |
+| `--accent` | `#58CC02` | 已连接、成功和进度 |
+| `--hot` | `#FF5A36` | 优惠、未读和警告 |
 
-字体只使用本机字体栈，不加载外部字体；标题优先 `Arial Black / Segoe UI Variable Display / PingFang SC / Microsoft YaHei UI`。主卡片使用 3–4px 黑边和 5–8px 无模糊硬阴影；按钮按下时以短距离位移抵消阴影，形成机械而克制的反馈。禁止使用渐变。
+字体只使用本机字体栈，不加载外部字体；H1/H2/H3 分别为 23/18/16px，正文 13.5px。组件统一使用 2.5px 黑边；主投影为 `6px 7px 0`，卡片投影为 `4px 5px 0`，hover 为 `3px 4px 0`，active 为零投影。禁止装饰性渐变和模糊阴影。
 
 ### 8.2 全局页面外壳
 
@@ -312,7 +316,7 @@ V2 核心令牌位于 `app/static/css/brutalist-foundation.css` 的 `:root`；`a
 
 ### 8.4 响应式与无障碍
 
-- V2 采用手机优先编排，完整断点为 `360 / 430 / 560 / 760 / 900 / 1100px`；小屏规则写在文件根级，宽屏通过 `min-width` 逐步恢复多栏结构。
+- UI 采用手机优先编排，完整断点为 `360 / 430 / 560 / 760 / 900 / 1100px`；小屏规则写在文件根级，宽屏通过 `min-width` 逐步恢复多栏结构。
 - `320–429px`：全部功能单列；登录态页头只保留品牌与退出，四个核心任务使用固定底部导航；表单控件为 16px，触控目标至少 44px。
 - `430px`：大手机恢复部分双列事实和“输入 + 行动”结构，但不会把密集桌面卡片压进窄列。
 - `560px`：标签与匹配卡可进入两列，会话成员和活动元信息开始横向组合。
@@ -354,9 +358,9 @@ V2 核心令牌位于 `app/static/css/brutalist-foundation.css` 的 `:root`；`a
 
 ## 9. 后端已明确处理与暂未覆盖的边界
 
-已处理：输入长度/枚举/人数/POI 白名单校验、活动时段冲突、重复报名、匿名审核页面、标签来源、真实/演示候选隔离、匹配 attempt 校验、direct 会话去重、成员权限、拉黑后只读与举报记录、请求期附近定位、管理员活动/举报审核与审计日志、已归档会话只读、商家演示权益的成团后发放和手动核销。
+已处理：输入长度/枚举/人数/Fixture POI 白名单校验、活动时段冲突、重复报名、匿名审核、标签来源、真实/演示候选隔离、匹配 attempt 校验、direct 会话去重、成员权限、拉黑后只读与举报记录、请求期附近定位、管理员活动/举报审核与审计日志、群聊归档、商家 Fixture 权益的成团后发放和 Demo 核销。
 
-MVP 限制：Mock OAuth，不含 WebSocket/SSE 实时推送、地图瓦片/路线导航、真实支付/POS、媒体/语音、商家自助后台、通知推送、出席信誉分、活动后评价。正式发布前还要增加 CSRF、限流、细粒度管理员角色、生产密钥、真实手机号验证、异步任务调度和隐私合规授权页。
+MVP 限制：Keep、短信、POI、商家与 POS 均为 Fixture；不含 WebSocket/SSE 实时推送、地图瓦片/路线导航、真实支付、媒体/语音、商家自助后台、通知推送、出席信誉分或活动后评价。正式发布前还需增加限流、细粒度管理员角色、真实手机号验证、生产调度/观测和隐私合规授权页。
 
 ## 10. 前端验收清单
 

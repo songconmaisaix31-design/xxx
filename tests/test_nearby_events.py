@@ -21,6 +21,7 @@ class NearbyEventsTests(unittest.TestCase):
                 "DATABASE": str(Path(self.temp_dir.name) / "test.sqlite3"),
                 "SECRET_KEY": "test",
                 "DEMO_MODE": True,
+                "CSRF_ENABLED": False,
             },
         )
         self.app = create_app(config)

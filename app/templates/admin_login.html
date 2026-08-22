@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#12110e">
+  <meta name="theme-color" content="#17150F">
   <title>管理员登录 · 真实标签</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/brand-mark.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-components.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-mobile.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-console.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/prd-contract.css') }}">
 </head>
 <body class="auth-page admin-auth-page">
   <main id="main-content" class="page-shell">
@@ -27,6 +28,7 @@
       <div class="auth-form-panel">
         <div class="form-heading"><p class="eyebrow">ADMIN ACCESS</p><h2 id="admin-login-title">管理员登录</h2></div>
         <form method="post" action="{{ url_for('admin.login') }}">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
           <label for="admin-email">管理员邮箱<input id="admin-email" required type="email" name="email" autocomplete="username"></label>
           <label for="admin-password">密码<input id="admin-password" required type="password" name="password" autocomplete="current-password"></label>
           <button class="button button-block" type="submit">进入审核后台</button>

@@ -7,6 +7,7 @@ from ..services.chat import (
     block_counterpart,
     conversation_list,
     get_conversation,
+    demo_unlock_point,
     report_subject,
     send_message,
     use_tool,
@@ -65,6 +66,20 @@ def demo_advance(conversation_id: str):
         flash(str(error), "error")
     else:
         flash(f"演示模式已推进至 L{level}。", "success")
+    return redirect(url_for("chat.detail", conversation_id=conversation_id))
+
+
+@bp.post("/conversations/<conversation_id>/demo/unlock")
+@login_required
+def demo_unlock(conversation_id: str):
+    if not current_app.config["DEMO_MODE"]:
+        abort(404)
+    try:
+        demo_unlock_point(conversation_id, current_user()["id"])
+    except ValidationError as error:
+        flash(str(error), "error")
+    else:
+        flash("演示模式已解锁一个匹配点。", "success")
     return redirect(url_for("chat.detail", conversation_id=conversation_id))
 
 

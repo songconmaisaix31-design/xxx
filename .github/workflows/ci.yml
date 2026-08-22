@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - competition/prd-hackathon
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.11.26"
+          enable-cache: true
+      - name: Install Python
+        run: uv python install 3.12
+      - name: Sync locked dependencies
+        run: uv sync --locked --python 3.12
+      - name: Run Python tests
+        run: uv run python -m unittest discover -s tests -v
+      - name: Run Node tests
+        run: node --test tests/match_flow.test.mjs
+      - name: Compile Python sources
+        run: uv run python -m compileall -q app tests tools

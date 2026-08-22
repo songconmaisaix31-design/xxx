@@ -4,7 +4,7 @@
 {% block content %}
   {% set is_direct = conversation.type == 'direct' %}
   {% set conversation_title = conversation.counterpart.anonymous_alias if is_direct else conversation.event.title if conversation.event else '已归档饭局群聊' %}
-  {% set system_kinds = ('match_started', 'dice', 'task_card', 'match_point', 'group_unlock_task', 'demo_progress') %}
+  {% set system_kinds = ('match_started', 'dice', 'task_card', 'match_point_task', 'match_point', 'group_unlock_task', 'demo_progress') %}
 
   <div class="mission-shell" data-conversation-type="{{ conversation.type }}" data-archived="{{ 'true' if conversation.is_archived else 'false' }}">
     <header class="mission-header" aria-labelledby="conversation-title">
@@ -64,7 +64,7 @@
 
       {% if conversation.counterpart.tags %}
         <section class="relation-unlocks" aria-labelledby="unlocked-tags-title">
-          <div><span>L3 VERIFIED</span><h2 id="unlocked-tags-title">L3 已解锁标签</h2></div>
+          <div><span>L3 REVEALED</span><h2 id="unlocked-tags-title">L3 已解锁标签</h2></div>
           <ul>
             {% for tag in conversation.counterpart.tags %}<li>{{ tag.name }} <small>{{ tag.source }}</small></li>{% endfor %}
           </ul>
@@ -111,7 +111,7 @@
                 <article class="system-event system-match" data-system-kind="match_started">
                   <span class="system-index" aria-hidden="true">READY</span>
                   <div class="system-ticket">
-                    <header><span>CONNECTION PROTOCOL</span><strong>已验证</strong></header>
+                    <header><span>CONNECTION PROTOCOL</span><strong>服务端匹配</strong></header>
                     <h3>匹配成功</h3>
                     <p>{{ message.content }}</p>
                     <time datetime="{{ message.created_at }}">{{ message.created_at[:10] }} {{ message.created_at[11:16] }}</time>
@@ -141,6 +141,17 @@
                   </div>
                 </article>
 
+              {% elif system_kind == 'match_point_task' %}
+                <article class="system-event system-task" data-system-kind="match_point_task">
+                  <span class="system-index" aria-hidden="true">DUO</span>
+                  <div class="task-ticket">
+                    <header><span>协作解锁任务</span><time datetime="{{ message.created_at }}">{{ message.created_at[11:16] }}</time></header>
+                    <h3>双方回答后揭示一条共同点</h3>
+                    <p>{{ message.content }}</p>
+                    <footer><span>当前状态</span><strong>等待双方</strong></footer>
+                  </div>
+                </article>
+
               {% elif system_kind == 'match_point' %}
                 <article class="system-event system-unlock" data-system-kind="match_point">
                   <span class="system-index" aria-hidden="true">L+{{ message.metadata.index|default(0) + 1 }}</span>
@@ -148,7 +159,7 @@
                     <header><strong>匹配点解锁 · {{ message.metadata.index|default(0) + 1 }}/{{ conversation.progress.total_point_count|default('—') }}</strong><time datetime="{{ message.created_at }}">{{ message.created_at[11:16] }}</time></header>
                     <h3>新线索已解锁</h3>
                     <p>{{ message.content }}</p>
-                    <span class="unlock-state">VERIFIED</span>
+                    <span class="unlock-state">REVEALED</span>
                   </div>
                 </article>
 
@@ -206,6 +217,7 @@
       <aside class="mission-command" id="safety-zone" aria-label="消息与任务工具">
         {% if not conversation.is_archived and not conversation.is_blocked and not conversation.is_disabled %}
           <form id="composer" class="message-form mission-composer" method="post" action="{{ url_for('chat.message', conversation_id=conversation.id) }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <label for="content">发送消息 <span data-character-count>0 / 500</span></label>
             <div class="composer-row">
               <textarea id="content" required maxlength="500" name="content" rows="2" placeholder="输入消息…"></textarea>
@@ -217,6 +229,7 @@
             <summary><span><small>MISSION DECK</small><strong>任务工具</strong></span><span class="drawer-state" data-drawer-label>收起</span></summary>
             <div class="tool-grid">
               <form class="tool-card tool-dice" method="post" action="{{ url_for('chat.tool', conversation_id=conversation.id, tool='dice') }}" data-tool="dice" data-tool-state="ready">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <button type="submit">
                   <span class="tool-number">01 / D6</span>
                   <img class="tool-visual" src="{{ url_for('static', filename='img/chat-tool-dice.webp') }}" width="720" height="720" loading="lazy" decoding="async" alt="">
@@ -226,6 +239,7 @@
               </form>
 
               <form class="tool-card tool-task" method="post" action="{{ url_for('chat.tool', conversation_id=conversation.id, tool='task_card') }}" data-tool="task_card" data-tool-state="random">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <button type="submit">
                   <span class="tool-number">02 / CARD</span>
                   <img class="tool-visual" src="{{ url_for('static', filename='img/chat-tool-task.webp') }}" width="720" height="720" loading="lazy" decoding="async" alt="">
@@ -236,6 +250,7 @@
 
               {% set unlock_complete = is_direct and conversation.counterpart.contact_exchange_available %}
               <form class="tool-card tool-unlock{% if unlock_complete %} is-complete{% endif %}" method="post" action="{{ url_for('chat.tool', conversation_id=conversation.id, tool='unlock') }}" data-tool="unlock" data-tool-state="{{ 'complete' if unlock_complete else 'ready' }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <button type="submit"{% if unlock_complete %} disabled aria-disabled="true"{% endif %}>
                   <span class="tool-number">03 / POINT</span>
                   <img class="tool-visual" src="{{ url_for('static', filename='img/chat-tool-unlock.webp') }}" width="720" height="720" loading="lazy" decoding="async" alt="">
@@ -247,8 +262,14 @@
 
             {% if demo_mode and is_direct %}
               <form class="demo-progress-tool" method="post" action="{{ url_for('chat.demo_advance', conversation_id=conversation.id) }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <span>LAB / 当前 {{ conversation.progress.label }}</span>
-                <button type="submit"{% if conversation.progress.level >= 4 %} disabled aria-disabled="true"{% endif %}>演示：推进关系阶段</button>
+                <button type="submit"{% if conversation.progress.level >= 3 %} disabled aria-disabled="true"{% endif %}>演示：推进时间至 L3</button>
+              </form>
+              <form class="demo-progress-tool" method="post" action="{{ url_for('chat.demo_unlock', conversation_id=conversation.id) }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <span>LAB / 明确标记的演示动作</span>
+                <button type="submit"{% if conversation.progress.level < 1 or unlock_complete %} disabled aria-disabled="true"{% endif %}>演示：解锁一个匹配点</button>
               </form>
             {% endif %}
           </details>
@@ -281,6 +302,7 @@
             <p>遇到骚扰、不当内容或线下风险时，请提交原因。操作会由服务端记录。</p>
             <div class="safety-actions">
               <form method="post" action="{{ url_for('chat.report', conversation_id=conversation.id) }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <label for="conversation-report-reason">举报原因
                   <input id="conversation-report-reason" required maxlength="200" name="reason" placeholder="请简要描述问题">
                 </label>
@@ -288,6 +310,7 @@
               </form>
               {% if is_direct %}
                 <form method="post" action="{{ url_for('chat.block', conversation_id=conversation.id) }}">
+                  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                   <button class="button danger-outline" type="submit">拉黑对方</button>
                 </form>
               {% endif %}
@@ -301,6 +324,7 @@
 
   <dialog class="safety-dialog report-dialog" id="report-dialog" aria-labelledby="report-dialog-title" hidden>
     <form method="post" action="{{ url_for('chat.report', conversation_id=conversation.id) }}">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
       <div class="dialog-heading"><span>REPORT / SERVER RECORD</span><h2 id="report-dialog-title">举报这段会话</h2><p>请说明具体问题。审核人员会根据会话记录跟进，不会通知对方你的身份。</p></div>
       <label for="dialog-report-reason">举报原因
         <textarea id="dialog-report-reason" required maxlength="200" name="reason" rows="4" placeholder="请填写 1–200 字，例如发生了什么、哪条内容令你不适"></textarea>
@@ -312,6 +336,7 @@
   {% if is_direct %}
     <dialog class="safety-dialog block-dialog" id="block-dialog" aria-labelledby="block-dialog-title" hidden>
       <form method="post" action="{{ url_for('chat.block', conversation_id=conversation.id) }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <div class="dialog-heading"><span>BLOCK / DIRECT ONLY</span><h2 id="block-dialog-title">确认拉黑 {{ conversation.counterpart.anonymous_alias }}</h2><p>提交后，你们将无法再建立新的一对一会话。该操作与举报不同，不会自动生成举报记录。</p></div>
         <label class="block-confirm"><input type="checkbox" name="confirm" value="yes" required><span>我已了解拉黑后的影响</span></label>
         <div class="dialog-actions"><button class="button secondary" type="button" data-dialog-close>返回会话</button><button class="button danger-outline" type="submit">确认拉黑</button></div>

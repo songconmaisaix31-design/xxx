@@ -2,8 +2,9 @@
 {% block title %}发起饭局{% endblock %}
 {% block body_class %}form-page{% endblock %}
 {% block content %}
-  <section class="form-page-heading" aria-labelledby="event-form-title"><div><p class="eyebrow">CREATE A SAFE TABLE</p><h1 id="event-form-title">发起兴趣饭局</h1></div><aside class="privacy-note"><strong>地点安全规则</strong><p>仅可选择已验证的真实餐厅 POI，不支持私人地址或封闭娱乐场所。</p></aside></section>
+  <section class="form-page-heading" aria-labelledby="event-form-title"><div><p class="eyebrow">CREATE A SAFE TABLE</p><h1 id="event-form-title">发起兴趣饭局</h1></div><aside class="privacy-note"><strong>地点安全规则</strong><p>仅可选择平台白名单内的公开餐厅 POI；Demo 中的餐厅为 Fixture，不支持私人地址或封闭娱乐场所。</p></aside></section>
   <form class="structured-form" method="post" action="{{ url_for('events.create') }}">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
     <section class="form-section" aria-labelledby="event-basic-title">
       <div class="form-section-heading"><span>01</span><div><h2 id="event-basic-title">主题与地点</h2><p>让参与者一眼知道聊什么、在哪里见面。</p></div></div>
       <div class="form-grid two"><label for="event-title">活动主题 *<input id="event-title" required maxlength="60" name="title" placeholder="如：聊聊 AI 创业，周五晚"></label><label for="event-poi">餐厅 / 地点 *<select id="event-poi" required name="poi_id">{% for poi_id, poi in pois.items() %}<option value="{{ poi_id }}">{{ poi.name }}｜{{ poi.address }}</option>{% endfor %}</select><small>地点来自后端餐厅白名单，不能填写私人地址。</small></label></div>

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import sqlite3
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -21,6 +22,8 @@ CREATE TABLE IF NOT EXISTS users (
     birth_year INTEGER NOT NULL,
     gender TEXT NOT NULL,
     match_gender TEXT NOT NULL,
+    match_age_min INTEGER NOT NULL DEFAULT 18,
+    match_age_max INTEGER NOT NULL DEFAULT 100,
     city TEXT NOT NULL,
     purposes_json TEXT NOT NULL,
     interests_json TEXT NOT NULL,
@@ -37,6 +40,7 @@ CREATE TABLE IF NOT EXISTS external_connections (
     source TEXT NOT NULL,
     status TEXT NOT NULL,
     access_token TEXT,
+    data_mode TEXT NOT NULL DEFAULT 'fixture',
     refreshed_at TEXT NOT NULL,
     PRIMARY KEY (user_id, source)
 );
@@ -49,6 +53,7 @@ CREATE TABLE IF NOT EXISTS tags (
     name TEXT NOT NULL,
     value_json TEXT NOT NULL,
     source TEXT NOT NULL,
+    data_mode TEXT NOT NULL DEFAULT 'fixture',
     verified INTEGER NOT NULL DEFAULT 0,
     visibility TEXT NOT NULL DEFAULT 'self_only',
     updated_at TEXT NOT NULL
@@ -217,6 +222,10 @@ def _migrate_schema(db: sqlite3.Connection) -> None:
     user_columns = {row["name"] for row in db.execute("PRAGMA table_info(users)").fetchall()}
     if "is_demo" not in user_columns:
         db.execute("ALTER TABLE users ADD COLUMN is_demo INTEGER NOT NULL DEFAULT 0")
+    if "match_age_min" not in user_columns:
+        db.execute("ALTER TABLE users ADD COLUMN match_age_min INTEGER NOT NULL DEFAULT 18")
+    if "match_age_max" not in user_columns:
+        db.execute("ALTER TABLE users ADD COLUMN match_age_max INTEGER NOT NULL DEFAULT 100")
     db.execute(
         "UPDATE users SET is_demo = 1 WHERE id IN ('demo_001', 'demo_002', 'demo_003', 'demo_004')"
     )
@@ -232,6 +241,20 @@ def _migrate_schema(db: sqlite3.Connection) -> None:
         if name not in report_columns:
             db.execute(f"ALTER TABLE reports ADD COLUMN {name} {definition}")
     db.execute("CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status, created_at)")
+
+    connection_columns = {row["name"] for row in db.execute("PRAGMA table_info(external_connections)").fetchall()}
+    if "data_mode" not in connection_columns:
+        db.execute("ALTER TABLE external_connections ADD COLUMN data_mode TEXT NOT NULL DEFAULT 'fixture'")
+    # Previous releases only stored mock tokens. Tokens are no longer persisted.
+    db.execute("UPDATE external_connections SET access_token = NULL")
+
+    tag_columns = {row["name"] for row in db.execute("PRAGMA table_info(tags)").fetchall()}
+    if "data_mode" not in tag_columns:
+        db.execute("ALTER TABLE tags ADD COLUMN data_mode TEXT NOT NULL DEFAULT 'fixture'")
+        db.execute(
+            "UPDATE tags SET data_mode = 'fixture', verified = 0 WHERE source IN ('duolingo', 'keep')"
+        )
+        db.execute("UPDATE tags SET data_mode = 'derived', verified = 0 WHERE source = 'derived'")
 
 
 def _seed_admin(db: sqlite3.Connection) -> None:
@@ -262,8 +285,9 @@ def _insert_user(db: sqlite3.Connection, user: dict) -> None:
     db.execute(
         """INSERT INTO users (
             id, email, password_hash, anonymous_alias, birth_year, gender, match_gender,
-            city, purposes_json, interests_json, mbti, zodiac, schedule, phone_verified, is_demo, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)""",
+            match_age_min, match_age_max, city, purposes_json, interests_json, mbti, zodiac,
+            schedule, phone_verified, is_demo, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 18, 100, ?, ?, ?, ?, ?, ?, ?, 1, ?)""",
         (
             user["id"], user["email"], generate_password_hash("demo-password"), user["alias"],
             user["birth_year"], user["gender"], user["match_gender"], user["city"],
@@ -274,29 +298,52 @@ def _insert_user(db: sqlite3.Connection, user: dict) -> None:
 
 
 def _insert_tag(db: sqlite3.Connection, user_id: str, tag_id: str, category: str, name: str,
-                value: object, source: str, verified: bool) -> None:
+                value: object, source: str, verified: bool, data_mode: str = "fixture") -> None:
     db.execute(
-        """INSERT INTO tags (user_id, tag_id, category, name, value_json, source, verified, visibility, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, 'self_only', ?)""",
-        (user_id, tag_id, category, name, json.dumps(value, ensure_ascii=False), source, int(verified), utcnow()),
+        """INSERT INTO tags
+           (user_id, tag_id, category, name, value_json, source, data_mode, verified, visibility, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'self_only', ?)""",
+        (
+            user_id, tag_id, category, name, json.dumps(value, ensure_ascii=False), source,
+            data_mode, int(verified), utcnow(),
+        ),
     )
 
 
 def _seed_behavior_tags(db: sqlite3.Connection, user_id: str, languages: list[str], sports: list[str],
                         learning_hours: list[int], sport_hours: list[int], streak: int, weekly_times: int) -> None:
-    """Seed a 12-tag source-labelled behavior profile; all tags remain self_only."""
-    _insert_tag(db, user_id, "lang_learning", "学习", "在学语种", {"items": languages}, "duolingo", True)
-    _insert_tag(db, user_id, "lang_streak", "学习", "连续打卡天数", {"days": streak}, "duolingo", True)
-    _insert_tag(db, user_id, "learning_consistency", "学习", "学习坚持度", {"level": "硬核" if streak >= 200 else "稳定"}, "duolingo", True)
-    _insert_tag(db, user_id, "learning_active_hours", "学习", "学习活跃时段", {"hours": learning_hours}, "duolingo", True)
-    _insert_tag(db, user_id, "learning_level", "学习", "当前等级", {"level": max(3, streak // 40), "xp": streak * 52}, "duolingo", True)
-    _insert_tag(db, user_id, "sport_primary", "运动", "主要运动类型", {"items": sports}, "keep", True)
-    _insert_tag(db, user_id, "sport_weekly", "运动", "周运动频次", {"times": weekly_times}, "keep", True)
-    _insert_tag(db, user_id, "sport_total", "运动", "累计运动量", {"km": weekly_times * 72}, "keep", True)
-    _insert_tag(db, user_id, "sport_active_hours", "运动", "运动活跃时段", {"hours": sport_hours}, "keep", True)
-    _insert_tag(db, user_id, "sport_intensity", "运动", "运动强度等级", {"level": "进阶" if weekly_times >= 3 else "入门"}, "keep", True)
-    _insert_tag(db, user_id, "self_discipline", "复合", "自律程度", {"level": "高" if streak >= 150 else "中"}, "derived", True)
-    _insert_tag(db, user_id, "active_time_overlap", "复合", "活跃时间画像", {"hours": sorted(set(learning_hours) | set(sport_hours))}, "derived", True)
+    """Seed 22 deterministic Fixture signals plus three non-verified derived signals."""
+    learning_xp = streak * 52
+    weekly_learning_days = min(7, max(1, streak % 7 + 1))
+    _insert_tag(db, user_id, "lang_learning", "学习", "在学语种", {"items": languages}, "duolingo", False)
+    _insert_tag(db, user_id, "lang_streak", "学习", "连续打卡天数", {"days": streak}, "duolingo", False)
+    _insert_tag(db, user_id, "learning_consistency", "学习", "学习坚持度", {"level": "硬核" if streak >= 200 else "稳定"}, "duolingo", False)
+    _insert_tag(db, user_id, "learning_active_hours", "学习", "学习活跃时段", {"hours": learning_hours}, "duolingo", False)
+    _insert_tag(db, user_id, "learning_level", "学习", "当前等级", {"level": max(3, streak // 40)}, "duolingo", False)
+    _insert_tag(db, user_id, "learning_total_xp", "学习", "累计经验值", {"xp": learning_xp}, "duolingo", False)
+    _insert_tag(db, user_id, "learning_course_count", "学习", "活跃课程数", {"count": len(languages)}, "duolingo", False)
+    _insert_tag(db, user_id, "learning_weekly_days", "学习", "周学习天数", {"days": weekly_learning_days}, "duolingo", False)
+    _insert_tag(db, user_id, "learning_session_style", "学习", "学习节奏", {"level": "夜间专注" if max(learning_hours) >= 21 else "日间专注"}, "duolingo", False)
+    _insert_tag(db, user_id, "learning_language_count", "学习", "学习语种数", {"count": len(languages)}, "duolingo", False)
+    _insert_tag(db, user_id, "learning_momentum", "学习", "近期学习势头", {"level": "持续" if streak >= 90 else "起步"}, "duolingo", False)
+
+    total_km = weekly_times * 72
+    total_hours = weekly_times * 18
+    _insert_tag(db, user_id, "sport_primary", "运动", "主要运动类型", {"items": sports}, "keep", False)
+    _insert_tag(db, user_id, "sport_weekly", "运动", "周运动频次", {"times": weekly_times}, "keep", False)
+    _insert_tag(db, user_id, "sport_total", "运动", "累计运动量", {"km": total_km}, "keep", False)
+    _insert_tag(db, user_id, "sport_active_hours", "运动", "运动活跃时段", {"hours": sport_hours}, "keep", False)
+    _insert_tag(db, user_id, "sport_intensity", "运动", "运动强度等级", {"level": "进阶" if weekly_times >= 3 else "入门"}, "keep", False)
+    _insert_tag(db, user_id, "sport_total_hours", "运动", "累计运动时长", {"hours": total_hours}, "keep", False)
+    _insert_tag(db, user_id, "sport_consistency_weeks", "运动", "连续运动周数", {"weeks": 4 + weekly_times * 2}, "keep", False)
+    _insert_tag(db, user_id, "sport_weekly_minutes", "运动", "周运动时长", {"minutes": weekly_times * 45}, "keep", False)
+    _insert_tag(db, user_id, "sport_session_duration", "运动", "单次运动时长", {"minutes": 35 + weekly_times * 5}, "keep", False)
+    _insert_tag(db, user_id, "sport_variety", "运动", "运动多样性", {"count": len(sports)}, "keep", False)
+    _insert_tag(db, user_id, "sport_routine", "运动", "运动习惯", {"level": "规律" if weekly_times >= 3 else "轻量"}, "keep", False)
+
+    _insert_tag(db, user_id, "self_discipline", "复合", "自律程度", {"level": "高" if streak >= 150 else "中"}, "derived", False, "derived")
+    _insert_tag(db, user_id, "active_time_overlap", "复合", "活跃时间画像", {"hours": sorted(set(learning_hours) | set(sport_hours))}, "derived", False, "derived")
+    _insert_tag(db, user_id, "purpose_consistency", "复合", "目标行为一致性", {"level": "一致"}, "derived", False, "derived")
 
 
 def _seed_database(db: sqlite3.Connection) -> None:
@@ -330,8 +377,10 @@ def _seed_database(db: sqlite3.Connection) -> None:
     _seed_behavior_tags(db, "demo_004", ["韩语", "英语"], ["瑜伽"], [20, 21], [18, 19], 122, 2)
     for source in ("duolingo", "keep"):
         db.execute(
-            "INSERT INTO external_connections (user_id, source, status, access_token, refreshed_at) VALUES (?, ?, 'connected', ?, ?)",
-            ("demo_001", source, f"mock-{source}-token", utcnow()),
+            """INSERT INTO external_connections
+               (user_id, source, status, access_token, data_mode, refreshed_at)
+               VALUES (?, ?, 'connected', NULL, 'fixture', ?)""",
+            ("demo_001", source, utcnow()),
         )
 
     start = datetime.now(timezone.utc).replace(microsecond=0) + timedelta(days=5)
@@ -401,6 +450,7 @@ def _ensure_seed_group_conversation(db: sqlite3.Connection, event_id: str) -> No
     benefit_row = db.execute("SELECT merchant_benefit_json FROM events WHERE id = ?", (event_id,)).fetchone()
     benefit = json.loads(benefit_row["merchant_benefit_json"]) if benefit_row and benefit_row["merchant_benefit_json"] else None
     if benefit:
+        redeem_code = f"TABLE-{hashlib.sha256(event_id.encode()).hexdigest()[:8].upper()}"
         for member in members:
             issued = db.execute(
                 "SELECT 1 FROM event_coupons WHERE event_id = ? AND user_id = ?", (event_id, member["user_id"])
@@ -410,5 +460,5 @@ def _ensure_seed_group_conversation(db: sqlite3.Connection, event_id: str) -> No
                     """INSERT INTO event_coupons (id, event_id, user_id, benefit_json, redeem_code, status, issued_at)
                        VALUES (?, ?, ?, ?, ?, 'issued', ?)""",
                     (f"coupon_{uuid4().hex[:12]}", event_id, member["user_id"], json.dumps(benefit, ensure_ascii=False),
-                     f"{event_id[-4:].upper()}-{member['user_id'][-4:].upper()}", utcnow()),
+                     redeem_code, utcnow()),
                 )

@@ -889,7 +889,7 @@
   border: var(--neo-border-thin) solid var(--neo-ink);
   border-radius: calc(var(--neo-radius-control) - 0.2rem);
   background: var(--neo-paper);
-  box-shadow: 2px 2px 0 var(--neo-ink);
+  box-shadow: var(--card-shadow);
   object-fit: cover;
   object-position: center;
   transition: filter 280ms ease, transform 460ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -1122,7 +1122,7 @@
   border-top-color: var(--neo-coral);
   background: #fff0ec;
   background: color-mix(in srgb, var(--neo-coral) 12%, var(--neo-paper));
-  box-shadow: var(--neo-shadow-lg), 8px 8px 0 var(--neo-coral);
+  box-shadow: var(--neo-shadow-lg);
 }
 
 .report-dialog .dialog-heading {
