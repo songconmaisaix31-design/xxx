@@ -17,6 +17,7 @@ Publish the hackathon build as a resettable HTTPS demo at
 
 ## Runtime design
 
+The versioned `vercel.json` selects Vercel's `flask` framework preset, and
 Vercel invokes the top-level `index.py` WSGI application. The build command
 copies only `app/static/css`, `app/static/img`, and `app/static/js` to
 `public/static`, which is Vercel's supported static-asset boundary. QA evidence

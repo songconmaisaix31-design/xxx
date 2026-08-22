@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import tempfile
 import unittest
@@ -12,6 +13,13 @@ from tools.prepare_vercel_public import prepare_public_assets
 
 
 class DeploymentTests(unittest.TestCase):
+    def test_vercel_config_selects_flask_framework(self) -> None:
+        repo_root = Path(__file__).resolve().parents[1]
+        config = json.loads((repo_root / "vercel.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(config["framework"], "flask")
+        self.assertEqual(config["buildCommand"], "python tools/prepare_vercel_public.py")
+
     def test_database_path_environment_variable_is_used_at_runtime(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             database = Path(temp_dir) / "runtime" / "realtags.sqlite3"
