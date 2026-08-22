@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-08-22T20:57:44Z",
+  "logical_task_id": "INT-001",
+  "orca_task_id": "task_fd835d85af30",
+  "terminal_handle": "term_846b500d-68d5-46fd-a090-b210db55a2e0",
+  "worktree": "C:\\Users\\DW\\orca\\workspaces\\xxx\\trk-integration-int-001",
+  "failed_dispatch_contexts": [
+    "ctx_48292b82ef17",
+    "ctx_908e06a7d264"
+  ],
+  "dispatch_failure": "Both supervised dispatch attempts ended with agent_prompt_stalled before Fleet registered a dispatch identity.",
+  "recovery": "The exact Orca terminal and worktree remained live. Root independently reviewed the integrated evidence, reran the full clean-HEAD verification, and verified the pushed branch SHA before formal Fleet acceptance.",
+  "branch": "songconmaisaix31-design/trk-integration-int-001",
+  "verified_head_sha": "a65354931828dea32866bf4fd118366aa764d22a",
+  "root_final_verification": "PASS"
+}

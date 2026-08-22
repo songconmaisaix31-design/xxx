@@ -3,7 +3,7 @@
   "run_id": "run_2969d06ac2f4",
   "objective": "Deliver a truthful, polished, judge-ready implementation of the RealTags PRD on an isolated hackathon branch without changing main",
   "created_at": "2026-08-22T18:54:34Z",
-  "updated_at": "2026-08-22T20:35:31Z",
+  "updated_at": "2026-08-22T20:58:41Z",
   "run_dir": "C:\\Users\\DW\\orca\\workspaces\\xxx\\fleet-control-hackathon-prize\\.agents\\runs\\20260822T185434Z-deliver-a-truthful-polished-judge-ready-im",
   "repo_selector": "id:15b0721e-5834-4702-a6f0-5155ebf31346",
   "coordinator_branch": "fleet-control-hackathon-prize",
@@ -81,9 +81,9 @@
       "tasks": [
         "INT-001"
       ],
-      "status": "planned",
+      "status": "completed",
       "dispatched_at": null,
-      "completed_at": null
+      "completed_at": "2026-08-22T20:58:41Z"
     }
   ],
   "tasks": {
@@ -356,17 +356,17 @@
       ],
       "agent": "codex",
       "wave": "integration",
-      "status": "planned",
+      "status": "completed",
       "workspace_name": "trk-integration-int-001",
       "orca_task_id": "task_fd835d85af30",
       "dispatch_id": null,
-      "branch": null,
+      "branch": "songconmaisaix31-design/trk-integration-int-001",
       "base_ref": "origin/songconmaisaix31-design/governance-data-base",
       "base_sha": "013633354f8b84e5ef5370bf8ace0b81ed1fc0f5",
-      "head_sha": null,
-      "summary": null,
+      "head_sha": "a65354931828dea32866bf4fd118366aa764d22a",
+      "summary": "Exact five-merge integration, truthful final evidence, 10 fresh screenshots, 78 Python tests, 17 strict acceptance tests, 4 Node tests, 6/6 HTTP harness, dual startup probes, clean worktree, and exact remote SHA independently verified.",
       "dispatched_at": null,
-      "completed_at": null
+      "completed_at": "2026-08-22T20:58:41Z"
     }
   },
   "last_inbox_at": "2026-08-22T19:31:34Z",

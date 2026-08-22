@@ -1,0 +1,20 @@
+{
+  "recorded_at": "2026-08-22T21:00:54Z",
+  "candidate_branch": "hackathon/realtags-prize-candidate",
+  "candidate_sha": "a65354931828dea32866bf4fd118366aa764d22a",
+  "source_branch": "songconmaisaix31-design/trk-integration-int-001",
+  "source_sha": "a65354931828dea32866bf4fd118366aa764d22a",
+  "publication": "Created as a new non-force remote branch and verified with git ls-remote.",
+  "protected_source_checkout": {
+    "path": "C:\\Users\\DW\\orca\\xxx",
+    "branch": "main",
+    "local_head": "42cdcbf4e7c5004e7fbbbe26f769643f68b1a8bc",
+    "result": "Local branch and pre-existing untracked files were preserved."
+  },
+  "remote_main_observation": {
+    "cached_takeover_ref": "648caa40ccd880f331b050bb27cfe80c361b0328",
+    "live_remote_ref_at_final_check": "89e80a9eb3b21cd22441be218302f429c8d78471",
+    "difference": "The live remote ref contains one documentation-only commit beyond the cached takeover ref.",
+    "scope": "No command in this run pushed, merged, or force-updated refs/heads/main."
+  }
+}

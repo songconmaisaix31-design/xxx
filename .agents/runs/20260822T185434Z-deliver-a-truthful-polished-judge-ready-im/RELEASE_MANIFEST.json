@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-22T20:59:57Z",
+  "run_id": "run_2969d06ac2f4",
+  "objective": "Deliver a truthful, polished, judge-ready implementation of the RealTags PRD on an isolated hackathon branch without changing main",
+  "initial_base_ref": "origin/fleet-control-hackathon-prize",
+  "initial_base_sha": "e7e4ee78826f213109955d345ed51a05839e4c0f",
+  "coordinator_branch": "fleet-control-hackathon-prize",
+  "tasks": {
+    "ARCH-001": {
+      "track": "architecture",
+      "status": "completed",
+      "orca_task_id": "task_0f3edd6b16d7",
+      "dispatch_id": "ctx_233b430f3462",
+      "base_sha": "e7e4ee78826f213109955d345ed51a05839e4c0f",
+      "branch": "songconmaisaix31-design/trk-architecture-arch-001",
+      "head_sha": "eddb9dd3add3d898db1b5e6a419e835d48bda400",
+      "summary": "Frozen four reviewed product/data/acceptance contracts; scoped remote SHA and gates verified; Duolingo, GitHub REST, and narrow LeetCode.com public mapping approved.",
+      "completed_at": "2026-08-22T19:24:07Z"
+    },
+    "DATA-001": {
+      "track": "data",
+      "status": "completed",
+      "orca_task_id": "task_e2e144d258f8",
+      "dispatch_id": "ctx_43e763e1b4a4",
+      "base_sha": "69762f334ca834e983bf47fb07fc69db957b42eb",
+      "branch": "songconmaisaix31-design/trk-data-data-001",
+      "head_sha": "324b847dbe75bdf03f27fc5638cac30eed6a2ef7",
+      "summary": "Credential-free Public Live adapters, deterministic Fixture data, atomic persistence, truthful source states, focused 20/20 tests, and exact remote SHA verified. Legacy authorize expectation remains assigned to INT-001.",
+      "completed_at": "2026-08-22T20:15:06Z"
+    },
+    "CORE-001": {
+      "track": "core",
+      "status": "completed",
+      "orca_task_id": "task_e69a61028b75",
+      "dispatch_id": "ctx_98e05d9bb253",
+      "base_sha": "eddb9dd3add3d898db1b5e6a419e835d48bda400",
+      "branch": "songconmaisaix31-design/trk-core-core-001",
+      "head_sha": "06012b59326c5a1de031d5f24a0027ec921d2397",
+      "summary": "Anonymous matching, per-viewer reveal, blocking, event safety boundaries, 6 contract tests, 9 legacy core tests, and exact remote SHA independently verified.",
+      "completed_at": "2026-08-22T20:15:08Z"
+    },
+    "UX-001": {
+      "track": "experience",
+      "status": "completed",
+      "orca_task_id": "task_0ba8f8c2f098",
+      "dispatch_id": "ctx_d9bc25e73963",
+      "base_sha": "eddb9dd3add3d898db1b5e6a419e835d48bda400",
+      "branch": "songconmaisaix31-design/trk-experience-ux-001",
+      "head_sha": "4c298caaa62d7f5b522b22a3f38ab7ded93f9253",
+      "summary": "Judge journey, responsive/focus behavior, 6 SSR tests, 4 motion tests, and exact remote SHA verified. Worker screenshots remain isolated evidence only; INT-001 must produce stable final integrated captures under its own evidence directory.",
+      "completed_at": "2026-08-22T20:15:11Z"
+    },
+    "QA-001": {
+      "track": "qa",
+      "status": "completed",
+      "orca_task_id": "task_697f352c3d08",
+      "dispatch_id": "ctx_a64a9e03e456",
+      "base_sha": "eddb9dd3add3d898db1b5e6a419e835d48bda400",
+      "branch": "songconmaisaix31-design/trk-qa-qa-001",
+      "head_sha": "6f4ba724ff9e24c338b3da05558630f6c29b6cce",
+      "summary": "Offline acceptance runner and truthful submission pack verified with 17 tests, PASS/FAIL/SKIP taxonomy, clean scope, and exact remote SHA. Assembly-dependent checks remain a required INT-001 gate.",
+      "completed_at": "2026-08-22T20:15:14Z"
+    },
+    "UX-002": {
+      "track": "experience",
+      "status": "completed",
+      "orca_task_id": "task_4abfa19eed12",
+      "dispatch_id": "ctx_60e15c8da875",
+      "base_sha": "4c298caaa62d7f5b522b22a3f38ab7ded93f9253",
+      "branch": "songconmaisaix31-design/trk-experience-ux-002",
+      "head_sha": "ac9c0d608c0b61ea0dbb93e885481a1cc2aa07b7",
+      "summary": "Truthful Fixture badge and disclaimer added with Public Live-negative SSR coverage; 7 focused tests, 6/6 full harness, scope gate, clean worktree, and exact remote SHA independently verified.",
+      "completed_at": "2026-08-22T20:35:29Z"
+    },
+    "INT-001": {
+      "track": "integration",
+      "status": "completed",
+      "orca_task_id": "task_fd835d85af30",
+      "dispatch_id": null,
+      "base_sha": "013633354f8b84e5ef5370bf8ace0b81ed1fc0f5",
+      "branch": "songconmaisaix31-design/trk-integration-int-001",
+      "head_sha": "a65354931828dea32866bf4fd118366aa764d22a",
+      "summary": "Exact five-merge integration, truthful final evidence, 10 fresh screenshots, 78 Python tests, 17 strict acceptance tests, 4 Node tests, 6/6 HTTP harness, dual startup probes, clean worktree, and exact remote SHA independently verified.",
+      "completed_at": "2026-08-22T20:58:41Z"
+    }
+  },
+  "integration_candidates": [
+    {
+      "task": "INT-001",
+      "branch": "songconmaisaix31-design/trk-integration-int-001",
+      "sha": "a65354931828dea32866bf4fd118366aa764d22a"
+    }
+  ],
+  "incomplete_tasks": [],
+  "evidence_directory": "C:\\Users\\DW\\orca\\workspaces\\xxx\\fleet-control-hackathon-prize\\.agents\\runs\\20260822T185434Z-deliver-a-truthful-polished-judge-ready-im\\evidence"
+}
