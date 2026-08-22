@@ -341,7 +341,7 @@ def init_app(app) -> None:
         refresh_event_statuses()
 
     with app.app_context():
-        Path(app.instance_path).mkdir(parents=True, exist_ok=True)
+        Path(app.config["DATABASE"]).parent.mkdir(parents=True, exist_ok=True)
         init_db()
 
 

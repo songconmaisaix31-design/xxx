@@ -16,7 +16,6 @@ def create_app(config: type[Config] = Config) -> Flask:
     configured_database = app.config.get("DATABASE") or os.environ.get("DATABASE_PATH")
     app.config["DATABASE"] = configured_database or str(Path(app.instance_path) / "realtags.sqlite3")
 
-    Path(app.config["DATABASE"]).parent.mkdir(parents=True, exist_ok=True)
     app.teardown_appcontext(close_db)
     init_db(app)
 

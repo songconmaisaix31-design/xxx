@@ -7,8 +7,11 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from flask import Flask
+
 from app import create_app
 from app.config import Config
+from app.db import close_db, init_app as init_database
 from tools.prepare_vercel_public import prepare_public_assets
 
 
@@ -53,6 +56,22 @@ class DeploymentTests(unittest.TestCase):
                 app = create_app(config)
 
             self.assertEqual(app.config["DATABASE"], str(database))
+
+    def test_database_init_does_not_write_to_the_flask_instance_path(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            blocked_parent = Path(temp_dir) / "not-a-directory"
+            blocked_parent.write_text("block instance directory creation", encoding="utf-8")
+            database = Path(temp_dir) / "runtime" / "realtags.sqlite3"
+            app = Flask(
+                "deployment-test",
+                instance_path=str(blocked_parent / "instance"),
+            )
+            app.config.update(DATABASE=str(database), DEMO_MODE=True)
+            app.teardown_appcontext(close_db)
+
+            init_database(app)
+
+            self.assertTrue(database.is_file())
 
     def test_public_asset_build_excludes_qa_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
