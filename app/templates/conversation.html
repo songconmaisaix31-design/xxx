@@ -95,13 +95,13 @@
     {% if not conversation.is_archived %}<a class="chat-jump" href="#composer">跳到消息输入</a>{% endif %}
 
     <div class="mission-workspace">
-      <section class="mission-log" role="log" aria-label="会话消息" aria-live="polite" aria-relevant="additions text">
+      <section class="mission-log" aria-labelledby="mission-log-title">
         <header class="mission-log-header">
-          <div><span>MISSION LOG</span><h2>对话记录</h2></div>
+          <div><span>MISSION LOG</span><h2 id="mission-log-title">对话记录</h2></div>
           <p>{{ conversation.messages|length }} 条 · 服务端记录</p>
         </header>
 
-        <div class="mission-messages">
+        <div class="mission-messages" role="log" aria-label="可滚动的对话消息" aria-live="polite" aria-relevant="additions text" tabindex="0" data-message-log>
           {% for message in conversation.messages %}
             {% if message.message_type == 'system_card' %}
               {% set raw_kind = message.metadata.kind|default('', true) %}

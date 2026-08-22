@@ -4,6 +4,13 @@
   const shell = document.querySelector(".mission-shell");
   if (!shell) return;
 
+  const messageLog = shell.querySelector("[data-message-log]");
+  if (messageLog) {
+    requestAnimationFrame(() => {
+      messageLog.scrollTop = messageLog.scrollHeight;
+    });
+  }
+
   const drawer = shell.querySelector("[data-tool-drawer]");
   const drawerLabel = shell.querySelector("[data-drawer-label]");
   const updateDrawerState = () => {

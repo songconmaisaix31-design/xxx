@@ -144,6 +144,8 @@ conversation.counterpart = {
 
 系统卡片只识别服务端白名单 `metadata.kind`：`match_started`、`dice`、`task_card`、`match_point`、`group_unlock_task`、`demo_progress`。每一类在 `conversation.html` 中有独立语义结构和视觉角色；未知值必须回退为普通 `notice`，禁止把元数据拼成 class、HTML 或脚本。连续普通消息会按同一发送者分组，但服务端消息顺序和内容不被 JavaScript改写。
 
+`.mission-messages` 是固定视口高度的独立滚动日志，新增消息只能增加其内部滚动高度，不能继续拉长整页或挤压关系进度与任务区。它保留 `role="log"`、键盘焦点与可见滚动条；页面重新渲染后，渐进增强脚本只负责把该容器定位到最新消息。
+
 ### 5.4 饭局群聊
 
 `conversation.type == 'event_group'` 时不要读取 `counterpart`。应展示 `conversation.members`，但每个成员只有：

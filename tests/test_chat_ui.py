@@ -103,9 +103,10 @@ class ChatMissionDeckTests(unittest.TestCase):
 
         html, dom = self._parse(f"/conversations/{conversation_id}")
 
-        logs = [(tag, attrs) for tag, attrs in dom.elements_with("role", "log") if tag == "section"]
+        logs = [(tag, attrs) for tag, attrs in dom.elements_with("role", "log") if tag == "div"]
         self.assertEqual(len(logs), 1)
         self.assertEqual(logs[0][1].get("aria-live"), "polite")
+        self.assertEqual(logs[0][1].get("tabindex"), "0")
 
         expected_classes = {
             "match_started": "system-match",
@@ -176,6 +177,10 @@ class ChatMissionDeckTests(unittest.TestCase):
         self.assertIn(".safety-dialog:not([open])", chat_css)
         self.assertIn(".mission-workspace", chat_css)
         self.assertIn("grid-template-columns: minmax(0, 1fr);", chat_css)
+        self.assertIn("overflow-y: auto;", chat_css)
+        self.assertIn("height: clamp(26rem, 60dvh, 42rem);", chat_css)
+        self.assertIn("data-message-log", html)
+        self.assertIn("messageLog.scrollTop = messageLog.scrollHeight;", chat_js)
         self.assertIn("dialog.hidden = false;", chat_js)
         self.assertIn("dialog.hidden = true;", chat_js)
 

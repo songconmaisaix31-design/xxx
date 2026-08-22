@@ -389,10 +389,37 @@
 }
 
 .mission-messages {
-  min-height: 36rem;
+  height: 36rem;
+  height: clamp(26rem, 60dvh, 42rem);
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-color: var(--neo-purple) var(--neo-paper-deep);
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scroll-padding-block: 1rem;
   padding: 1rem 0.45rem 2rem;
+}
+
+.mission-messages::-webkit-scrollbar {
+  width: 0.72rem;
+}
+
+.mission-messages::-webkit-scrollbar-track {
+  border-left: var(--neo-border-thin) solid var(--neo-ink);
+  background: var(--neo-paper-deep);
+}
+
+.mission-messages::-webkit-scrollbar-thumb {
+  border: var(--neo-border-thin) solid var(--neo-ink);
+  background: var(--neo-purple);
+}
+
+.mission-messages:focus-visible {
+  outline: 3px solid var(--neo-purple);
+  outline-offset: -5px;
 }
 
 .chat-message {
@@ -1350,7 +1377,9 @@
   }
 
   .mission-messages {
-    min-height: 28rem;
+    height: 30rem;
+    height: min(56dvh, 32rem);
+    min-height: 22rem;
     padding: 0.65rem 0.1rem 1.2rem;
   }
 
