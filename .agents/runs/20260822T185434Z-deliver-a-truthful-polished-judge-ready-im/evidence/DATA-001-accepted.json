@@ -1,0 +1,58 @@
+{
+  "recorded_at": "2026-08-22T20:15:05Z",
+  "logical_task_id": "DATA-001",
+  "outcome": "succeeded",
+  "summary": "Credential-free Public Live adapters, deterministic Fixture data, atomic persistence, truthful source states, focused 20/20 tests, and exact remote SHA verified. Legacy authorize expectation remains assigned to INT-001.",
+  "branch": "songconmaisaix31-design/trk-data-data-001",
+  "provided_sha": "324b847dbe75bdf03f27fc5638cac30eed6a2ef7",
+  "remote_sha": "324b847dbe75bdf03f27fc5638cac30eed6a2ef7",
+  "files": [
+    "app/config.py",
+    "app/constants.py",
+    "app/db.py",
+    "app/routes/auth.py",
+    "app/services/adapters.py",
+    "app/services/data_sources/__init__.py",
+    "app/services/data_sources/duolingo.py",
+    "app/services/data_sources/fixtures.py",
+    "app/services/data_sources/github.py",
+    "app/services/data_sources/http.py",
+    "app/services/data_sources/leetcode.py",
+    "app/services/data_sources/models.py",
+    "app/services/data_sources/validation.py",
+    "app/templates/connections.html",
+    "tests/fixtures/data_sources/duolingo_profile.json",
+    "tests/fixtures/data_sources/github_events.json",
+    "tests/fixtures/data_sources/github_repositories.json",
+    "tests/fixtures/data_sources/github_user.json",
+    "tests/fixtures/data_sources/leetcode_profile.json",
+    "tests/test_data_sources.py"
+  ],
+  "commit_subjects": [
+    "feat(data): connect public behavior sources [DATA-001]"
+  ],
+  "integration": null,
+  "fetch": {
+    "fresh": true,
+    "branch": "songconmaisaix31-design/trk-data-data-001",
+    "expected_sha": "324b847dbe75bdf03f27fc5638cac30eed6a2ef7"
+  },
+  "settlement": {
+    "id": "16d808a2-f0bb-43c1-b993-87a2f868d117",
+    "ok": true,
+    "result": {
+      "dispatchId": "ctx_43e763e1b4a4",
+      "state": "retained",
+      "reason": "external_terminal",
+      "processAction": "none",
+      "archive": null,
+      "mutation": {
+        "requestId": "6c2871aa-489c-4db7-a764-354fa0edb3f3",
+        "replayed": false
+      }
+    },
+    "_meta": {
+      "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+    }
+  }
+}

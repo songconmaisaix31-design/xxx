@@ -1,0 +1,188 @@
+{
+  "recorded_at": "2026-08-22T20:15:07Z",
+  "logical_task_id": "CORE-001",
+  "outcome": "succeeded",
+  "summary": "Anonymous matching, per-viewer reveal, blocking, event safety boundaries, 6 contract tests, 9 legacy core tests, and exact remote SHA independently verified.",
+  "branch": "songconmaisaix31-design/trk-core-core-001",
+  "provided_sha": "06012b59326c5a1de031d5f24a0027ec921d2397",
+  "remote_sha": "06012b59326c5a1de031d5f24a0027ec921d2397",
+  "files": [
+    "app/routes/events.py",
+    "app/routes/matches.py",
+    "app/services/chat.py",
+    "app/services/events.py",
+    "app/services/matching.py",
+    "app/services/users.py",
+    "tests/test_core_contracts.py"
+  ],
+  "commit_subjects": [
+    "feat(core): harden anonymous matching boundaries [CORE-001]"
+  ],
+  "integration": null,
+  "fetch": {
+    "fresh": true,
+    "branch": "songconmaisaix31-design/trk-core-core-001",
+    "expected_sha": "06012b59326c5a1de031d5f24a0027ec921d2397"
+  },
+  "settlement": {
+    "ok": true,
+    "state": "release_unknown_inspected_inert",
+    "release": {
+      "id": "58f2d4c0-e865-4211-8d91-7783af3d28bd",
+      "ok": true,
+      "result": {
+        "dispatchId": "ctx_98e05d9bb253",
+        "state": "release_unknown",
+        "processAction": "none",
+        "archive": {
+          "source": "transcript",
+          "status": "captured"
+        },
+        "lastError": "tab_not_found",
+        "recovery": "Inspect with: orca orchestration worker-show --dispatch ctx_98e05d9bb253 --json — then repeat worker-release with the same --retry-request. Never substitute a broad terminal close.",
+        "mutation": {
+          "requestId": "f051a9db-1de8-4016-86da-d7ae3cd52812",
+          "replayed": false
+        }
+      },
+      "_meta": {
+        "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+      }
+    },
+    "inspection": {
+      "id": "dfbb880d-985b-420c-b2fb-a5db92f5eab2",
+      "ok": true,
+      "result": {
+        "dispatch": {
+          "id": "ctx_98e05d9bb253",
+          "task_id": "task_e69a61028b75",
+          "assignee_handle": "term_6c2dfc2f-1571-43ef-aae6-36dcfadc9b1f",
+          "assignee_pane_key": "bb1e71ef-8d2b-40b8-b5d2-909fa5a986a8:11f0c93e-d6d0-4826-90da-a86052e0887f",
+          "status": "completed",
+          "failure_count": 0,
+          "last_failure": null,
+          "dispatched_at": "2026-08-22 19:40:31",
+          "completed_at": "2026-08-22 20:10:05",
+          "created_at": "2026-08-22 19:40:31",
+          "last_heartbeat_at": "2026-08-22T19:58:56Z",
+          "run_id": "run_2969d06ac2f4",
+          "capability_hash": "5a1ab59e32e3c4340dfa64b8222ba1410237c90b045ce4c916c74fc2a9a0d068",
+          "process_incarnation": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-core-core-001@@6d4a847a:0f723526-b6e0-46bc-9034-a680f8138de5",
+          "capability_revoked_at": "2026-08-22 20:10:05",
+          "contract_version": 1,
+          "launch_token_hash": "587584c02af8e2aa3cfeabfc412812c49f8e05272ed12468c5ddf93132237a6b",
+          "termination_reason": null
+        },
+        "worker": {
+          "dispatch_id": "ctx_98e05d9bb253",
+          "runtime_epoch": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411",
+          "state": "succeeded",
+          "stage": "settled",
+          "worktree_id": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-core-core-001",
+          "agent_terminal_handle": "term_6c2dfc2f-1571-43ef-aae6-36dcfadc9b1f",
+          "setup_state": "not_applicable",
+          "effects": [
+            {
+              "kind": "worktree",
+              "action": "reused",
+              "id": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-core-core-001"
+            },
+            {
+              "kind": "setup",
+              "action": "not_applicable",
+              "state": "not_applicable"
+            },
+            {
+              "kind": "terminal",
+              "role": "agent",
+              "action": "reused",
+              "id": "term_6c2dfc2f-1571-43ef-aae6-36dcfadc9b1f"
+            },
+            {
+              "kind": "dispatch_input",
+              "role": "agent",
+              "id": "term_6c2dfc2f-1571-43ef-aae6-36dcfadc9b1f",
+              "state": "accepted"
+            }
+          ],
+          "residual_resources": "[]",
+          "start_options": "{\"worktree\":\"path:C:/Users/DW/orca/workspaces/xxx/trk-core-core-001\",\"resolvedWorktreeId\":\"15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-core-core-001\",\"name\":null,\"repo\":null,\"baseBranch\":null,\"terminal\":\"term_6c2dfc2f-1571-43ef-aae6-36dcfadc9b1f\",\"agent\":null,\"launch\":{\"requested\":{\"agent\":null,\"model\":null,\"effort\":null},\"effective\":{\"agent\":null,\"model\":null,\"effort\":null}},\"timeoutMs\":120000,\"setup\":\"not_applicable\",\"setupSource\":\"existing_worktree\"}",
+          "last_error": null,
+          "created_at": "2026-08-22 19:40:31",
+          "updated_at": "2026-08-22 20:10:05",
+          "residualResources": [],
+          "startOptions": {
+            "worktree": "path:C:/Users/DW/orca/workspaces/xxx/trk-core-core-001",
+            "resolvedWorktreeId": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-core-core-001",
+            "name": null,
+            "repo": null,
+            "baseBranch": null,
+            "terminal": "term_6c2dfc2f-1571-43ef-aae6-36dcfadc9b1f",
+            "agent": null,
+            "launch": {
+              "requested": {
+                "agent": null,
+                "model": null,
+                "effort": null
+              },
+              "effective": {
+                "agent": null,
+                "model": null,
+                "effort": null
+              }
+            },
+            "timeoutMs": 120000,
+            "setup": "not_applicable",
+            "setupSource": "existing_worktree"
+          }
+        },
+        "terminal": {
+          "handle": "term_6c2dfc2f-1571-43ef-aae6-36dcfadc9b1f",
+          "ptyId": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-core-core-001@@6d4a847a",
+          "incarnationId": "0f723526-b6e0-46bc-9034-a680f8138de5",
+          "orphaned": false,
+          "worktreeId": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-core-core-001",
+          "worktreePath": "C:/Users/DW/orca/workspaces/xxx/trk-core-core-001",
+          "branch": "refs/heads/songconmaisaix31-design/trk-core-core-001",
+          "tabId": "bb1e71ef-8d2b-40b8-b5d2-909fa5a986a8",
+          "leafId": "11f0c93e-d6d0-4826-90da-a86052e0887f",
+          "title": "trk-core-core-001",
+          "connected": false,
+          "writable": false,
+          "lastOutputAt": 1787429412951,
+          "preview": "max fast · ~\\orca\\workspaces\\xxx\\trk-core-core-001•RunningRunning•Runnng St•unning Sto\n─ Worked for 29m 38s ───────────────────────────────────────────────────────────────────────────────────────────────────  › Ask Codex to do anything   gpt-5.6-sol max fast · ~\\orca\\workspaces\\xxx\\trk-core-core-001",
+          "exitCause": {
+            "kind": "operator_close"
+          },
+          "executionHostId": "local",
+          "paneRuntimeId": -1,
+          "rendererGraphEpoch": 0
+        },
+        "observation": {
+          "status": "exited",
+          "exactWorker": true
+        },
+        "terminalResource": {
+          "id": "wtr_51f88b94f854",
+          "ownershipState": "owned",
+          "releaseState": "unknown",
+          "retainedReason": null,
+          "terminalHandle": "term_6c2dfc2f-1571-43ef-aae6-36dcfadc9b1f",
+          "worktreeId": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-core-core-001",
+          "originDispatchId": "ctx_8814f5e6ca86",
+          "ownerDispatchId": "ctx_98e05d9bb253",
+          "releaseRequestedAt": "2026-08-22 20:15:08",
+          "releaseCompletedAt": null,
+          "releaseError": "tab_not_found",
+          "archive": {
+            "source": "transcript",
+            "status": "captured"
+          }
+        }
+      },
+      "_meta": {
+        "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+      }
+    }
+  }
+}

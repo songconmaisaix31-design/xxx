@@ -1,0 +1,237 @@
+{
+  "recorded_at": "2026-08-22T20:15:13Z",
+  "logical_task_id": "QA-001",
+  "outcome": "succeeded",
+  "summary": "Offline acceptance runner and truthful submission pack verified with 17 tests, PASS/FAIL/SKIP taxonomy, clean scope, and exact remote SHA. Assembly-dependent checks remain a required INT-001 gate.",
+  "branch": "songconmaisaix31-design/trk-qa-qa-001",
+  "provided_sha": "6f4ba724ff9e24c338b3da05558630f6c29b6cce",
+  "remote_sha": "6f4ba724ff9e24c338b3da05558630f6c29b6cce",
+  "files": [
+    "docs/qa/hackathon/acceptance/ACCEPTANCE_COVERAGE.md",
+    "docs/qa/hackathon/acceptance/QA_SPEC.md",
+    "docs/qa/hackathon/acceptance/RUN_EVIDENCE.md",
+    "submission/ARCHITECTURE_AND_DATA_FLOW.md",
+    "submission/CLAIMS_LEDGER.md",
+    "submission/DEMO_SCRIPT.md",
+    "submission/EVIDENCE_CHECKLIST.md",
+    "submission/JUDGE_BRIEF.md",
+    "submission/LIMITATIONS.md",
+    "submission/README.md",
+    "submission/RUNBOOK.md",
+    "tests/acceptance/__init__.py",
+    "tests/acceptance/support.py",
+    "tests/acceptance/test_boundaries.py",
+    "tests/acceptance/test_datasource_boundaries.py",
+    "tests/acceptance/test_judge_path.py",
+    "tests/acceptance/test_runner_contract.py",
+    "tools/hackathon_acceptance.py"
+  ],
+  "commit_subjects": [
+    "feat(qa): add offline acceptance evidence [QA-001]"
+  ],
+  "integration": null,
+  "fetch": {
+    "fresh": true,
+    "branch": "songconmaisaix31-design/trk-qa-qa-001",
+    "expected_sha": "6f4ba724ff9e24c338b3da05558630f6c29b6cce"
+  },
+  "settlement": {
+    "ok": true,
+    "state": "release_unknown_inspected_inert",
+    "release": {
+      "id": "576b3bee-b129-4957-8919-97b0e9327c83",
+      "ok": true,
+      "result": {
+        "dispatchId": "ctx_a64a9e03e456",
+        "state": "release_unknown",
+        "processAction": "none",
+        "archive": {
+          "source": "transcript",
+          "status": "captured"
+        },
+        "lastError": "tab_not_found",
+        "recovery": "Inspect with: orca orchestration worker-show --dispatch ctx_a64a9e03e456 --json — then repeat worker-release with the same --retry-request. Never substitute a broad terminal close.",
+        "mutation": {
+          "requestId": "3e75ba5d-763c-4e98-9fc0-93d55fa66fb7",
+          "replayed": false
+        }
+      },
+      "_meta": {
+        "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+      }
+    },
+    "inspection": {
+      "id": "8aa7e822-a1e7-49bf-a0fe-831f2da35252",
+      "ok": true,
+      "result": {
+        "dispatch": {
+          "id": "ctx_a64a9e03e456",
+          "task_id": "task_697f352c3d08",
+          "assignee_handle": "term_2db03523-6a93-4161-aef4-f522a93ebf25",
+          "assignee_pane_key": "04c5f4af-b2b1-47b2-95ef-a609431bb083:dc0b05a2-7b2a-433d-9469-1be792d3b1fb",
+          "status": "completed",
+          "failure_count": 0,
+          "last_failure": null,
+          "dispatched_at": "2026-08-22 19:38:51",
+          "completed_at": "2026-08-22 20:09:43",
+          "created_at": "2026-08-22 19:38:51",
+          "last_heartbeat_at": "2026-08-22T19:58:23Z",
+          "run_id": "run_2969d06ac2f4",
+          "capability_hash": "6d2f88674026ab14009fbcc4f68b8fd7ab191760093f0666f9477798a6c47444",
+          "process_incarnation": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-qa-qa-001@@848951c1:11157696-f1c3-44f8-a3fc-ea0cd2ee913d",
+          "capability_revoked_at": "2026-08-22 20:09:43",
+          "contract_version": 1,
+          "launch_token_hash": "373151e858f9ee27ce6a4f80bb44348bd151022f67f3314458565969844b3b9b",
+          "termination_reason": null
+        },
+        "worker": {
+          "dispatch_id": "ctx_a64a9e03e456",
+          "runtime_epoch": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411",
+          "state": "succeeded",
+          "stage": "settled",
+          "worktree_id": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-qa-qa-001",
+          "agent_terminal_handle": "term_2db03523-6a93-4161-aef4-f522a93ebf25",
+          "setup_state": "succeeded",
+          "effects": [
+            {
+              "kind": "worktree",
+              "action": "created_top_level",
+              "id": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-qa-qa-001"
+            },
+            {
+              "kind": "terminal",
+              "role": "agent",
+              "action": "reused_agent_terminal",
+              "id": "term_2db03523-6a93-4161-aef4-f522a93ebf25",
+              "tabId": "04c5f4af-b2b1-47b2-95ef-a609431bb083",
+              "leafId": "dc0b05a2-7b2a-433d-9469-1be792d3b1fb"
+            },
+            {
+              "kind": "terminal",
+              "role": "setup",
+              "action": "created",
+              "id": "term_07b83428-7889-4a78-b21d-eeaf76f1af3d",
+              "tabId": "16138f7b-89fa-43c8-92b1-aefd55fb19bb",
+              "leafId": "8ca3b3b6-2d61-44aa-af18-6b0d3f7772ad"
+            },
+            {
+              "kind": "setup",
+              "action": "run",
+              "requested": "run",
+              "effective": "run",
+              "source": "explicit_request",
+              "hookFound": true,
+              "startupPolicy": "start-immediately",
+              "state": "succeeded",
+              "terminalId": "term_07b83428-7889-4a78-b21d-eeaf76f1af3d"
+            },
+            {
+              "kind": "dispatch_input",
+              "role": "agent",
+              "id": "term_2db03523-6a93-4161-aef4-f522a93ebf25",
+              "state": "accepted"
+            }
+          ],
+          "residual_resources": "[{\"kind\":\"worktree\",\"action\":\"created_top_level\",\"id\":\"15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-qa-qa-001\"},{\"kind\":\"terminal\",\"role\":\"agent\",\"action\":\"reused_agent_terminal\",\"id\":\"term_2db03523-6a93-4161-aef4-f522a93ebf25\",\"tabId\":\"04c5f4af-b2b1-47b2-95ef-a609431bb083\",\"leafId\":\"dc0b05a2-7b2a-433d-9469-1be792d3b1fb\"},{\"kind\":\"terminal\",\"role\":\"setup\",\"action\":\"created\",\"id\":\"term_07b83428-7889-4a78-b21d-eeaf76f1af3d\",\"tabId\":\"16138f7b-89fa-43c8-92b1-aefd55fb19bb\",\"leafId\":\"8ca3b3b6-2d61-44aa-af18-6b0d3f7772ad\"}]",
+          "start_options": "{\"worktree\":\"new-top-level\",\"resolvedWorktreeId\":null,\"name\":\"trk-qa-qa-001\",\"repo\":\"id:15b0721e-5834-4702-a6f0-5155ebf31346\",\"baseBranch\":null,\"terminal\":null,\"agent\":\"codex\",\"launch\":{\"requested\":{\"agent\":\"codex\",\"model\":null,\"effort\":null},\"effective\":{\"agent\":\"codex\",\"model\":null,\"effort\":null}},\"timeoutMs\":60000,\"setup\":\"run\",\"setupSource\":\"explicit_request\"}",
+          "last_error": null,
+          "created_at": "2026-08-22 19:38:51",
+          "updated_at": "2026-08-22 20:09:43",
+          "residualResources": [
+            {
+              "kind": "worktree",
+              "action": "created_top_level",
+              "id": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-qa-qa-001"
+            },
+            {
+              "kind": "terminal",
+              "role": "agent",
+              "action": "reused_agent_terminal",
+              "id": "term_2db03523-6a93-4161-aef4-f522a93ebf25",
+              "tabId": "04c5f4af-b2b1-47b2-95ef-a609431bb083",
+              "leafId": "dc0b05a2-7b2a-433d-9469-1be792d3b1fb"
+            },
+            {
+              "kind": "terminal",
+              "role": "setup",
+              "action": "created",
+              "id": "term_07b83428-7889-4a78-b21d-eeaf76f1af3d",
+              "tabId": "16138f7b-89fa-43c8-92b1-aefd55fb19bb",
+              "leafId": "8ca3b3b6-2d61-44aa-af18-6b0d3f7772ad"
+            }
+          ],
+          "startOptions": {
+            "worktree": "new-top-level",
+            "resolvedWorktreeId": null,
+            "name": "trk-qa-qa-001",
+            "repo": "id:15b0721e-5834-4702-a6f0-5155ebf31346",
+            "baseBranch": null,
+            "terminal": null,
+            "agent": "codex",
+            "launch": {
+              "requested": {
+                "agent": "codex",
+                "model": null,
+                "effort": null
+              },
+              "effective": {
+                "agent": "codex",
+                "model": null,
+                "effort": null
+              }
+            },
+            "timeoutMs": 60000,
+            "setup": "run",
+            "setupSource": "explicit_request"
+          }
+        },
+        "terminal": {
+          "handle": "term_2db03523-6a93-4161-aef4-f522a93ebf25",
+          "ptyId": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-qa-qa-001@@848951c1",
+          "incarnationId": "11157696-f1c3-44f8-a3fc-ea0cd2ee913d",
+          "orphaned": false,
+          "worktreeId": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-qa-qa-001",
+          "worktreePath": "C:/Users/DW/orca/workspaces/xxx/trk-qa-qa-001",
+          "branch": "refs/heads/songconmaisaix31-design/trk-qa-qa-001",
+          "tabId": "04c5f4af-b2b1-47b2-95ef-a609431bb083",
+          "leafId": "dc0b05a2-7b2a-433d-9469-1be792d3b1fb",
+          "title": "trk-qa-qa-001",
+          "connected": false,
+          "writable": false,
+          "lastOutputAt": 1787429392080,
+          "preview": "sk Codex to do anything   gpt-5.6-sol max fast · ~\\orca\\workspaces\\xxx\\trk-qa-qa-001ookokk\n─ Worked for 30m 44s ───────────────────────────────────────────────────────────────────────────────────────────────────  › Ask Codex to do anything   gpt-5.6-sol max fast · ~\\orca\\workspaces\\xxx\\trk-qa-qa-001",
+          "exitCause": {
+            "kind": "operator_close"
+          },
+          "executionHostId": "local",
+          "paneRuntimeId": -1,
+          "rendererGraphEpoch": 0
+        },
+        "observation": {
+          "status": "exited",
+          "exactWorker": true
+        },
+        "terminalResource": {
+          "id": "wtr_bc4c89c7005f",
+          "ownershipState": "owned",
+          "releaseState": "unknown",
+          "retainedReason": null,
+          "terminalHandle": "term_2db03523-6a93-4161-aef4-f522a93ebf25",
+          "worktreeId": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-qa-qa-001",
+          "originDispatchId": "ctx_a64a9e03e456",
+          "ownerDispatchId": "ctx_a64a9e03e456",
+          "releaseRequestedAt": "2026-08-22 20:15:15",
+          "releaseCompletedAt": null,
+          "releaseError": "tab_not_found",
+          "archive": {
+            "source": "transcript",
+            "status": "captured"
+          }
+        }
+      },
+      "_meta": {
+        "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+      }
+    }
+  }
+}

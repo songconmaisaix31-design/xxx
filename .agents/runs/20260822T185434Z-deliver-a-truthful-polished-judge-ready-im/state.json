@@ -3,7 +3,7 @@
   "run_id": "run_2969d06ac2f4",
   "objective": "Deliver a truthful, polished, judge-ready implementation of the RealTags PRD on an isolated hackathon branch without changing main",
   "created_at": "2026-08-22T18:54:34Z",
-  "updated_at": "2026-08-22T19:39:07Z",
+  "updated_at": "2026-08-22T20:15:17Z",
   "run_dir": "C:\\Users\\DW\\orca\\workspaces\\xxx\\fleet-control-hackathon-prize\\.agents\\runs\\20260822T185434Z-deliver-a-truthful-polished-judge-ready-im",
   "repo_selector": "id:15b0721e-5834-4702-a6f0-5155ebf31346",
   "coordinator_branch": "fleet-control-hackathon-prize",
@@ -41,9 +41,9 @@
         "UX-001",
         "QA-001"
       ],
-      "status": "dispatched",
+      "status": "completed",
       "dispatched_at": "2026-08-22T19:39:07Z",
-      "completed_at": null
+      "completed_at": "2026-08-22T20:15:17Z"
     },
     {
       "id": "integration",
@@ -129,17 +129,17 @@
       ],
       "agent": "codex",
       "wave": "parallel-build",
-      "status": "dispatched",
+      "status": "completed",
       "workspace_name": "trk-data-data-001",
       "orca_task_id": "task_e2e144d258f8",
       "dispatch_id": "ctx_43e763e1b4a4",
       "branch": "songconmaisaix31-design/trk-data-data-001",
       "base_ref": "origin/songconmaisaix31-design/governance-data-base",
       "base_sha": "69762f334ca834e983bf47fb07fc69db957b42eb",
-      "head_sha": null,
-      "summary": null,
+      "head_sha": "324b847dbe75bdf03f27fc5638cac30eed6a2ef7",
+      "summary": "Credential-free Public Live adapters, deterministic Fixture data, atomic persistence, truthful source states, focused 20/20 tests, and exact remote SHA verified. Legacy authorize expectation remains assigned to INT-001.",
       "dispatched_at": "2026-08-22T19:32:06Z",
-      "completed_at": null
+      "completed_at": "2026-08-22T20:15:06Z"
     },
     "CORE-001": {
       "id": "CORE-001",
@@ -169,17 +169,17 @@
       ],
       "agent": "codex",
       "wave": "parallel-build",
-      "status": "dispatched",
+      "status": "completed",
       "workspace_name": "trk-core-core-001",
       "orca_task_id": "task_e69a61028b75",
       "dispatch_id": "ctx_98e05d9bb253",
       "branch": "songconmaisaix31-design/trk-core-core-001",
       "base_ref": "origin/songconmaisaix31-design/trk-architecture-arch-001",
       "base_sha": "eddb9dd3add3d898db1b5e6a419e835d48bda400",
-      "head_sha": null,
-      "summary": null,
+      "head_sha": "06012b59326c5a1de031d5f24a0027ec921d2397",
+      "summary": "Anonymous matching, per-viewer reveal, blocking, event safety boundaries, 6 contract tests, 9 legacy core tests, and exact remote SHA independently verified.",
       "dispatched_at": "2026-08-22T19:34:00Z",
-      "completed_at": null
+      "completed_at": "2026-08-22T20:15:08Z"
     },
     "UX-001": {
       "id": "UX-001",
@@ -217,17 +217,17 @@
       ],
       "agent": "codex",
       "wave": "parallel-build",
-      "status": "dispatched",
+      "status": "completed",
       "workspace_name": "trk-experience-ux-001",
       "orca_task_id": "task_0ba8f8c2f098",
       "dispatch_id": "ctx_d9bc25e73963",
       "branch": "songconmaisaix31-design/trk-experience-ux-001",
       "base_ref": "origin/songconmaisaix31-design/trk-architecture-arch-001",
       "base_sha": "eddb9dd3add3d898db1b5e6a419e835d48bda400",
-      "head_sha": null,
-      "summary": null,
+      "head_sha": "4c298caaa62d7f5b522b22a3f38ab7ded93f9253",
+      "summary": "Judge journey, responsive/focus behavior, 6 SSR tests, 4 motion tests, and exact remote SHA verified. Worker screenshots remain isolated evidence only; INT-001 must produce stable final integrated captures under its own evidence directory.",
       "dispatched_at": "2026-08-22T19:37:30Z",
-      "completed_at": null
+      "completed_at": "2026-08-22T20:15:11Z"
     },
     "QA-001": {
       "id": "QA-001",
@@ -252,17 +252,17 @@
       ],
       "agent": "codex",
       "wave": "parallel-build",
-      "status": "dispatched",
+      "status": "completed",
       "workspace_name": "trk-qa-qa-001",
       "orca_task_id": "task_697f352c3d08",
       "dispatch_id": "ctx_a64a9e03e456",
       "branch": "songconmaisaix31-design/trk-qa-qa-001",
       "base_ref": "origin/songconmaisaix31-design/trk-architecture-arch-001",
       "base_sha": "eddb9dd3add3d898db1b5e6a419e835d48bda400",
-      "head_sha": null,
-      "summary": null,
+      "head_sha": "6f4ba724ff9e24c338b3da05558630f6c29b6cce",
+      "summary": "Offline acceptance runner and truthful submission pack verified with 17 tests, PASS/FAIL/SKIP taxonomy, clean scope, and exact remote SHA. Assembly-dependent checks remain a required INT-001 gate.",
       "dispatched_at": "2026-08-22T19:39:07Z",
-      "completed_at": null
+      "completed_at": "2026-08-22T20:15:14Z"
     },
     "INT-001": {
       "id": "INT-001",
