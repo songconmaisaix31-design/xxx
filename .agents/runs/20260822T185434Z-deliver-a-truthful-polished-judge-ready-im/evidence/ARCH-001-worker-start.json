@@ -1,0 +1,80 @@
+{
+  "id": "d5e52ab2-19c2-4931-ae04-f4c0c5ea778a",
+  "ok": true,
+  "result": {
+    "runId": "run_2969d06ac2f4",
+    "taskId": "task_0f3edd6b16d7",
+    "dispatchId": "ctx_233b430f3462",
+    "state": "ready",
+    "stage": "input_accepted",
+    "setup": {
+      "requested": "run",
+      "effective": "run",
+      "source": "explicit_request",
+      "hookFound": true,
+      "startupPolicy": "start-immediately",
+      "state": "running"
+    },
+    "launch": {
+      "requested": {
+        "agent": "codex",
+        "model": null,
+        "effort": null
+      },
+      "effective": {
+        "agent": "codex",
+        "model": null,
+        "effort": null
+      }
+    },
+    "timeoutMs": 60000,
+    "effects": [
+      {
+        "kind": "worktree",
+        "action": "created_top_level",
+        "id": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-architecture-arch-001"
+      },
+      {
+        "kind": "terminal",
+        "role": "agent",
+        "action": "reused_agent_terminal",
+        "id": "term_cc21718c-d90a-4393-8d32-8bc192e4e126",
+        "tabId": "273bafe9-144c-46c9-b10d-99e219ae0808",
+        "leafId": "faac42ff-0627-46dc-944b-36c48e544ca2"
+      },
+      {
+        "kind": "terminal",
+        "role": "setup",
+        "action": "created",
+        "id": "term_b3e334ce-176f-408a-b99a-979f71e60173",
+        "tabId": "46ec440d-89bb-45c4-9aae-1a785c2ad408",
+        "leafId": "d61b69c0-5ad3-4bec-bc86-54d37a5e9aa5"
+      },
+      {
+        "kind": "setup",
+        "action": "run",
+        "requested": "run",
+        "effective": "run",
+        "source": "explicit_request",
+        "hookFound": true,
+        "startupPolicy": "start-immediately",
+        "state": "running",
+        "terminalId": "term_b3e334ce-176f-408a-b99a-979f71e60173"
+      },
+      {
+        "kind": "dispatch_input",
+        "role": "agent",
+        "id": "term_cc21718c-d90a-4393-8d32-8bc192e4e126",
+        "state": "accepted"
+      }
+    ],
+    "residualResources": [],
+    "mutation": {
+      "requestId": "fe70c258-e85d-44ef-9414-4220208b68f0",
+      "replayed": false
+    }
+  },
+  "_meta": {
+    "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "d5b7e2ee-45ec-45e1-9d93-5aa114bb9df7",
+  "ok": true,
+  "result": {
+    "run": {
+      "id": "run_2969d06ac2f4",
+      "objective": "Deliver a truthful, polished, judge-ready implementation of the RealTags PRD on an isolated hackathon branch without changing main",
+      "home_database": "this_database",
+      "coordinator_handle": "term_68691400-44fa-48dd-a7c7-1aca01ddfe7e",
+      "coordinator_pane_key": "11b3d8b9-f73b-4178-86bb-7e833dc7acde:c1b8d902-2757-4582-af2c-979bfc1d63e6",
+      "consumer_generation": 1,
+      "legacy": 0,
+      "created_at": "2026-08-22T18:54:34Z",
+      "updated_at": "2026-08-22T18:54:34Z"
+    },
+    "binding": {
+      "consumerGeneration": 1
+    },
+    "mutation": {
+      "requestId": "f6b2abf2-2231-448e-8ed8-4265389b8fd2",
+      "replayed": false
+    }
+  },
+  "_meta": {
+    "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+  }
+}

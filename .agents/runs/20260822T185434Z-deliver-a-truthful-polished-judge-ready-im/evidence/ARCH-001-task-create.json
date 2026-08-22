@@ -1,0 +1,30 @@
+{
+  "id": "d6db75c9-9e43-4c19-bc32-f8443706dc03",
+  "ok": true,
+  "result": {
+    "task": {
+      "id": "task_0f3edd6b16d7",
+      "parent_id": null,
+      "created_by_terminal_handle": "term_68691400-44fa-48dd-a7c7-1aca01ddfe7e",
+      "task_title": "[ARCH-001] Freeze the hackathon product, data, and acceptance contracts",
+      "display_name": "[ARCH-001] Freeze the hackathon product, data, and acceptance contracts",
+      "spec": "# Logical task ARCH-001\n\nTitle: Freeze the hackathon product, data, and acceptance contracts\nTrack: architecture\nOrca Run: run_2969d06ac2f4\nFrozen BASE_REF: origin/fleet-control-hackathon-prize\nFrozen BASE_SHA: e7e4ee78826f213109955d345ed51a05839e4c0f\nExpected workspace/branch: trk-architecture-arch-001\n\n## Specification\n\nRead the full PRD, sanitized API catalog, current Flask implementation, tests, and visual handoff. Produce an implementation specification, technical specification, data-source contract, and P0 acceptance matrix. Optimize for a reliable three-minute demo, not production completeness. Public interfaces that can safely return useful behavior data take priority; mocks are placeholders only. Freeze Duolingo and GitHub public-live mappings. Define a LeetCode public-live mapping only if a bounded read-only profile query is verified during this task; otherwise mark only its transport as verified and keep its product mapping Fixture. Keep, NetEase, WeRead, Steam, and credentialed GitHub GraphQL stay Fixture or unavailable. Separate baseline facts, current public-live evidence, Fixture behavior, and Roadmap. Treat API_INTERFACE_CATALOG.md as immutable input and do not edit application code.\n\n## Acceptance\n\n- Every P0 PRD capability is mapped to evidence, a concrete gap, or an explicit non-goal\n- The data contract defines normalized tags and Public Live, Fixture, unavailable, timeout, invalid-input, malformed-response, and upstream-error states\n- The technical spec defines exact worker boundaries, risks, acceptance tests, and a three-minute judge path\n- No unsupported API, deployment, score, user, or business claim is presented as fact\n\n## Exact write paths\n\n- `docs/specs/**`\n- `docs/contracts/DATA_SOURCE_CONTRACT.md`\n- `docs/acceptance/**`\n\n## Required checks\n\n- `git diff --check`\n\n## Dependency evidence\n\n- None\n\n## Mandatory first commands\n\n```bash\npython scripts/gate.py init \\\n  --track architecture \\\n  --task ARCH-001 \\\n  --base e7e4ee78826f213109955d345ed51a05839e4c0f \\\n  --write-path \"docs/specs/**\" \\\n  --write-path \"docs/contracts/DATA_SOURCE_CONTRACT.md\" \\\n  --write-path \"docs/acceptance/**\" \\\n  --check \"git diff --check\"\npython scripts/gate.py check --preflight\n```\n\nThe Orca worker preamble contains the actual task_... and dispatch_... IDs. Use those exact IDs in worker_finish.py.\n\n---\n\n# Directory-Owner Worker\n\n你是目录轨道 Worker，不是总控，也不是集成者。\n\n## 必须先做\n\n任务 Prompt 会给出 `TRACK`、`LOGICAL_TASK_ID`、`BASE_SHA`、`WRITE_PATHS` 和检查命令。先执行 Prompt 中生成的 `gate.py init` 命令，再执行：\n\n```bash\npython scripts/gate.py check --preflight\n```\n\n## 工作边界\n\n- 可以读取全仓库，但只能写任务列出的 `WRITE_PATHS`。\n- 禁止切换分支、合并、Rebase、Force Push、Hard Reset。\n- 禁止修改其他轨道、公共契约、根依赖、锁文件、部署和 CI，除非它们明确位于当前 `WRITE_PATHS`。\n- 禁止全仓库格式化和无关重构。\n- 跨轨需求使用 Orca `ask`、`question` 或 `escalation`，不要代改。\n- 优先复用已有契约、Fixture、SDK 和成熟开源组件。\n\n## 提交节奏\n\n每个可验证增量：\n\n```bash\npython scripts/gate.py check --run-checks\ngit add <owned-paths>\ngit commit -m \"feat(<track>): <summary> [<LOGICAL_TASK_ID>]\"\ngit push -u origin HEAD\n```\n\n已 push 提交不得 amend、rebase 或 force push；错误用新提交或 `git revert`。\n\n## 最终完成\n\n确认检查通过、工作区干净、HEAD 与远端一致后：\n\n```bash\npython scripts/worker_finish.py \\\n  --logical-task <LOGICAL_TASK_ID> \\\n  --task-id <ORCA_TASK_ID> \\\n  --dispatch-id <ORCA_DISPATCH_ID> \\\n  --base <BASE_SHA> \\\n  --outcome succeeded \\\n  --summary \"完成内容、验证结果和剩余限制\"\n```\n\n失败也必须调用一次，使用 `--outcome failed`。发送 `worker_done` 后停止修改，等待新的 Dispatch。\n",
+      "status": "ready",
+      "deps": "[]",
+      "result": null,
+      "created_at": "2026-08-22 18:54:35",
+      "completed_at": null,
+      "run_id": "run_2969d06ac2f4",
+      "created_by_pane_key": "11b3d8b9-f73b-4178-86bb-7e833dc7acde:c1b8d902-2757-4582-af2c-979bfc1d63e6",
+      "created_by_process_incarnation": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/fleet-control-hackathon-prize@@7c5b6e5a:0b7f8e3a-22ff-4c3d-94ee-66051a9379d7",
+      "created_by_run_generation": 1
+    },
+    "mutation": {
+      "requestId": "e7cfef95-ae94-47b4-9c27-4a891666af87",
+      "replayed": false
+    }
+  },
+  "_meta": {
+    "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+  }
+}
