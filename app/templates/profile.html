@@ -29,6 +29,10 @@
       <div><p class="eyebrow">VERIFIED BEHAVIOR SIGNALS</p><h2 id="tag-title">我的真实标签</h2><p>按来源折叠整理；需要时再展开详情，不再让每个标签占据一整张大卡。</p></div>
       <div class="profile-truth-boundary">
         <span class="privacy-lock">SELF ONLY · 不会公开</span>
+        {% if tags|selectattr('data_mode', 'equalto', 'fixture')|list %}
+          <span class="status-pill status-neutral">演示数据 Fixture</span>
+          <p>用于演示流程，不是账号实况</p>
+        {% endif %}
         <p>先在连接页确认 Public Live、Fixture 或 unavailable 状态；本页只展示你的私密标签投影。</p>
       </div>
     </div>
