@@ -11,6 +11,6 @@
   "verification": {
     "git_diff_check": "passed",
     "secrets_recorded": false,
-    "remote_publication": "pending because GitHub connectivity is unavailable"
+    "remote_publication": "published and verified at b372e65306abc82b17e36959f532b6382df38901 by exact ls-remote SHA"
   }
 }

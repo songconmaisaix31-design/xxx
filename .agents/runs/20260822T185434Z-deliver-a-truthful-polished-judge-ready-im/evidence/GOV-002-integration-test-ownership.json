@@ -12,6 +12,6 @@
   "verification": {
     "kit_tests": "9 passed",
     "git_diff_check": "passed",
-    "remote_publication": "pending because GitHub connectivity failed twice"
+    "remote_publication": "published as ancestor of b372e65306abc82b17e36959f532b6382df38901 and verified by exact ls-remote SHA"
   }
 }
