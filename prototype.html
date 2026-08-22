@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>兴趣社交 · 可点击原型 V1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&display=swap" rel="stylesheet">
+<style>
+/* ===================================================================
+   设计变量 —— 严格取自 PRD 第 5 章「玩具箱风格」5.9 节
+   =================================================================== */
+:root{
+  --bg:#FFFCF0; --surface:#FFFFFF; --surface2:#FFE95C;
+  --text:#17150F; --dim:#6B675A;
+  --primary:#5B4DFF; --accent:#58CC02; --hot:#FF5A36; --disabled:#EFEDE4;
+
+  --radius:16px; --radius-sm:11px; --pill:999px;
+
+  --border:2.5px solid #17150F; --line:#17150F;
+  --shadow:6px 7px 0 #17150F;
+  --card-shadow:4px 5px 0 #17150F;
+  --shadow-hover:3px 4px 0 #17150F;
+  --shadow-active:0 0 0 #17150F;
+
+  --font-display:"Archivo","AlibabaPuHuiTi-3-105-Heavy","PingFang SC",sans-serif;
+  --font-body:"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",sans-serif;
+  --display-weight:800; --display-ls:-.03em; --body-weight:500; --label-ls:.04em;
+
+  --focus:3px solid #5B4DFF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-weight:var(--body-weight);
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit}
+:focus-visible{outline:var(--focus);outline-offset:2px}
+.num{font-family:var(--font-display);font-weight:var(--display-weight);letter-spacing:var(--display-ls)}
+.eyebrow{font-size:10.5px;letter-spacing:var(--label-ls);text-transform:uppercase;color:var(--dim);font-weight:600}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- 通用组件（PRD 5.6） ---------- */
+.btn{
+  padding:14px 22px;border-radius:var(--pill);background:var(--primary);color:#fff;
+  font-size:14.5px;font-weight:600;border:var(--border);box-shadow:var(--shadow);
+  transition:transform .14s ease,box-shadow .14s ease;min-height:44px;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.btn:active{transform:translate(3px,4px);box-shadow:var(--shadow-active)}
+.btn[disabled]{background:var(--disabled);color:var(--dim);box-shadow:none;cursor:not-allowed;transform:none}
+.btn.ghost{background:transparent;color:var(--dim);box-shadow:none}
+.btn.ghost:hover{background:var(--surface);transform:none}
+.btn.yellow{background:var(--surface2);color:var(--text)}
+.btn.block{width:100%}
+.card{
+  background:var(--surface);border:var(--border);border-radius:var(--radius);
+  box-shadow:var(--card-shadow);padding:24px;
+}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;letter-spacing:var(--label-ls);
+  padding:5px 11px;border-radius:var(--pill);background:var(--surface2);border:var(--border);
+}
+.badge{ /* 券 / 商家：橙底黑字，PRD 5.2 硬规则 */
+  display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;letter-spacing:var(--label-ls);
+  padding:5px 11px;border-radius:var(--pill);background:var(--hot);color:var(--text);border:var(--border);
+}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:11px;letter-spacing:var(--label-ls);text-transform:uppercase;
+  color:var(--dim);font-weight:600;margin-bottom:7px}
+.field input,.field select{
+  width:100%;padding:12px 14px;border-radius:var(--radius-sm);background:var(--bg);border:var(--border);
+  color:var(--text);font-size:13.5px;min-height:44px;
+}
+.field .row2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.pick{display:flex;flex-wrap:wrap;gap:8px}
+.pick button{
+  padding:10px 15px;border-radius:var(--pill);background:var(--bg);border:var(--border);
+  font-size:12.5px;color:var(--dim);min-height:44px;transition:transform .14s ease,box-shadow .14s ease;
+}
+.pick button:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.pick button[aria-pressed="true"]{background:var(--surface2);color:var(--text);font-weight:700;box-shadow:var(--card-shadow)}
+
+/* ===================================================================
+   屏幕容器
+   =================================================================== */
+.screen{display:none;height:100vh;overflow-y:auto}
+.screen.on{display:block}
+
+/* ---------- 登录 ---------- */
+.authwrap{min-height:100vh;display:grid;place-items:center;padding:30px}
+.authbox{width:min(430px,100%)}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.brand em{
+  width:52px;height:52px;border-radius:var(--radius-sm);background:var(--surface2);border:var(--border);
+  box-shadow:var(--card-shadow);display:grid;place-items:center;font-style:normal;font-size:26px;
+}
+.brand h1{font-size:26px;font-weight:600;letter-spacing:-.02em}
+.authbox .lead{font-size:13px;color:var(--dim);line-height:1.75;margin:14px 0 24px}
+.tabsw{display:flex;gap:0;margin-bottom:22px;border:var(--border);border-radius:var(--pill);overflow:hidden;
+  box-shadow:var(--card-shadow)}
+.tabsw button{flex:1;padding:13px;font-size:13.5px;font-weight:600;background:var(--surface);color:var(--dim);min-height:44px}
+.tabsw button[aria-selected="true"]{background:var(--surface2);color:var(--text)}
+.codeline{display:flex;gap:10px}
+.codeline input{flex:1}
+.codeline button{
+  flex:none;padding:0 17px;border-radius:var(--radius-sm);background:var(--surface2);border:var(--border);
+  font-size:12.5px;font-weight:700;box-shadow:var(--card-shadow);min-height:44px;
+}
+.codeline button:active{transform:translate(3px,4px);box-shadow:var(--shadow-active)}
+.authnote{font-size:11.5px;color:var(--dim);line-height:1.7;margin-top:16px;text-align:center}
+
+/* ---------- 引导填写 ---------- */
+.onwrap{min-height:100vh;display:grid;place-items:center;padding:30px}
+.onbox{width:min(660px,100%)}
+.steps{display:flex;align-items:center;gap:9px;margin-bottom:22px}
+.stepdot{
+  flex:1;height:9px;border-radius:var(--pill);background:var(--surface);border:1.5px solid var(--line);
+}
+.stepdot.done{background:var(--accent)}
+.onhead{margin-bottom:22px}
+.onhead .eyebrow{display:block;margin-bottom:8px}
+.onhead h2{font-size:23px;font-weight:600;letter-spacing:-.02em;margin-bottom:7px}
+.onhead p{font-size:13px;color:var(--dim);line-height:1.75}
+.onfoot{display:flex;gap:11px;margin-top:24px}
+.onfoot .btn{flex:1}
+.onfoot .btn.ghost{flex:0 0 110px}
+.reqmark{color:var(--hot);font-weight:700}
+
+/* 数据源授权 */
+.srcrow{
+  display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--radius-sm);
+  background:var(--bg);border:var(--border);margin-bottom:12px;
+}
+.srcrow .ic{
+  width:46px;height:46px;border-radius:var(--radius-sm);background:var(--surface2);border:var(--border);
+  display:grid;place-items:center;font-size:23px;flex:none;
+}
+.srcrow .t{flex:1;min-width:0}
+.srcrow h4{font-size:14px;font-weight:600;margin-bottom:3px}
+.srcrow p{font-size:11.5px;color:var(--dim);line-height:1.6}
+.srcrow .act{
+  flex:none;padding:9px 15px;border-radius:var(--pill);background:var(--surface2);border:var(--border);
+  font-size:12px;font-weight:700;box-shadow:var(--card-shadow);min-height:44px;
+}
+.srcrow .act:active{transform:translate(3px,4px);box-shadow:var(--shadow-active)}
+.srcrow.linked{background:var(--surface2)}
+.srcrow.linked .ic{background:var(--surface)}
+.srcrow .ok{flex:none;font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.srcrow .ok s{text-decoration:none;width:20px;height:20px;border-radius:50%;background:var(--accent);
+  border:2px solid var(--line);display:grid;place-items:center;font-size:11px;color:var(--text)}
+.gentags{margin-top:18px;padding:16px;border-radius:var(--radius-sm);background:var(--bg);border:var(--border)}
+.gentags .eyebrow{display:block;margin-bottom:11px}
+.tagflow{display:flex;flex-wrap:wrap;gap:8px}
+.tagflow .chip{opacity:0;transform:translateY(6px);transition:opacity .3s ease,transform .3s ease}
+.tagflow .chip.in{opacity:1;transform:none}
+
+/* ===================================================================
+   应用外壳
+   =================================================================== */
+.app{display:grid;grid-template-rows:60px 1fr;height:100vh}
+.topbar{display:flex;align-items:center;gap:16px;padding:0 22px;border-bottom:2.5px solid var(--line);background:var(--surface)}
+.topbar .logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;letter-spacing:-.01em}
+.topbar .logo em{
+  width:30px;height:30px;border-radius:9px;background:var(--surface2);border:var(--border);
+  display:grid;place-items:center;font-style:normal;font-size:15px;
+}
+.topbar .sp{flex:1}
+.topbar .who{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--dim)}
+.topbar .who i{
+  width:32px;height:32px;border-radius:50%;background:var(--surface2);border:var(--border);
+  display:grid;place-items:center;font-style:normal;font-size:13px;color:var(--text);font-weight:700;
+}
+.main{display:grid;grid-template-columns:216px 1fr;overflow:hidden}
+.side{border-right:2.5px solid var(--line);background:var(--surface);padding:18px 12px;display:flex;flex-direction:column;gap:5px}
+.nav{
+  display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:var(--radius-sm);
+  font-size:14px;color:var(--dim);width:100%;text-align:left;min-height:44px;
+  transition:transform .14s ease,box-shadow .14s ease;border:2.5px solid transparent;
+}
+.nav:hover{background:var(--bg)}
+.nav em{font-style:normal;font-size:17px;width:22px;text-align:center}
+.nav[aria-current="page"]{
+  background:var(--surface2);color:var(--text);font-weight:700;border:var(--border);box-shadow:var(--card-shadow);
+}
+.nav b{margin-left:auto;font-size:10.5px;background:var(--hot);color:var(--text);border:1.5px solid var(--line);
+  padding:1px 7px;border-radius:var(--pill);font-weight:700}
+.side .tip{
+  margin-top:auto;padding:13px;border-radius:var(--radius-sm);background:var(--surface2);border:var(--border);
+  font-size:11px;line-height:1.7;font-weight:600;
+}
+.page{overflow-y:auto;padding:26px 30px 44px}
+.page[hidden]{display:none}
+.phead{margin-bottom:22px}
+.phead h1{font-size:23px;font-weight:600;letter-spacing:-.02em;margin-bottom:6px}
+.phead p{font-size:13px;color:var(--dim);line-height:1.75}
+
+/* ---------- 首页 ---------- */
+.hello{margin-bottom:24px}
+.hello h1{font-size:27px;font-weight:600;letter-spacing:-.02em;margin-bottom:8px}
+.hello p{font-size:13.5px;color:var(--dim);line-height:1.75}
+.statrow{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:26px}
+.stat{
+  padding:14px 19px;border-radius:var(--radius-sm);background:var(--surface);border:var(--border);
+  box-shadow:var(--card-shadow);display:flex;align-items:baseline;gap:9px;
+}
+.stat b{font-family:var(--font-display);font-weight:var(--display-weight);font-size:22px;letter-spacing:var(--display-ls)}
+.stat span{font-size:12px;color:var(--dim)}
+.modgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px}
+.mod{
+  text-align:left;padding:28px;border-radius:var(--radius);background:var(--surface);border:var(--border);
+  box-shadow:var(--card-shadow);transition:transform .14s ease,box-shadow .14s ease;
+  display:flex;flex-direction:column;min-height:270px;
+}
+.mod:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.mod:active{transform:translate(3px,4px);box-shadow:var(--shadow-active)}
+.mod.hi{background:var(--surface2)}
+.mod .ico{
+  width:60px;height:60px;border-radius:var(--radius-sm);background:var(--bg);border:var(--border);
+  display:grid;place-items:center;font-size:29px;margin-bottom:18px;
+}
+.mod.hi .ico{background:var(--surface)}
+.mod h2{font-size:20px;font-weight:600;letter-spacing:-.01em;margin-bottom:9px}
+.mod p{font-size:13px;color:var(--dim);line-height:1.75;margin-bottom:16px}
+.mod.hi p{color:var(--text);opacity:.72}
+.mod .go{
+  margin-top:auto;display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;
+  padding:11px 18px;border-radius:var(--pill);background:var(--primary);color:#fff;border:var(--border);
+  box-shadow:var(--card-shadow);align-self:flex-start;
+}
+.mod .meta{font-size:11px;color:var(--dim);letter-spacing:var(--label-ls);font-weight:600;margin-top:12px}
+.mod.hi .meta{color:var(--text);opacity:.65}
+
+/* ---------- 匹配 ---------- */
+.mstate{display:none}
+.mstate.on{display:block}
+.midle{max-width:620px}
+.midle .card{text-align:center}
+.bigico{
+  width:92px;height:92px;margin:4px auto 20px;border-radius:var(--radius-sm);background:var(--surface2);
+  border:var(--border);box-shadow:var(--card-shadow);display:grid;place-items:center;font-size:44px;
+}
+.midle h2{font-size:21px;font-weight:600;margin-bottom:10px}
+.midle .desc{font-size:13.5px;color:var(--dim);line-height:1.8;margin-bottom:20px}
+.rules{text-align:left;margin:0 0 22px;padding:16px;border-radius:var(--radius-sm);background:var(--bg);border:var(--border)}
+.rules li{list-style:none;font-size:12.5px;line-height:1.7;padding-left:22px;position:relative;margin-bottom:8px}
+.rules li:last-child{margin-bottom:0}
+.rules li::before{content:"◆";position:absolute;left:0;color:var(--primary);font-size:11px}
+
+/* 匹配中 */
+.calc{max-width:540px}
+.calcbox{text-align:center;padding:34px 26px}
+.spinner{
+  width:74px;height:74px;margin:0 auto 24px;border-radius:50%;
+  border:6px solid var(--surface2);border-top-color:var(--primary);
+  animation:spin .85s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.calcbox h2{font-size:19px;font-weight:600;margin-bottom:22px}
+.calcsteps{text-align:left;display:flex;flex-direction:column;gap:11px}
+.cstep{
+  display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:var(--radius-sm);
+  background:var(--bg);border:var(--border);font-size:13px;opacity:.4;transition:opacity .3s ease,background .3s ease;
+}
+.cstep.on{opacity:1;background:var(--surface2)}
+.cstep i{
+  width:24px;height:24px;flex:none;border-radius:50%;background:var(--surface);border:2px solid var(--line);
+  display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;
+}
+.cstep.on i{background:var(--accent)}
+
+/* 匹配结果 */
+.mres{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:1080px){.mres{grid-template-columns:1fr}}
+.ring{
+  width:208px;height:208px;margin:2px auto 20px;border-radius:50%;display:grid;place-items:center;text-align:center;
+  background:var(--bg);border:var(--border);box-shadow:var(--card-shadow);position:relative;
+}
+.ring::before{
+  content:"";position:absolute;inset:-2.5px;border-radius:50%;
+  background:conic-gradient(var(--accent) 0 var(--pct,87%),transparent var(--pct,87%));
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px));
+          mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px));
+}
+.ring b{font-size:64px;line-height:1;display:block}
+.ring i{font-style:normal;font-size:24px;opacity:.55}
+.ring small{display:block;font-size:10.5px;color:var(--dim);letter-spacing:var(--label-ls);
+  font-weight:600;margin-top:8px;text-transform:uppercase}
+.rescopy{text-align:center;margin-bottom:20px}
+.rescopy h2{font-size:19px;font-weight:600;margin-bottom:9px}
+.rescopy p{font-size:13px;color:var(--dim);line-height:1.75}
+.qgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin:13px 0 20px}
+.q{
+  aspect-ratio:3/4;border-radius:var(--radius-sm);background:var(--surface2);border:var(--border);
+  box-shadow:var(--card-shadow);display:grid;place-items:center;padding:8px;text-align:center;
+  font-family:var(--font-display);font-weight:var(--display-weight);font-size:27px;color:var(--dim);
+  transition:transform .26s cubic-bezier(.34,1.56,.64,1),box-shadow .14s ease;
+}
+.q:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover)}
+.q.open{font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--text);line-height:1.45}
+.brow{display:flex;gap:11px}
+.brow .btn{flex:1}
+.brow .btn.ghost{flex:0 0 128px}
+.anon{
+  display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--radius-sm);
+  background:var(--surface2);border:var(--border);margin-bottom:18px;
+}
+.anon .face{
+  width:54px;height:54px;border-radius:50%;background:var(--surface);border:var(--border);
+  display:grid;place-items:center;font-size:25px;flex:none;
+}
+.anon h3{font-size:15px;font-weight:700;margin-bottom:4px}
+.anon p{font-size:11.5px;line-height:1.6;opacity:.72}
+.lockrow{display:flex;flex-direction:column;gap:10px}
+.lock{display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:var(--radius-sm);
+  background:var(--bg);border:var(--border);font-size:12.5px}
+.lock em{font-style:normal;font-size:15px}
+.lock span{color:var(--dim)}
+.lock b{margin-left:auto;font-size:11px;font-weight:700}
+.note{
+  margin-top:18px;padding:15px;border-radius:var(--radius-sm);background:var(--surface2);border:var(--border);
+  font-size:12px;line-height:1.75;
+}
+
+/* ---------- 消息 ---------- */
+.chatwrap{
+  display:grid;grid-template-columns:264px 1fr;border:var(--border);border-radius:var(--radius);
+  overflow:hidden;background:var(--surface);box-shadow:var(--card-shadow);height:calc(100vh - 60px - 70px - 44px);
+  min-height:470px;
+}
+.convs{border-right:2.5px solid var(--line);overflow-y:auto}
+.conv{
+  display:flex;gap:11px;align-items:center;padding:14px 15px;width:100%;text-align:left;
+  border-bottom:2.5px solid var(--line);min-height:44px;
+}
+.conv:hover{background:var(--bg)}
+.conv[aria-current="true"]{background:var(--surface2)}
+.conv .face{
+  width:38px;height:38px;border-radius:50%;background:var(--bg);border:var(--border);flex:none;
+  display:grid;place-items:center;font-size:17px;
+}
+.conv .t{flex:1;min-width:0}
+.conv h4{font-size:13.5px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv p{font-size:11.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv .pct{font-size:12.5px;font-weight:800;font-family:var(--font-display);flex:none}
+.chatmain{display:flex;flex-direction:column;min-width:0}
+.chead{padding:13px 20px;border-bottom:2.5px solid var(--line);display:flex;align-items:center;gap:12px;flex:none}
+.chead .face{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:var(--border);
+  display:grid;place-items:center;font-size:17px;flex:none}
+.chead h3{font-size:15px;font-weight:700}
+.chead .stage{margin-left:auto;font-size:11px;font-weight:700;padding:5px 11px;border-radius:var(--pill);
+  background:var(--surface2);border:var(--border)}
+.prog{padding:13px 20px;border-bottom:2.5px solid var(--line);flex:none;background:var(--bg)}
+.prog .r{display:flex;justify-content:space-between;font-size:11.5px;color:var(--dim);margin-bottom:8px}
+.prog .r b{color:var(--text);font-weight:700}
+.bar{height:9px;border-radius:var(--pill);background:var(--surface);border:1.5px solid var(--line);overflow:hidden}
+.bar span{display:block;height:100%;background:var(--accent)}
+.stream{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:13px;background:var(--bg)}
+.msg{max-width:64%;padding:12px 15px;font-size:13.5px;line-height:1.6;border-radius:var(--radius-sm);border:var(--border)}
+.msg.you{background:var(--surface);align-self:flex-start;box-shadow:var(--card-shadow)}
+.msg.me{background:var(--primary);color:#fff;align-self:flex-end;box-shadow:var(--card-shadow)}
+.syscard{
+  align-self:center;width:100%;max-width:400px;padding:17px;border-radius:var(--radius-sm);
+  background:var(--surface2);border:var(--border);box-shadow:var(--card-shadow);text-align:center;
+}
+.syscard .big{font-size:38px;display:block;margin-bottom:8px}
+.syscard p{font-size:13.5px;font-weight:700;line-height:1.55;margin-top:6px}
+/* 破冰工具箱：仅展示，点击链路由其他同学接入 */
+.toolbox{flex:none;border-top:2.5px solid var(--line);padding:15px 20px;background:var(--surface)}
+.toolbox .hd{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.toolbox .hd .eyebrow{flex:1}
+.todo{font-size:9.5px;font-weight:700;letter-spacing:var(--label-ls);padding:4px 9px;border-radius:var(--pill);
+  background:var(--hot);color:var(--text);border:1.5px solid var(--line)}
+.toolgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:11px}
+.toolgrid button{
+  padding:14px 6px;border-radius:var(--radius-sm);background:var(--bg);border:var(--border);
+  box-shadow:var(--card-shadow);font-size:11px;font-weight:700;line-height:1.5;
+  transition:transform .14s ease,box-shadow .14s ease;min-height:44px;
+}
+.toolgrid button:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.toolgrid button:active{transform:translate(3px,4px);box-shadow:var(--shadow-active)}
+.toolgrid em{display:block;font-style:normal;font-size:25px;margin-bottom:6px}
+.composer{flex:none;padding:13px 20px;border-top:2.5px solid var(--line);display:flex;gap:10px;align-items:center}
+.composer .fake{flex:1;padding:12px 16px;border-radius:var(--pill);background:var(--bg);border:var(--border);
+  font-size:13px;color:var(--dim)}
+
+/* ---------- 我的标签 ---------- */
+.tagsgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:20px;align-items:start}
+@media(max-width:1080px){.tagsgrid{grid-template-columns:1fr}}
+.tagwall{display:flex;flex-wrap:wrap;gap:9px}
+.tg{
+  display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:var(--pill);
+  background:var(--surface2);border:var(--border);font-size:12px;font-weight:700;box-shadow:var(--card-shadow);
+}
+.tg s{text-decoration:none;font-size:9px;font-weight:700;letter-spacing:.03em;padding:2px 7px;
+  border-radius:var(--pill);background:var(--accent);color:var(--text);border:1.5px solid var(--line)}
+.tg.self{background:var(--surface)}
+.tg.self s{background:var(--disabled);color:var(--dim)}
+
+/* ---------- 活动广场 ---------- */
+.filters{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+.fchip{
+  font-size:12.5px;font-weight:600;padding:11px 16px;border-radius:var(--pill);background:var(--surface);
+  border:var(--border);color:var(--dim);min-height:44px;transition:transform .14s ease,box-shadow .14s ease;
+}
+.fchip:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.fchip[aria-pressed="true"]{background:var(--surface2);color:var(--text);font-weight:700;box-shadow:var(--card-shadow)}
+.filters .sp{flex:1}
+.egrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(296px,1fr));gap:18px}
+.ecard{
+  background:var(--surface);border:var(--border);border-radius:var(--radius);box-shadow:var(--card-shadow);
+  padding:19px;display:flex;flex-direction:column;
+}
+.ecard.mine{background:var(--surface2)}
+.ehost{display:flex;align-items:center;gap:8px;font-size:10.5px;letter-spacing:var(--label-ls);
+  color:var(--dim);font-weight:700;margin-bottom:11px;text-transform:uppercase}
+.ecard.mine .ehost{color:var(--text)}
+.etop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.etop h3{font-size:16px;font-weight:700;line-height:1.42;letter-spacing:-.01em}
+.score{flex:none;text-align:center;padding:8px 11px;border-radius:var(--radius-sm);background:var(--bg);border:var(--border)}
+.ecard.mine .score{background:var(--surface)}
+.score b{font-family:var(--font-display);font-weight:var(--display-weight);font-size:19px;line-height:1;display:block}
+.score small{font-size:8.5px;color:var(--dim);letter-spacing:var(--label-ls);font-weight:700}
+.emeta{font-size:12.5px;color:var(--dim);line-height:1.9}
+.ecard.mine .emeta{color:var(--text);opacity:.75}
+.echips{display:flex;gap:7px;flex-wrap:wrap;margin:13px 0}
+.ecard.mine .chip{background:var(--surface)}
+.eseats{display:flex;align-items:center;gap:9px;font-size:11.5px;color:var(--dim);margin-top:auto;padding-top:12px}
+.ecard.mine .eseats{color:var(--text);opacity:.75}
+.avs{display:flex}
+.avs i{width:25px;height:25px;border-radius:50%;background:var(--bg);border:2px solid var(--line);
+  margin-left:-8px;display:grid;place-items:center;font-size:10px;font-style:normal;font-weight:700;color:var(--dim)}
+.avs i:first-child{margin-left:0}
+.eacts{display:flex;gap:9px;margin-top:13px}
+.joinbtn{
+  flex:1;padding:12px;border-radius:var(--pill);background:var(--primary);color:#fff;font-size:13.5px;
+  font-weight:700;border:var(--border);box-shadow:var(--card-shadow);min-height:44px;
+  transition:transform .14s ease,box-shadow .14s ease;
+}
+.joinbtn:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.joinbtn:active{transform:translate(3px,4px);box-shadow:var(--shadow-active)}
+.joinbtn.done{background:var(--disabled);color:var(--dim);box-shadow:none;transform:none}
+.joinbtn.full{background:var(--accent);color:var(--text)}
+.detbtn{
+  flex:0 0 74px;padding:12px;border-radius:var(--pill);background:var(--surface);border:var(--border);
+  font-size:12.5px;font-weight:700;min-height:44px;box-shadow:var(--card-shadow);
+}
+.detbtn:active{transform:translate(3px,4px);box-shadow:var(--shadow-active)}
+
+/* ---------- 弹窗 / toast ---------- */
+.mask{position:fixed;inset:0;background:rgba(23,21,15,.62);display:none;place-items:center;z-index:80;padding:24px}
+.mask.on{display:grid}
+.modal{
+  width:min(580px,100%);max-height:88vh;overflow-y:auto;background:var(--surface);border:var(--border);
+  border-radius:var(--radius);box-shadow:var(--shadow);padding:26px;
+}
+.modal h2{font-size:20px;font-weight:600;letter-spacing:-.01em;margin-bottom:7px}
+.modal .lead{font-size:12.5px;color:var(--dim);line-height:1.75;margin-bottom:20px}
+.mfoot{display:flex;gap:11px;margin-top:22px}
+.mfoot .btn{flex:1}
+.mfoot .btn.ghost{flex:0 0 110px}
+.rng{display:flex;align-items:center;gap:14px}
+.rng input[type=range]{flex:1;accent-color:var(--hot);min-height:44px}
+.rng b{font-family:var(--font-display);font-weight:var(--display-weight);font-size:18px;min-width:58px}
+.vis{padding:15px;border-radius:var(--radius-sm);background:var(--surface2);border:var(--border);
+  font-size:12px;line-height:1.75;margin-top:4px}
+.vis b{display:block;margin-bottom:5px}
+.toast{
+  position:fixed;left:50%;top:26px;transform:translate(-50%,-160%);z-index:95;
+  padding:14px 24px;border-radius:var(--pill);background:var(--surface2);color:var(--text);border:var(--border);
+  box-shadow:var(--shadow);font-size:13.5px;font-weight:700;
+  transition:transform .38s cubic-bezier(.34,1.4,.64,1);
+}
+.toast.on{transform:translate(-50%,0)}
+
+@media(max-width:1080px){
+  .main{grid-template-columns:74px 1fr}
+  .nav span,.side .tip{display:none}
+  .nav{justify-content:center}
+  .chatwrap{grid-template-columns:1fr}
+  .convs{display:none}
+}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;animation:none!important}
+  .btn:hover,.mod:hover,.q:hover,.fchip:hover,.joinbtn:hover,.toolgrid button:hover{transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= 1. 登录 / 注册 ================= -->
+<section class="screen on" id="s-auth">
+  <div class="authwrap"><div class="authbox">
+    <div class="brand"><em>◐</em><h1>还没起名</h1></div>
+    <p class="lead">用你在别的 App 里的真实数据找人。匹配时只看到一个百分比，聊下去才知道对方是谁。</p>
+    <div class="tabsw" role="tablist" aria-label="登录或注册">
+      <button role="tab" id="tabReg" aria-selected="true">注册</button>
+      <button role="tab" id="tabLogin" aria-selected="false">登录</button>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label for="phone">手机号 <span class="reqmark">*</span></label>
+        <input id="phone" type="tel" inputmode="numeric" placeholder="138 0000 0000" value="138 0000 0000">
+      </div>
+      <div class="field">
+        <label for="code">验证码 <span class="reqmark">*</span></label>
+        <div class="codeline">
+          <input id="code" inputmode="numeric" placeholder="6 位验证码" value="123456">
+          <button id="sendCode">获取验证码</button>
+        </div>
+      </div>
+      <button class="btn block" id="authGo">注册并填写资料</button>
+      <p class="authnote">发起线下约饭需要手机号验证，这是安全要求。</p>
+    </div>
+  </div></div>
+</section>
+
+<!-- ================= 2. 填写个人信息 ================= -->
+<section class="screen" id="s-onboard">
+  <div class="onwrap"><div class="onbox">
+    <div class="steps" aria-hidden="true">
+      <div class="stepdot done" id="d1"></div><div class="stepdot" id="d2"></div><div class="stepdot" id="d3"></div>
+    </div>
+
+    <!-- 步骤 1 -->
+    <div class="ostep on" id="o1">
+      <div class="onhead">
+        <span class="eyebrow">第 1 步 / 3</span>
+        <h2>先填三项基础信息</h2>
+        <p>年龄和性别只用来筛选候选池，不参与匹配度计算，也不会展示给对方。</p>
+      </div>
+      <div class="card">
+        <div class="field row2" style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+          <div><label for="birth">出生年份 <span class="reqmark">*</span></label>
+            <input id="birth" inputmode="numeric" value="1998"></div>
+          <div><label for="city">城市 <span class="reqmark">*</span></label>
+            <select id="city"><option>上海</option><option>北京</option><option>深圳</option><option>杭州</option><option>成都</option><option>海外</option></select></div>
+        </div>
+        <div class="field">
+          <label>我的性别 <span class="reqmark">*</span></label>
+          <div class="pick" id="gender" data-single="1">
+            <button aria-pressed="true">女</button><button aria-pressed="false">男</button><button aria-pressed="false">不愿透露</button>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>希望匹配 <span class="reqmark">*</span></label>
+          <div class="pick" id="want" data-single="1">
+            <button aria-pressed="false">女</button><button aria-pressed="false">男</button><button aria-pressed="true">不限</button>
+          </div>
+        </div>
+      </div>
+      <div class="onfoot"><button class="btn block" data-next="2">下一步</button></div>
+    </div>
+
+    <!-- 步骤 2 -->
+    <div class="ostep" id="o2" hidden>
+      <div class="onhead">
+        <span class="eyebrow">第 2 步 / 3</span>
+        <h2>你想找什么样的人</h2>
+        <p>交友目的是匹配里权重最高的自填项。其余几项只做微调，填不填都行。</p>
+      </div>
+      <div class="card">
+        <div class="field">
+          <label>交友目的 <span class="reqmark">*</span>（可多选）</label>
+          <div class="pick" id="purpose">
+            <button aria-pressed="true">学习搭子</button><button aria-pressed="false">运动搭子</button>
+            <button aria-pressed="false">聊天倾诉</button><button aria-pressed="false">兴趣同好</button>
+            <button aria-pressed="false">饭搭子</button><button aria-pressed="false">随便聊聊</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>兴趣爱好（可多选）</label>
+          <div class="pick" id="hobby">
+            <button aria-pressed="true">阅读</button><button aria-pressed="false">音乐</button><button aria-pressed="false">影视</button>
+            <button aria-pressed="false">游戏</button><button aria-pressed="false">健身</button><button aria-pressed="false">旅行</button>
+            <button aria-pressed="false">摄影</button><button aria-pressed="false">美食</button><button aria-pressed="false">二次元</button>
+            <button aria-pressed="false">宠物</button>
+          </div>
+        </div>
+        <div class="field row2" style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+          <div><label for="mbti">MBTI</label>
+            <select id="mbti"><option>INFP</option><option>INFJ</option><option>ENFP</option><option>INTJ</option><option>ENTJ</option><option>ISFJ</option><option>不知道</option></select></div>
+          <div><label for="zodiac">星座</label>
+            <select id="zodiac"><option>白羊</option><option>金牛</option><option>双子</option><option>巨蟹</option><option>狮子</option><option>处女</option><option>天秤</option><option>天蝎</option><option>射手</option><option>摩羯</option><option>水瓶</option><option>双鱼</option></select></div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>作息类型</label>
+          <div class="pick" id="rhythm" data-single="1">
+            <button aria-pressed="false">早鸟</button><button aria-pressed="false">正常</button><button aria-pressed="true">夜猫子</button>
+          </div>
+        </div>
+      </div>
+      <div class="onfoot">
+        <button class="btn ghost" data-next="1">上一步</button>
+        <button class="btn" data-next="3">下一步</button>
+      </div>
+    </div>
+
+    <!-- 步骤 3 -->
+    <div class="ostep" id="o3" hidden>
+      <div class="onhead">
+        <span class="eyebrow">第 3 步 / 3</span>
+        <h2>连接你在用的 App</h2>
+        <p>标签会自动生成，不用手填。这些标签只有你自己看得到，对方永远看不到。</p>
+      </div>
+      <div class="card">
+        <div class="srcrow" data-src="duo">
+          <div class="ic">🦜</div>
+          <div class="t"><h4>多邻国 Duolingo</h4><p>可获取：在学语种、连续打卡天数、学习时段、等级</p></div>
+          <button class="act">连接</button>
+        </div>
+        <div class="srcrow" data-src="keep">
+          <div class="ic">🏃</div>
+          <div class="t"><h4>Keep</h4><p>可获取：运动类型、周频次、累计运动量、运动时段</p></div>
+          <button class="act">连接</button>
+        </div>
+        <div class="srcrow" data-src="music">
+          <div class="ic">🎵</div>
+          <div class="t"><h4>音乐 App</h4><p>可获取：音乐口味标签（V2 支持）</p></div>
+          <button class="act" disabled style="background:var(--disabled);color:var(--dim);box-shadow:none">暂不支持</button>
+        </div>
+        <div class="gentags" id="genBox" hidden>
+          <span class="eyebrow">已自动生成的标签 <b class="num" id="genCount">0</b> 个</span>
+          <div class="tagflow" id="tagFlow"></div>
+        </div>
+      </div>
+      <div class="onfoot">
+        <button class="btn ghost" data-next="2">上一步</button>
+        <button class="btn" id="finishOn">完成，进入首页</button>
+      </div>
+    </div>
+  </div></div>
+</section>
+
+<!-- ================= 3. 应用主体 ================= -->
+<section class="screen" id="s-app">
+<div class="app">
+  <header class="topbar">
+    <div class="logo"><em>◐</em>还没起名</div>
+    <div class="sp"></div>
+    <div class="who"><i>我</i><span id="whoName">夜行的水獺</span></div>
+  </header>
+  <div class="main">
+    <nav class="side" aria-label="主导航">
+      <button class="nav" data-page="home" aria-current="page"><em>⌂</em><span>首页</span></button>
+      <button class="nav" data-page="match"><em>◐</em><span>匹配</span></button>
+      <button class="nav" data-page="events"><em>◈</em><span>活动广场</span></button>
+      <button class="nav" data-page="msg"><em>◍</em><span>消息</span><b id="msgDot">1</b></button>
+      <button class="nav" data-page="tags"><em>◎</em><span>我的标签</span></button>
+      <div class="tip">你的标签只有你能看到。<br>对方只会看到一个百分比。</div>
+    </nav>
+
+    <!-- 首页 -->
+    <div class="page" id="p-home">
+      <div class="hello">
+        <h1>今天想认识什么样的人？</h1>
+        <p>两条路：一对一匿名匹配，或者约一桌同频的人吃饭。</p>
+      </div>
+      <div class="statrow">
+        <div class="stat"><b>12</b><span>个真实标签</span></div>
+        <div class="stat"><b>2</b><span>个已连接的 App</span></div>
+        <div class="stat"><b>971</b><span>天日语打卡</span></div>
+      </div>
+      <div class="modgrid">
+        <button class="mod" data-page="match">
+          <div class="ico">◐</div>
+          <h2>匹配</h2>
+          <p>系统按你的真实标签算出匹配度。你只会看到一个百分比，看不到照片、年龄和标签——聊下去才慢慢解锁。</p>
+          <span class="go">开始匹配 →</span>
+          <span class="meta">1 对 1 · 全程匿名</span>
+        </button>
+        <button class="mod hi" data-page="events">
+          <div class="ico">◈</div>
+          <h2>活动广场</h2>
+          <p>3–10 人的线下兴趣饭局，不是相亲。以共同兴趣为钩子，压力被人数分散。餐厅发起的局还有折扣。</p>
+          <span class="go">去逛逛 →</span>
+          <span class="meta">多人 · 线下 · 有商家优惠</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 匹配 -->
+    <div class="page" id="p-match" hidden>
+      <!-- 状态 1：待匹配 -->
+      <div class="mstate on" id="m-idle">
+        <div class="phead"><h1>匹配</h1><p>匹配度是算出来的，但匹配在哪里，得聊出来。</p></div>
+        <div class="midle"><div class="card">
+          <div class="bigico">◐</div>
+          <h2>准备好了就开始</h2>
+          <p class="desc">系统会先按年龄和希望匹配性别筛出候选池，<br>再用你的真实标签算出匹配度。</p>
+          <ul class="rules">
+            <li>你只会看到一个匹配度百分比，看不到对方的照片、年龄、学历</li>
+            <li>匹配点位初始全是「？」，靠聊天一个一个解锁</li>
+            <li>你的标签和匹配偏好，对方永远看不到</li>
+          </ul>
+          <button class="btn block" id="startMatch">开始匹配</button>
+        </div></div>
+      </div>
+
+      <!-- 状态 2：匹配中 -->
+      <div class="mstate" id="m-calc">
+        <div class="phead"><h1>正在匹配</h1><p>算法在跑，稍等一下。</p></div>
+        <div class="calc"><div class="card calcbox">
+          <div class="spinner" role="status"><span class="sr">正在匹配</span></div>
+          <h2>正在为你寻找同频的人</h2>
+          <div class="calcsteps">
+            <div class="cstep" id="cs1"><i>1</i>按年龄、希望匹配性别筛选候选池</div>
+            <div class="cstep" id="cs2"><i>2</i>逐标签计算相似度</div>
+            <div class="cstep" id="cs3"><i>3</i>加权求和，得出匹配度</div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 状态 3：匹配结果 -->
+      <div class="mstate" id="m-res">
+        <div class="phead"><h1>匹配成功</h1><p>点开下面的「？」看看效果——正式版里它们要靠聊天解锁。</p></div>
+        <div class="mres">
+          <div class="card">
+            <div class="ring" id="ring"><div><b class="num" id="pctNum">87</b><i class="num">%</i><small>匹配度</small></div></div>
+            <div class="rescopy">
+              <h2>你们有 <span class="num" id="qCount">4</span> 个隐藏共同点</h2>
+              <p>现在你看不到 TA 的照片、年龄和标签。<br>聊下去，共同点会一个一个亮起来。</p>
+            </div>
+            <p class="eyebrow">待解锁的共同点</p>
+            <div class="qgrid" id="qgrid"></div>
+            <div class="brow">
+              <button class="btn" id="toChat">开始匿名聊天</button>
+              <button class="btn ghost" id="again">换一个</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="anon">
+              <div class="face" id="anonFace">🦉</div>
+              <div><h3 id="anonName">夜行的猫头鹰</h3><p>系统生成的匿名代号 · 真实资料未解锁</p></div>
+            </div>
+            <p class="eyebrow" style="margin-bottom:11px">解锁路径</p>
+            <div class="lockrow">
+              <div class="lock"><em>🌐</em><span>城市、年龄段</span><b>聊满 1 天</b></div>
+              <div class="lock"><em>🖼️</em><span>模糊头像、兴趣类别</span><b>聊满 3 天</b></div>
+              <div class="lock"><em>👤</em><span>清晰头像、完整标签</span><b>聊满 7 天</b></div>
+              <div class="lock"><em>💬</em><span>交换联系方式</span><b>共同点全解锁</b></div>
+            </div>
+            <div class="note">平台不会替你揭面。对方的资料由聊天进度决定何时解锁，你的标签也同样对 TA 隐藏。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 消息 -->
+    <div class="page" id="p-msg" hidden>
+      <div class="phead">
+        <h1>消息</h1>
+        <p>匿名会话。下方破冰工具箱已按设计稿呈现，游戏点击链路由其他同学接入。</p>
+      </div>
+      <div class="chatwrap">
+        <div class="convs" id="convs">
+          <button class="conv" aria-current="true" data-conv="owl">
+            <div class="face">🦉</div>
+            <div class="t"><h4>夜行的猫头鹰</h4><p>那我们算是同类了</p></div>
+            <span class="pct">87%</span>
+          </button>
+          <button class="conv" data-conv="hedgehog">
+            <div class="face">🦔</div>
+            <div class="t"><h4>迷路的刺猬</h4><p>你也在学日语？</p></div>
+            <span class="pct">79%</span>
+          </button>
+        </div>
+        <div class="chatmain">
+          <div class="chead">
+            <div class="face" id="cFace">🦉</div>
+            <h3 id="cName">夜行的猫头鹰</h3>
+            <span class="stage">L1 初识</span>
+          </div>
+          <div class="prog">
+            <div class="r"><span>关系进度</span><b>还差 2 天解锁模糊头像</b></div>
+            <div class="bar"><span style="width:38%"></span></div>
+          </div>
+          <div class="stream" id="stream">
+            <div class="msg you">刚看到我们匹配度 87%，好高啊</div>
+            <div class="msg me">是啊 但我完全猜不到你是谁哈哈</div>
+            <div class="syscard">
+              <span class="big">🎲</span>
+              <span class="eyebrow">骰子话题 · 掷出 4 点</span>
+              <p>说一件你坚持了超过一年的小事</p>
+            </div>
+            <div class="msg you">我先来——每天背单词，971 天了</div>
+            <div class="msg me">巧了，我也在背，不过是日语</div>
+            <div class="msg you">那我们算是同类了</div>
+          </div>
+          <div class="toolbox">
+            <div class="hd">
+              <span class="eyebrow">破冰工具箱</span>
+              <span class="todo">点击链路待接入</span>
+            </div>
+            <div class="toolgrid">
+              <button data-todo="摇骰子"><em>🎲</em>摇骰子</button>
+              <button data-todo="抽任务卡"><em>🃏</em>抽任务卡</button>
+              <button data-todo="解锁共同点"><em>🔓</em>解锁共同点</button>
+              <button data-todo="大富翁"><em>🎯</em>大富翁</button>
+              <button data-todo="扑克牌"><em>♠️</em>扑克牌</button>
+            </div>
+          </div>
+          <div class="composer">
+            <div class="fake">说点什么…</div>
+            <button class="btn" style="padding:12px 20px" data-todo="发送消息">发送</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 我的标签 -->
+    <div class="page" id="p-tags" hidden>
+      <div class="phead"><h1>我的标签</h1><p>标签从你授权的 App 自动生成，带来源标识。只有你自己看得到。</p></div>
+      <div class="tagsgrid">
+        <div class="card">
+          <p class="eyebrow" style="margin-bottom:13px">数据源</p>
+          <div class="srcrow linked">
+            <div class="ic">🦜</div>
+            <div class="t"><h4>多邻国</h4><p>日语 · 连续 971 天 · Lv.12</p></div>
+            <span class="ok"><s>✓</s>已连接</span>
+          </div>
+          <div class="srcrow linked">
+            <div class="ic">🏃</div>
+            <div class="t"><h4>Keep</h4><p>跑步 · 每周 4 次 · 累计 320km</p></div>
+            <span class="ok"><s>✓</s>已连接</span>
+          </div>
+          <div class="srcrow">
+            <div class="ic">🎵</div>
+            <div class="t"><h4>音乐 App</h4><p>V2 支持</p></div>
+            <span class="ok" style="color:var(--dim)">未连接</span>
+          </div>
+          <div class="note">接口层已抽象，Demo 阶段用 mock 数据跑通。每个标签都带来源，这是真实性的证明。</div>
+        </div>
+        <div class="card">
+          <p class="eyebrow" style="margin-bottom:13px">自动生成的标签 · 12 个</p>
+          <div class="tagwall">
+            <span class="tg">正在学日语 <s>多邻国</s></span>
+            <span class="tg">连续打卡 971 天 <s>多邻国</s></span>
+            <span class="tg">学习坚持度 硬核 <s>多邻国</s></span>
+            <span class="tg">深夜学习型 <s>多邻国</s></span>
+            <span class="tg">跑步爱好者 <s>Keep</s></span>
+            <span class="tg">每周运动 4 次 <s>Keep</s></span>
+            <span class="tg">晨练型 <s>Keep</s></span>
+            <span class="tg">自律程度 高 <s>复合</s></span>
+            <span class="tg self">找学习搭子 <s>自填</s></span>
+            <span class="tg self">夜猫子 <s>自填</s></span>
+            <span class="tg self">INFP <s>自填</s></span>
+            <span class="tg self">上海 <s>自填</s></span>
+          </div>
+          <div class="note">
+            <b>为什么不给对方看？</b>
+            刷卡片会放大颜值和学历，而可选项质量越高、决策标准越高、满意度反而越低（选择悖论）。所以我们只给一个数字。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 活动广场 -->
+    <div class="page" id="p-events" hidden>
+      <div class="phead">
+        <h1>活动广场</h1>
+        <p>3–10 人的兴趣局，不是相亲。地点必须是真实餐厅，这是安全要求。</p>
+      </div>
+      <div class="filters">
+        <button class="fchip" aria-pressed="true" data-f="score">按匹配度</button>
+        <button class="fchip" aria-pressed="false" data-f="near">离我最近</button>
+        <button class="fchip" aria-pressed="false" data-f="week">本周</button>
+        <button class="fchip" aria-pressed="false" data-f="coupon">只看有优惠</button>
+        <div class="sp"></div>
+        <button class="btn" id="openNew" style="padding:12px 20px">＋ 发起约饭</button>
+      </div>
+      <div class="egrid" id="egrid"></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 发起约饭 -->
+<div class="mask" id="newMask" role="dialog" aria-modal="true" aria-labelledby="newTitle">
+  <div class="modal">
+    <h2 id="newTitle">发起一桌</h2>
+    <p class="lead">3–10 人的兴趣局。地点必须选真实餐厅，不支持私人住址。</p>
+    <div class="field"><label for="nTitle">活动主题 <span class="reqmark">*</span></label>
+      <input id="nTitle" value="聊聊 AI 创业，周五晚"></div>
+    <div class="field"><label for="nPoi">餐厅（真实 POI） <span class="reqmark">*</span></label>
+      <input id="nPoi" value="Anna's Bistro · 静安寺"></div>
+    <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+      <div><label for="nTime">日期时间 <span class="reqmark">*</span></label><input id="nTime" value="9月4日 周五 19:00"></div>
+      <div><label for="nBudget">人均预算 <span class="reqmark">*</span></label>
+        <select id="nBudget"><option>50 以下</option><option>50–100</option><option selected>100–200</option><option>200+</option></select></div>
+    </div>
+    <div class="field">
+      <label for="nSize">人数上限（限制 3–10 人）</label>
+      <div class="rng"><input id="nSize" type="range" min="3" max="10" value="8"><b class="num" id="nSizeV">8 人</b></div>
+    </div>
+    <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+      <div><label for="nPay">费用方式</label>
+        <select id="nPay"><option selected>AA</option><option>发起人请</option><option>各付各的</option></select></div>
+      <div><label for="nMode">报名方式</label>
+        <select id="nMode"><option selected>发起人审核</option><option>先到先得</option></select></div>
+    </div>
+    <div class="field">
+      <label>想约什么样的人 <span class="reqmark">*</span>（1–5 个标签）</label>
+      <div class="pick" id="nTags">
+        <button aria-pressed="true">对 AI 感兴趣</button><button aria-pressed="true">创业中</button>
+        <button aria-pressed="false">在学英语</button><button aria-pressed="false">在学日语</button>
+        <button aria-pressed="false">跑步爱好者</button><button aria-pressed="false">夜猫子</button>
+        <button aria-pressed="false">写代码</button><button aria-pressed="false">爱看展</button>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn ghost" id="newCancel">取消</button>
+      <button class="btn" id="newSubmit">发布到广场</button>
+    </div>
+  </div>
+</div>
+
+<!-- 活动详情 -->
+<div class="mask" id="detMask" role="dialog" aria-modal="true" aria-labelledby="detTitle">
+  <div class="modal" id="detBody"></div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+
+/* ---------------- toast ---------------- */
+let tTimer;
+function toast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(tTimer); tTimer=setTimeout(()=>t.classList.remove('on'),2200);
+}
+
+/* ---------------- 屏幕切换 ---------------- */
+function screen(id){
+  $$('.screen').forEach(s=>s.classList.remove('on'));
+  $('#'+id).classList.add('on');
+  window.scrollTo(0,0);
+}
+
+/* ---------------- 1. 登录注册 ---------------- */
+let isReg=true;
+$('#tabReg').addEventListener('click',()=>{
+  isReg=true; $('#tabReg').setAttribute('aria-selected','true'); $('#tabLogin').setAttribute('aria-selected','false');
+  $('#authGo').textContent='注册并填写资料';
+});
+$('#tabLogin').addEventListener('click',()=>{
+  isReg=false; $('#tabLogin').setAttribute('aria-selected','true'); $('#tabReg').setAttribute('aria-selected','false');
+  $('#authGo').textContent='登录';
+});
+let cd;
+$('#sendCode').addEventListener('click',e=>{
+  let n=60; const b=e.currentTarget; b.disabled=true;
+  b.textContent=n+'s 后重发';
+  clearInterval(cd);
+  cd=setInterval(()=>{ n--; b.textContent=n+'s 后重发'; if(n<=0){clearInterval(cd);b.disabled=false;b.textContent='获取验证码'} },1000);
+  toast('验证码已发送（演示环境固定 123456）');
+});
+$('#authGo').addEventListener('click',()=>{
+  if(!$('#phone').value.trim()||!$('#code').value.trim()){toast('手机号和验证码都要填');return}
+  if(isReg){screen('s-onboard');} else {screen('s-app'); page('home'); toast('欢迎回来');}
+});
+
+/* ---------------- 2. 填写资料 ---------------- */
+/* 多选 / 单选 chip */
+$$('.pick').forEach(g=>{
+  const single=g.dataset.single==='1';
+  g.addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    if(single){ [...g.children].forEach(x=>x.setAttribute('aria-pressed','false')); b.setAttribute('aria-pressed','true'); return; }
+    const on=b.getAttribute('aria-pressed')==='true';
+    if(g.id==='nTags' && !on && g.querySelectorAll('[aria-pressed="true"]').length>=5){toast('最多选 5 个标签');return}
+    b.setAttribute('aria-pressed',String(!on));
+  });
+});
+function ostep(n){
+  ['o1','o2','o3'].forEach((id,i)=>$('#'+id).hidden=(i!==n-1));
+  ['d1','d2','d3'].forEach((id,i)=>$('#'+id).classList.toggle('done',i<n));
+  window.scrollTo(0,0);
+}
+$$('[data-next]').forEach(b=>b.addEventListener('click',()=>{
+  const to=+b.dataset.next;
+  if(to===2){
+    if(!$('#birth').value.trim()){toast('出生年份要填');return}
+  }
+  if(to===3){
+    if(!$('#purpose').querySelector('[aria-pressed="true"]')){toast('至少选一个交友目的');return}
+  }
+  ostep(to);
+}));
+
+/* 第三方授权 → 生成标签 */
+const SRC_TAGS={
+  duo:['正在学日语','连续打卡 971 天','学习坚持度 硬核','深夜学习型','Lv.12'],
+  keep:['跑步爱好者','每周运动 4 次','晨练型','累计 320km','自律程度 高']
+};
+let genTags=[];
+$$('.srcrow[data-src] .act').forEach(btn=>{
+  if(btn.disabled)return;
+  btn.addEventListener('click',()=>{
+    const row=btn.closest('.srcrow'), key=row.dataset.src;
+    row.classList.add('linked');
+    btn.outerHTML='<span class="ok"><s>✓</s>已连接</span>';
+    row.querySelector('p').textContent='已生成 '+SRC_TAGS[key].length+' 个标签';
+    genTags=genTags.concat(SRC_TAGS[key]);
+    $('#genBox').hidden=false;
+    $('#genCount').textContent=genTags.length;
+    const flow=$('#tagFlow');
+    SRC_TAGS[key].forEach((t,i)=>{
+      const el=document.createElement('span');
+      el.className='chip'; el.textContent=t;
+      flow.appendChild(el);
+      setTimeout(()=>el.classList.add('in'),90*i+40);
+    });
+    toast('已连接，生成 '+SRC_TAGS[key].length+' 个真实标签');
+  });
+});
+$('#finishOn').addEventListener('click',()=>{
+  if(genTags.length===0){
+    if(!confirm('你还没有连接任何 App，标签会很少，匹配质量会差。确定跳过吗？'))return;
+  }
+  screen('s-app'); page('home'); toast('资料完成，开始探索');
+});
+
+/* ---------------- 3. 页面切换 ---------------- */
+const PAGES=['home','match','msg','tags','events'];
+function page(k){
+  PAGES.forEach(p=>$('#p-'+p).hidden=(p!==k));
+  $$('.nav').forEach(n=>n.removeAttribute('aria-current'));
+  const n=$(`.nav[data-page="${k}"]`); if(n)n.setAttribute('aria-current','page');
+  const pg=$('#p-'+k); if(pg)pg.scrollTop=0;
+  if(k==='msg')$('#msgDot').style.display='none';
+}
+$$('[data-page]').forEach(b=>b.addEventListener('click',()=>page(b.dataset.page)));
+
+/* ---------------- 匹配流程 ---------------- */
+const CANDS=[
+  {name:'夜行的猫头鹰',face:'🦉',pct:87,pts:['都在学日语','都是夜猫子','每周跑步 4 次','都在创业']},
+  {name:'迷路的刺猬',  face:'🦔',pct:79,pts:['都在学日语','都爱看展','学习坚持度都是硬核']},
+  {name:'早起的水豚',  face:'🦫',pct:92,pts:['都是晨练型','都在跑步','自律程度都很高','都想找学习搭子']},
+  {name:'走神的柯基',  face:'🐕',pct:68,pts:['都在上海','都喜欢美食','都是 INFP']}
+];
+let ci=0;
+function mstate(id){ $$('.mstate').forEach(s=>s.classList.remove('on')); $('#'+id).classList.add('on'); }
+
+function runMatch(){
+  mstate('m-calc');
+  ['cs1','cs2','cs3'].forEach(id=>$('#'+id).classList.remove('on'));
+  const t=[];
+  t.push(setTimeout(()=>$('#cs1').classList.add('on'),260));
+  t.push(setTimeout(()=>$('#cs2').classList.add('on'),1000));
+  t.push(setTimeout(()=>$('#cs3').classList.add('on'),1740));
+  t.push(setTimeout(showResult,2500));
+}
+function showResult(){
+  const c=CANDS[ci%CANDS.length]; ci++;
+  $('#pctNum').textContent=c.pct;
+  $('#ring').style.setProperty('--pct',c.pct+'%');
+  $('#anonName').textContent=c.name;
+  $('#anonFace').textContent=c.face;
+  $('#qCount').textContent=c.pts.length;
+  const g=$('#qgrid'); g.innerHTML='';
+  g.style.gridTemplateColumns=`repeat(${c.pts.length},1fr)`;
+  c.pts.forEach(p=>{
+    const b=document.createElement('button');
+    b.className='q'; b.textContent='?'; b.dataset.reveal=p;
+    b.setAttribute('aria-label','未解锁的共同点，点击预览');
+    b.addEventListener('click',()=>{
+      const open=b.classList.toggle('open');
+      b.textContent=open?b.dataset.reveal:'?';
+    });
+    g.appendChild(b);
+  });
+  mstate('m-res');
+}
+$('#startMatch').addEventListener('click',runMatch);
+$('#again').addEventListener('click',runMatch);
+$('#toChat').addEventListener('click',()=>{
+  const c=CANDS[(ci-1+CANDS.length)%CANDS.length];
+  $('#cFace').textContent=c.face; $('#cName').textContent=c.name;
+  page('msg'); toast('已建立匿名会话');
+});
+
+/* ---------------- 消息：工具箱仅展示 ---------------- */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-todo]'); if(!b)return;
+  toast('「'+b.dataset.todo+'」链路由其他同学接入');
+});
+$$('.conv').forEach(c=>c.addEventListener('click',()=>{
+  $$('.conv').forEach(x=>x.removeAttribute('aria-current'));
+  c.setAttribute('aria-current','true');
+  $('#cFace').textContent=c.querySelector('.face').textContent;
+  $('#cName').textContent=c.querySelector('h4').textContent;
+}));
+
+/* ---------------- 活动广场 ---------------- */
+const EVENTS=[
+  {id:1,host:'user',title:'聊聊 AI 创业，周五晚',score:82,time:'9月4日 周五 19:00',
+   poi:"Anna's Bistro · 静安寺",budget:'人均 100–200 · AA',tags:['对 AI 感兴趣','创业中'],
+   joined:4,max:8,min:3,mode:'发起人审核',coupon:null,common:3},
+  {id:2,host:'merchant',title:'独立开发者晚餐局',score:76,time:'9月3日 周四 19:30',
+   poi:'拾光咖啡 · 愚园路',budget:'人均 50–100',tags:['写代码','夜猫子'],
+   joined:5,max:6,min:6,mode:'先到先得',coupon:'到店 8 折',common:2},
+  {id:3,host:'user',title:'早八跑完去吃早饭',score:91,time:'9月6日 周日 08:30',
+   poi:'老弄堂粢饭 · 徐汇滨江',budget:'人均 50 以下 · 各付各的',tags:['跑步爱好者','早鸟'],
+   joined:2,max:5,min:3,mode:'先到先得',coupon:null,common:4},
+  {id:4,host:'merchant',title:'日语角 · 只说日语的一顿饭',score:88,time:'9月5日 周六 18:00',
+   poi:'居酒屋 灯 · 长乐路',budget:'人均 100–200',tags:['在学日语','学习坚持度 硬核'],
+   joined:5,max:8,min:4,mode:'发起人审核',coupon:'赠小食',common:3}
+];
+const state={};  // id -> 'none' | 'pending' | 'joined' | 'full'
+
+function seatText(e){
+  const st=state[e.id]||'none';
+  const j=e.joined+(st==='pending'||st==='joined'||st==='full'?1:0);
+  if(j>=e.min) return `${j}/${e.max} 人 · 已成团`;
+  return `${j}/${e.max} 人 · 还差 ${e.min-j} 人成团`;
+}
+function joinLabel(e){
+  const st=state[e.id]||'none';
+  if(st==='pending')return '已报名 · 待审核';
+  if(st==='joined') return '已报名 · 等待成团';
+  if(st==='full')   return '已成团 · 群聊已建';
+  return '报名这一桌';
+}
+function renderEvents(){
+  const g=$('#egrid'); g.innerHTML='';
+  EVENTS.forEach(e=>{
+    const st=state[e.id]||'none';
+    const el=document.createElement('div');
+    el.className='ecard'+(e.mine?' mine':'');
+    el.innerHTML=`
+      <div class="ehost">
+        <span>${e.mine?'我发起的局':(e.host==='merchant'?'商家发起':'用户发起')}</span>
+        ${e.coupon?`<span style="color:var(--text)">· ${e.coupon}</span>`:''}
+      </div>
+      <div class="etop">
+        <h3>${e.title}</h3>
+        <div class="score"><b>${e.mine?'—':e.score}</b><small>${e.mine?'我发起':'匹配'}</small></div>
+      </div>
+      <p class="emeta">${e.time}<br>${e.poi}<br>${e.budget}</p>
+      <div class="echips">
+        ${e.tags.map(t=>`<span class="chip">${t}</span>`).join('')}
+        ${e.coupon?`<span class="badge">${e.coupon}</span>`:''}
+      </div>
+      <div class="eseats">
+        <div class="avs">${Array.from({length:Math.min(e.joined,5)},()=>'<i>?</i>').join('')}${st!=='none'?'<i>我</i>':''}</div>
+        <span>${seatText(e)}</span>
+      </div>
+      <div class="eacts">
+        <button class="joinbtn ${st==='none'?'':(st==='full'?'full':'done')}">${joinLabel(e)}</button>
+        <button class="detbtn">详情</button>
+      </div>`;
+    el.querySelector('.joinbtn').addEventListener('click',()=>doJoin(e));
+    el.querySelector('.detbtn').addEventListener('click',()=>showDetail(e));
+    g.appendChild(el);
+  });
+}
+function doJoin(e){
+  const st=state[e.id]||'none';
+  if(st!=='none'){ state[e.id]='none'; renderEvents(); toast('已取消报名'); return; }
+  const willFull=(e.joined+1)>=e.min;
+  if(willFull){
+    state[e.id]='full'; renderEvents();
+    toast('成团了！已建群'+(e.coupon?'并发放'+e.coupon+'券':''));
+    addGroupConv(e);
+  }else if(e.mode==='发起人审核'){
+    state[e.id]='pending'; renderEvents();
+    toast('已提交，等发起人审核（对方只看得到匹配度）');
+  }else{
+    state[e.id]='joined'; renderEvents();
+    toast('报名成功，成团后会建群');
+  }
+}
+function addGroupConv(e){
+  if($(`.conv[data-conv="ev${e.id}"]`))return;
+  const b=document.createElement('button');
+  b.className='conv'; b.dataset.conv='ev'+e.id;
+  b.innerHTML=`<div class="face">🍜</div>
+    <div class="t"><h4>${e.title} · 群</h4><p>成团啦，${e.time.split(' ').slice(0,2).join(' ')} 见</p></div>
+    <span class="pct">群</span>`;
+  b.addEventListener('click',()=>{
+    $$('.conv').forEach(x=>x.removeAttribute('aria-current'));
+    b.setAttribute('aria-current','true');
+    $('#cFace').textContent='🍜'; $('#cName').textContent=e.title+' · 群';
+  });
+  $('#convs').appendChild(b);
+  $('#msgDot').style.display=''; $('#msgDot').textContent='1';
+}
+function showDetail(e){
+  const st=state[e.id]||'none';
+  $('#detBody').innerHTML=`
+    <h2 id="detTitle">${e.title}</h2>
+    <p class="lead">${e.mine?'我发起的局':(e.host==='merchant'?'商家发起 · 引流局':'用户发起')} · ${e.mode}</p>
+    <div class="field"><label>时间地点</label>
+      <p style="font-size:13.5px;line-height:1.85">${e.time}<br>${e.poi}<br>${e.budget}</p></div>
+    <div class="field"><label>想约的人的特征</label>
+      <div class="echips">${e.tags.map(t=>`<span class="chip">${t}</span>`).join('')}</div></div>
+    ${e.coupon?`<div class="field"><label>商家让利</label>
+      <p style="font-size:13.5px">${e.coupon}，成团后发券，仅本场本店有效，活动取消即失效。</p></div>`:''}
+    <div class="field"><label>人数</label>
+      <p style="font-size:13.5px">${seatText(e)} · 上限 ${e.max} 人 · 成团下限 ${e.min} 人</p></div>
+    <div class="vis">
+      <b>报名前你能看到什么</b>
+      活动信息、发起人身份（用户 / 商家）、当前报名人数、与你的匹配度，以及群里有 ${e.common} 个人和你有共同标签。
+      看不到任何成员的照片、昵称和个人资料——成团后群聊里也只是匿名代号加 1–2 个兴趣标签。
+    </div>
+    <div class="mfoot">
+      <button class="btn ghost" id="detClose">关闭</button>
+      <button class="btn" id="detJoin">${joinLabel(e)}</button>
+    </div>`;
+  openMask('#detMask');
+  $('#detClose').addEventListener('click',()=>closeMask('#detMask'));
+  $('#detJoin').addEventListener('click',()=>{doJoin(e);closeMask('#detMask')});
+}
+renderEvents();
+
+/* 筛选（仅切换选中态，排序逻辑 Demo 不做） */
+$$('.fchip').forEach(f=>f.addEventListener('click',()=>{
+  $$('.fchip').forEach(x=>x.setAttribute('aria-pressed','false'));
+  f.setAttribute('aria-pressed','true');
+  toast('已切换到「'+f.textContent+'」');
+}));
+
+/* ---------------- 弹窗 ---------------- */
+let lastFocus=null;
+function openMask(sel){ lastFocus=document.activeElement; $(sel).classList.add('on');
+  const f=$(sel).querySelector('input,select,button'); if(f)f.focus(); }
+function closeMask(sel){ $(sel).classList.remove('on'); if(lastFocus)lastFocus.focus(); }
+$('#openNew').addEventListener('click',()=>openMask('#newMask'));
+$('#newCancel').addEventListener('click',()=>closeMask('#newMask'));
+$$('.mask').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on')}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$$('.mask').forEach(m=>m.classList.remove('on'))});
+$('#nSize').addEventListener('input',e=>$('#nSizeV').textContent=e.target.value+' 人');
+$('#newSubmit').addEventListener('click',()=>{
+  const title=$('#nTitle').value.trim(), poi=$('#nPoi').value.trim(), time=$('#nTime').value.trim();
+  const tags=$$('#nTags [aria-pressed="true"]').map(b=>b.textContent);
+  if(!title||!poi||!time){toast('主题、餐厅、时间都要填');return}
+  if(tags.length===0){toast('至少选一个想约的人的特征');return}
+  const max=+$('#nSize').value;
+  EVENTS.unshift({id:Date.now(),host:'user',mine:true,title,score:'—',time,poi,
+    budget:'人均 '+$('#nBudget').value+' · '+$('#nPay').value,tags,
+    joined:0,max,min:3,mode:$('#nMode').value,coupon:null,common:0});
+  renderEvents(); closeMask('#newMask'); page('events'); toast('已发布到广场，等人报名');
+});
+</script>
+</body>
+</html>
