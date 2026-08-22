@@ -1,0 +1,43 @@
+{
+  "recorded_at": "2026-08-22T19:40:00Z",
+  "incident": "Orca staged complete Codex prompts but reported agent_prompt_stalled before automatic submission on three workers.",
+  "safety_checks": [
+    "Inspected each exact Dispatch and terminal handle before recovery.",
+    "Confirmed each worker branch was still at the frozen architecture base with a clean worktree.",
+    "Sent one Enter keystroke only after the complete task prompt was visible.",
+    "Confirmed each recovered Codex terminal began task execution.",
+    "Did not create replacement tasks or duplicate worktrees."
+  ],
+  "detached_workers": [
+    {
+      "logical_task": "DATA-001",
+      "task_id": "task_e2e144d258f8",
+      "dispatch_id": "ctx_ae33ef0b85e8",
+      "terminal_handle": "term_2a5434c4-e24a-4fa0-a11d-99fee84feb48",
+      "branch": "songconmaisaix31-design/trk-data-data-001"
+    },
+    {
+      "logical_task": "CORE-001",
+      "task_id": "task_e69a61028b75",
+      "dispatch_id": "ctx_8814f5e6ca86",
+      "terminal_handle": "term_6c2dfc2f-1571-43ef-aae6-36dcfadc9b1f",
+      "branch": "songconmaisaix31-design/trk-core-core-001"
+    },
+    {
+      "logical_task": "UX-001",
+      "task_id": "task_0ba8f8c2f098",
+      "dispatch_id": "ctx_4979fceeb05c",
+      "terminal_handle": "term_421fb24c-ef2e-4127-93a6-d07244e44c8e",
+      "branch": "songconmaisaix31-design/trk-experience-ux-001",
+      "idempotent_retry_request": "2a093bd6-c81b-4256-ba07-963b5211784f"
+    }
+  ],
+  "active_worker": {
+    "logical_task": "QA-001",
+    "task_id": "task_697f352c3d08",
+    "dispatch_id": "ctx_a64a9e03e456",
+    "terminal_handle": "term_2db03523-6a93-4161-aef4-f522a93ebf25",
+    "branch": "songconmaisaix31-design/trk-qa-qa-001"
+  },
+  "limitation": "The three detached Orca Dispatch records remain failed even though their exact terminals are executing. The coordinator must inspect their final clean branch and exact SHA before acceptance."
+}

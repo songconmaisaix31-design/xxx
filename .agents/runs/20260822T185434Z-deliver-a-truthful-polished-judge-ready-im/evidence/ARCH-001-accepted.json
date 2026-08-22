@@ -1,0 +1,47 @@
+{
+  "recorded_at": "2026-08-22T19:23:45Z",
+  "logical_task_id": "ARCH-001",
+  "outcome": "succeeded",
+  "summary": "Frozen four reviewed product/data/acceptance contracts; scoped remote SHA and gates verified; Duolingo, GitHub REST, and narrow LeetCode.com public mapping approved.",
+  "branch": "songconmaisaix31-design/trk-architecture-arch-001",
+  "provided_sha": "eddb9dd3add3d898db1b5e6a419e835d48bda400",
+  "remote_sha": "eddb9dd3add3d898db1b5e6a419e835d48bda400",
+  "files": [
+    "docs/acceptance/P0_ACCEPTANCE_MATRIX.md",
+    "docs/contracts/DATA_SOURCE_CONTRACT.md",
+    "docs/specs/IMPLEMENTATION_SPEC.md",
+    "docs/specs/TECHNICAL_SPEC.md"
+  ],
+  "commit_subjects": [
+    "feat(architecture): freeze product and data contracts [ARCH-001]"
+  ],
+  "integration": null,
+  "fetch": {
+    "fresh": false,
+    "branch": "songconmaisaix31-design/trk-architecture-arch-001",
+    "expected_sha": "eddb9dd3add3d898db1b5e6a419e835d48bda400",
+    "cached_sha": "eddb9dd3add3d898db1b5e6a419e835d48bda400",
+    "fetch_error": "fatal: unable to access 'https://github.com/songconmaisaix31-design/xxx/': Failed to connect to github.com port 443 after 21056 ms: Could not connect to server"
+  },
+  "settlement": {
+    "id": "4800b6d1-7e9f-45b7-b2f4-12226743b56e",
+    "ok": true,
+    "result": {
+      "dispatchId": "ctx_233b430f3462",
+      "state": "retained",
+      "reason": "identity_unproven",
+      "processAction": "none",
+      "archive": {
+        "source": "transcript",
+        "status": "captured"
+      },
+      "mutation": {
+        "requestId": "0f345cbd-be99-47e0-a47d-9c437949da2e",
+        "replayed": false
+      }
+    },
+    "_meta": {
+      "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "d4dcba7b-802e-4b81-a7a6-bb535a18a2de",
+  "ok": true,
+  "result": {
+    "task": {
+      "id": "task_e69a61028b75",
+      "parent_id": null,
+      "created_by_terminal_handle": "term_68691400-44fa-48dd-a7c7-1aca01ddfe7e",
+      "task_title": "[CORE-001] Harden anonymous matching and progressive reveal",
+      "display_name": "[CORE-001] Harden anonymous matching and progressive reveal",
+      "spec": "# Logical task CORE-001\n\nTitle: Harden anonymous matching and progressive reveal\nTrack: core\nOrca Run: run_2969d06ac2f4\nFrozen BASE_REF: origin/songconmaisaix31-design/trk-architecture-arch-001\nFrozen BASE_SHA: eddb9dd3add3d898db1b5e6a419e835d48bda400\nExpected workspace/branch: trk-core-core-001\n\n## Specification\n\nUse the frozen matrix and normalized data tags to adversarially audit the domain behavior. Add focused tests and only necessary fixes for reciprocal hard filters, exact weight groups and 60-98 smoothing, useful coding/learning/sport behavior signals, no hidden identity or raw-score leakage, one active match attempt, L0-to-L4 reveal controlled by each user's own consent, membership and block enforcement, restaurant-only events, 3-10 membership, and truthful transitions. Preserve server-rendered behavior and do not add realtime, payment, media, or notification features.\n\n## Acceptance\n\n- Tests cover privacy leakage, filters, fallback weights, attempt invalidation, reveal consent, blocking, and event boundaries\n- No page or payload exposes raw weights, raw scores, profile IDs, or unrevealed personal fields\n- Public and Fixture normalized tags are consumed through the same matching boundary\n- Any behavior change closes a documented P0 gap and existing core tests remain green\n\n## Exact write paths\n\n- `app/services/matching.py`\n- `app/services/chat.py`\n- `app/services/events.py`\n- `app/services/users.py`\n- `app/services/moderation.py`\n- `app/routes/matches.py`\n- `app/routes/chat.py`\n- `app/routes/events.py`\n- `tests/test_core_contracts.py`\n\n## Required checks\n\n- `.venv\\Scripts\\python.exe -m unittest discover -s tests -p \"test_core_contracts.py\" -v`\n- `.venv\\Scripts\\python.exe -m unittest discover -s tests -p \"test_core.py\" -v`\n\n## Dependency evidence\n\n- ARCH-001: branch=songconmaisaix31-design/trk-architecture-arch-001; sha=eddb9dd3add3d898db1b5e6a419e835d48bda400; track=architecture\n\n## Mandatory first commands\n\n```bash\npython scripts/gate.py init \\\n  --track core \\\n  --task CORE-001 \\\n  --base eddb9dd3add3d898db1b5e6a419e835d48bda400 \\\n  --write-path \"app/services/matching.py\" \\\n  --write-path \"app/services/chat.py\" \\\n  --write-path \"app/services/events.py\" \\\n  --write-path \"app/services/users.py\" \\\n  --write-path \"app/services/moderation.py\" \\\n  --write-path \"app/routes/matches.py\" \\\n  --write-path \"app/routes/chat.py\" \\\n  --write-path \"app/routes/events.py\" \\\n  --write-path \"tests/test_core_contracts.py\" \\\n  --check \".venv\\\\Scripts\\\\python.exe -m unittest discover -s tests -p \\\"test_core_contracts.py\\\" -v\" \\\n  --check \".venv\\\\Scripts\\\\python.exe -m unittest discover -s tests -p \\\"test_core.py\\\" -v\"\npython scripts/gate.py check --preflight\n```\n\nThe Orca worker preamble contains the actual task_... ID and dispatch identity (dispatch_... or ctx_...). Use those exact IDs in worker_finish.py.\n\n---\n\n# Directory-Owner Worker\n\n你是目录轨道 Worker，不是总控，也不是集成者。\n\n## 必须先做\n\n任务 Prompt 会给出 `TRACK`、`LOGICAL_TASK_ID`、`BASE_SHA`、`WRITE_PATHS` 和检查命令。先执行 Prompt 中生成的 `gate.py init` 命令，再执行：\n\n```bash\npython scripts/gate.py check --preflight\n```\n\n## 工作边界\n\n- 可以读取全仓库，但只能写任务列出的 `WRITE_PATHS`。\n- 禁止切换分支、合并、Rebase、Force Push、Hard Reset。\n- 禁止修改其他轨道、公共契约、根依赖、锁文件、部署和 CI，除非它们明确位于当前 `WRITE_PATHS`。\n- 禁止全仓库格式化和无关重构。\n- 跨轨需求使用 Orca `ask`、`question` 或 `escalation`，不要代改。\n- 优先复用已有契约、Fixture、SDK 和成熟开源组件。\n\n## 提交节奏\n\n每个可验证增量：\n\n```bash\npython scripts/gate.py check --run-checks\ngit add <owned-paths>\ngit commit -m \"feat(<track>): <summary> [<LOGICAL_TASK_ID>]\"\ngit push -u origin HEAD\n```\n\n已 push 提交不得 amend、rebase 或 force push；错误用新提交或 `git revert`。\n\n## 最终完成\n\n确认检查通过、工作区干净、HEAD 与远端一致后：\n\n```bash\npython scripts/worker_finish.py \\\n  --logical-task <LOGICAL_TASK_ID> \\\n  --task-id <ORCA_TASK_ID> \\\n  --dispatch-id <ORCA_DISPATCH_ID> \\\n  --base <BASE_SHA> \\\n  --outcome succeeded \\\n  --summary \"完成内容、验证结果和剩余限制\"\n```\n\n当前 Orca 运行时可能注入旧式 `dispatch_...` 或新版 `ctx_...` 身份。必须原样传给 `worker_finish.py`，不得把回执动作名 `dispatch_input` 当作 ID。\n如果任务基线中的旧版 helper 拒绝有效的 `ctx_...`，不要越权修改 `scripts/**`。先完成同等的 gate、测试、干净工作树与远端 SHA 检查，再从当前被派发终端使用 `orca orchestration send --type worker_done` 和注入的精确 Task/Dispatch ID 发送一次结果。\n\n失败也必须调用一次，使用 `--outcome failed`。发送 `worker_done` 后停止修改，等待新的 Dispatch。\n",
+      "status": "ready",
+      "deps": "[]",
+      "result": null,
+      "created_at": "2026-08-22 19:33:49",
+      "completed_at": null,
+      "run_id": "run_2969d06ac2f4",
+      "created_by_pane_key": "11b3d8b9-f73b-4178-86bb-7e833dc7acde:c1b8d902-2757-4582-af2c-979bfc1d63e6",
+      "created_by_process_incarnation": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/fleet-control-hackathon-prize@@7c5b6e5a:0b7f8e3a-22ff-4c3d-94ee-66051a9379d7",
+      "created_by_run_generation": 1
+    },
+    "mutation": {
+      "requestId": "32128857-1346-48c7-afa5-5a374ad80aa1",
+      "replayed": false
+    }
+  },
+  "_meta": {
+    "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+  }
+}

@@ -213,6 +213,41 @@ def resolve_sha(root: Path, ref: str, dry_run: bool = False) -> str:
     return "0" * 40 if dry_run else git_sha(root, ref)
 
 
+def fetch_exact_branch(
+    root: Path, branch: str, expected_sha: str, dry_run: bool = False
+) -> dict[str, Any]:
+    """Fetch a worker branch or use an already exact cached tracking ref.
+
+    The fallback is intentionally narrow: it is available only when the local
+    `origin/<branch>` ref already equals the reviewed worker SHA. Final release
+    publication still requires a live remote push/SHA check.
+    """
+    cmd = ["git", "fetch", "origin", branch]
+    cp = run(cmd, cwd=root, dry_run=dry_run, echo=True, check=False)
+    if dry_run or cp.returncode == 0:
+        return {"fresh": True, "branch": branch, "expected_sha": expected_sha}
+    ref = f"origin/{branch}"
+    try:
+        cached_sha = git_sha(root, ref)
+    except FleetError as exc:
+        raise FleetError(f"fetch failed and cached ref is unavailable for {branch}: {exc}") from exc
+    if cached_sha != expected_sha:
+        raise FleetError(
+            f"fetch failed and cached ref drifted for {branch}: expected={expected_sha} cached={cached_sha}"
+        )
+    print(
+        f"WARNING: fetch failed; using exact cached {ref}@{cached_sha}",
+        file=sys.stderr,
+    )
+    return {
+        "fresh": False,
+        "branch": branch,
+        "expected_sha": expected_sha,
+        "cached_sha": cached_sha,
+        "fetch_error": (cp.stderr or cp.stdout).strip()[-2000:],
+    }
+
+
 def do_doctor(root: Path, cfg: Mapping[str, Any], args: argparse.Namespace) -> int:
     for name in ("git", "orca"):
         if not command_exists(name):
@@ -356,7 +391,11 @@ def save_state(path: Path, state: dict[str, Any]) -> None:
 
 
 def wave_ready(wave: Mapping[str, Any], state: Mapping[str, Any]) -> bool:
-    return wave["status"] == "planned" and all(state["tasks"][x]["status"] == "completed" for x in wave["depends_on"])
+    return (
+        wave["status"] in ("planned", "dispatched")
+        and all(state["tasks"][x]["status"] == "completed" for x in wave["depends_on"])
+        and any(state["tasks"][x]["status"] == "planned" for x in wave["tasks"])
+    )
 
 
 def resolve_wave_base(root: Path, state: Mapping[str, Any], wave: Mapping[str, Any], dry_run: bool) -> tuple[str, str]:
@@ -369,7 +408,7 @@ def resolve_wave_base(root: Path, state: Mapping[str, Any], wave: Mapping[str, A
         raise FleetError(f"base task {base['task']} is not verified complete")
     branch = clean_branch(str(task["branch"]))
     ref = f"origin/{branch}"
-    run(["git", "fetch", "origin", branch], cwd=root, dry_run=dry_run, echo=True)
+    fetch_exact_branch(root, branch, str(task["head_sha"]), dry_run)
     if not dry_run and git_sha(root, ref) != task["head_sha"]:
         raise FleetError(f"base task remote ref drifted: {base['task']}")
     return ref, str(task["head_sha"])
@@ -429,18 +468,23 @@ def dispatch_wave(root: Path, cfg: Mapping[str, Any], state: dict[str, Any], wav
     defaults = cfg.get("worker_defaults", {})
     for tid in wave["tasks"]:
         task = state["tasks"][tid]
+        if task["status"] in ("dispatched", "completed"):
+            continue
         task["base_ref"], task["base_sha"] = base_ref, base_sha
-        create = orca(
-            root,
-            ["orchestration", "task-create", "--task-title", f"[{tid}] {task['title']}", "--spec", render_spec(root, cfg, state, task)],
-            f"create task {tid}",
-            dry_run,
-        )
-        task_id = find_prefixed(create, "task_") or (f"task_dry_{tid.lower()}" if dry_run else None)
+        task_id = task.get("orca_task_id")
         if not task_id:
-            raise FleetError(f"task-create receipt missing task_ ID for {tid}")
-        task["orca_task_id"] = task_id
-        save_json(evidence / f"{tid}-task-create.json", create)
+            create = orca(
+                root,
+                ["orchestration", "task-create", "--task-title", f"[{tid}] {task['title']}", "--spec", render_spec(root, cfg, state, task)],
+                f"create task {tid}",
+                dry_run,
+            )
+            task_id = find_prefixed(create, "task_") or (f"task_dry_{tid.lower()}" if dry_run else None)
+            if not task_id:
+                raise FleetError(f"task-create receipt missing task_ ID for {tid}")
+            task["orca_task_id"] = task_id
+            save_json(evidence / f"{tid}-task-create.json", create)
+            save_state(state_path, state)
         agent = task.get("agent") or defaults.get("agent") or "codex"
         setup = task.get("setup") or defaults.get("setup") or "run"
         mode = task.get("worktree_mode") or defaults.get("worktree_mode") or "new-top-level"
@@ -569,7 +613,7 @@ def do_accept(root: Path, cfg: Mapping[str, Any], args: argparse.Namespace) -> i
         if not branch or not args.sha or not re.fullmatch(r"[0-9a-fA-F]{7,40}", args.sha):
             raise FleetError("successful acceptance requires --branch and valid --sha")
         branch = clean_branch(str(branch))
-        run(["git", "fetch", "origin", branch], cwd=root, dry_run=args.dry_run, echo=True)
+        fetch_receipt = fetch_exact_branch(root, branch, str(args.sha), args.dry_run)
         remote_sha = args.sha.lower() if args.dry_run else git_sha(root, f"origin/{branch}")
         if not args.dry_run and not remote_sha.startswith(args.sha.lower()):
             raise FleetError(f"provided SHA {args.sha} != remote {remote_sha}")
@@ -603,7 +647,7 @@ def do_accept(root: Path, cfg: Mapping[str, Any], args: argparse.Namespace) -> i
         })
         evidence.update({
             "remote_sha": remote_sha, "files": files, "commit_subjects": subjects,
-            "integration": integration,
+            "integration": integration, "fetch": fetch_receipt,
         })
     else:
         task.update({"status": "failed", "summary": args.summary, "completed_at": now()})

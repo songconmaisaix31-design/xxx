@@ -1,0 +1,80 @@
+{
+  "id": "c957e3a8-e224-4140-9886-1f4d003a7ef2",
+  "ok": true,
+  "result": {
+    "runId": "run_2969d06ac2f4",
+    "taskId": "task_697f352c3d08",
+    "dispatchId": "ctx_a64a9e03e456",
+    "state": "ready",
+    "stage": "input_accepted",
+    "setup": {
+      "requested": "run",
+      "effective": "run",
+      "source": "explicit_request",
+      "hookFound": true,
+      "startupPolicy": "start-immediately",
+      "state": "running"
+    },
+    "launch": {
+      "requested": {
+        "agent": "codex",
+        "model": null,
+        "effort": null
+      },
+      "effective": {
+        "agent": "codex",
+        "model": null,
+        "effort": null
+      }
+    },
+    "timeoutMs": 60000,
+    "effects": [
+      {
+        "kind": "worktree",
+        "action": "created_top_level",
+        "id": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-qa-qa-001"
+      },
+      {
+        "kind": "terminal",
+        "role": "agent",
+        "action": "reused_agent_terminal",
+        "id": "term_2db03523-6a93-4161-aef4-f522a93ebf25",
+        "tabId": "04c5f4af-b2b1-47b2-95ef-a609431bb083",
+        "leafId": "dc0b05a2-7b2a-433d-9469-1be792d3b1fb"
+      },
+      {
+        "kind": "terminal",
+        "role": "setup",
+        "action": "created",
+        "id": "term_07b83428-7889-4a78-b21d-eeaf76f1af3d",
+        "tabId": "16138f7b-89fa-43c8-92b1-aefd55fb19bb",
+        "leafId": "8ca3b3b6-2d61-44aa-af18-6b0d3f7772ad"
+      },
+      {
+        "kind": "setup",
+        "action": "run",
+        "requested": "run",
+        "effective": "run",
+        "source": "explicit_request",
+        "hookFound": true,
+        "startupPolicy": "start-immediately",
+        "state": "running",
+        "terminalId": "term_07b83428-7889-4a78-b21d-eeaf76f1af3d"
+      },
+      {
+        "kind": "dispatch_input",
+        "role": "agent",
+        "id": "term_2db03523-6a93-4161-aef4-f522a93ebf25",
+        "state": "accepted"
+      }
+    ],
+    "residualResources": [],
+    "mutation": {
+      "requestId": "7c737cc1-906a-4adc-96ca-799f4e60e48a",
+      "replayed": false
+    }
+  },
+  "_meta": {
+    "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+  }
+}

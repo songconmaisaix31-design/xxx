@@ -1,7 +1,9 @@
 import json
+import subprocess
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
@@ -15,7 +17,7 @@ from common import (  # noqa: E402
     run,
     validate_plan,
 )
-from fleet import release_unknown_terminal_is_inert  # noqa: E402
+from fleet import fetch_exact_branch, release_unknown_terminal_is_inert, wave_ready  # noqa: E402
 
 
 class ProcessTests(unittest.TestCase):
@@ -53,6 +55,35 @@ class ProcessTests(unittest.TestCase):
         self.assertTrue(release_unknown_terminal_is_inert(inspection))
         inspection["result"]["terminal"]["writable"] = True
         self.assertFalse(release_unknown_terminal_is_inert(inspection))
+
+    @patch("fleet.git_sha")
+    @patch("fleet.run")
+    def test_fetch_fallback_requires_the_exact_cached_sha(self, run_mock, sha_mock):
+        expected = "a" * 40
+        run_mock.return_value = subprocess.CompletedProcess(
+            ["git", "fetch"], 1, stdout="", stderr="offline"
+        )
+        sha_mock.return_value = expected
+        receipt = fetch_exact_branch(Path.cwd(), "worker", expected)
+        self.assertFalse(receipt["fresh"])
+        self.assertEqual(receipt["cached_sha"], expected)
+
+    def test_partially_dispatched_wave_can_resume_without_duplicate_workers(self):
+        wave = {
+            "status": "dispatched",
+            "depends_on": ["ARCH-001"],
+            "tasks": ["DATA-001", "CORE-001"],
+        }
+        state = {
+            "tasks": {
+                "ARCH-001": {"status": "completed"},
+                "DATA-001": {"status": "dispatched"},
+                "CORE-001": {"status": "planned"},
+            }
+        }
+        self.assertTrue(wave_ready(wave, state))
+        state["tasks"]["CORE-001"]["status"] = "dispatched"
+        self.assertFalse(wave_ready(wave, state))
 
 
 class PatternTests(unittest.TestCase):
