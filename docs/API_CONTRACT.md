@@ -25,7 +25,7 @@ ExternalTag(
 - `tag_id` 来自项目词表；匹配算法和活动标签只依赖该标识。
 - `data_mode` 仅允许 `self_reported | fixture | live | derived`。
 - `verified=true` 只允许当前 Live 同步成功的直接第三方标签；Derived 始终保持未认证，避免把推导结果包装成上游事实。
-- `visibility` 在 MVP 中固定为 `self_only`；未解锁前不得发送给匹配对象。
+- `visibility` 在 MVP 中固定为 `self_only`；任何关系阶段都不得发送给匹配对象。
 - 只保存规范化标签、连接状态、模式和同步时间；不保存原始响应、cookie 或 token。
 
 ## 2. 支持矩阵

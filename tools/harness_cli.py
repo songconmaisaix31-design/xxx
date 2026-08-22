@@ -152,9 +152,10 @@ def verification_stages(suite: str) -> list[Stage]:
                 "Feature checks",
                 (
                     python, "-m", "unittest",
-                    "tests.test_admin_moderation", "tests.test_chat_ui", "tests.test_nearby_events", "-v",
+                    "tests.test_admin_moderation", "tests.test_chat_ui", "tests.test_nearby_events",
+                    "tests.test_adapters", "tests.test_prd_acceptance", "-v",
                 ),
-                "admin moderation, mission chat, nearby privacy",
+                "admin, chat, nearby, adapters, PRD gates",
             )
         )
     if suite in ("all", "e2e"):
@@ -168,8 +169,8 @@ def run_verification(console: Console, suite: str, verbose: bool, fail_fast: boo
     banner(console)
     separator = "·" if console.unicode else "/"
     coverage = {
-        "all": f"23 unit/SSR checks + 4 motion checks {separator} 5 product journeys",
-        "core": "23 unit/SSR checks + 4 motion checks",
+        "all": f"43 unit/SSR/contract checks + 4 motion checks {separator} 5 product journeys",
+        "core": "43 unit/SSR/contract checks + 4 motion checks",
         "e2e": "5 complete product journeys",
         "doctor": "runtime + syntax",
     }[suite]

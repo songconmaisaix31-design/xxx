@@ -168,7 +168,9 @@ class MvpWorkflowHarness(unittest.TestCase):
         for _ in range(3):
             self.assertEqual(first.post(f"/conversations/{conversation_id}/demo/advance").status_code, 302)
         l3 = first.get(f"/conversations/{conversation_id}").get_data(as_text=True)
-        self.assertIn("L3 已解锁标签", l3)
+        self.assertIn("L3 已解锁兴趣", l3)
+        self.assertIn("第三方行为标签始终仅本人可见", l3)
+        self.assertNotIn("连续打卡天数", l3)
 
         # Five is the deterministic maximum common-point count of the seeded pair.
         for _ in range(5):

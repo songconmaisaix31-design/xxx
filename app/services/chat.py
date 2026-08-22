@@ -268,8 +268,8 @@ def relationship_progress(conversation_id: str) -> dict:
     labels = ("L0 完全匿名", "L1 初识", "L2 熟悉", "L3 熟络", "L4 走出产品")
     next_requirements = (
         "双方发言并累积 10 点互动热度，解锁第一个匹配点。",
-        "连续有效聊天满 3 天，解锁更多兴趣线索。",
-        "连续有效聊天满 7 天，解锁完整标签。",
+        "共同活跃满 3 天，解锁更多兴趣线索。",
+        "共同活跃满 7 天，解锁完整兴趣线索。",
         "解锁全部匹配点，开放联系方式交换。",
         "你们已完成全部解锁。",
     )
@@ -294,7 +294,6 @@ def _visible_counterpart(viewer_id: str, conversation_id: str, progress: dict) -
         visible["avatar_mode"] = "blur"
     if progress["level"] >= 3:
         visible["interests"] = other["interests"]
-        visible["tags"] = profile_tags(other["user_id"])
         visible["avatar_mode"] = "clear_placeholder"
     if progress["level"] >= 4:
         visible["contact_exchange_available"] = True

@@ -27,6 +27,7 @@
 | S-04 | Fixture/Live truth | Fixture 不显示为已认证；Live 失败不静默写成成功 | PASS |
 | S-05 | Offline safety | 未验证手机号不能发起；同性别局服务端约束；活动和群聊可举报 | PASS |
 | S-06 | Lifecycle | ended 活动在结束 7 天后归档，归档群不能消息或使用工具 | PASS |
+| S-07 | Tag privacy | `self_only` 行为标签在 L0–L4 均不返回给匹配对象；L3 仅展示本人填写的兴趣 | PASS |
 
 ## Judge route
 

@@ -12,7 +12,7 @@ from werkzeug.datastructures import MultiDict
 from app import create_app
 from app.config import Config
 from app.db import get_db
-from app.services.chat import relationship_progress, send_message, start_direct_conversation, use_tool
+from app.services.chat import get_conversation, relationship_progress, send_message, start_direct_conversation, use_tool
 from app.services.events import create_user_event, redeem_coupon, refresh_event_statuses, signup_for_event, viewer_coupon
 from app.services.matching import _numeric_similarity, _tier_similarity, _time_similarity, is_hard_filter_match
 from app.services.users import ValidationError, get_user, profile_tags
@@ -238,6 +238,18 @@ class PrdAcceptanceTests(unittest.TestCase):
             progress = relationship_progress(conversation_id)
         self.assertEqual(progress["mutual_active_days"], 1)
         self.assertEqual(progress["level"], 1)
+
+    def test_l3_keeps_self_only_behavior_tags_private(self) -> None:
+        with self.app.app_context():
+            conversation_id = start_direct_conversation("demo_001", "demo_002")
+            get_db().execute(
+                "UPDATE conversations SET demo_progress_offset = 3 WHERE id = ?",
+                (conversation_id,),
+            )
+            get_db().commit()
+            counterpart = get_conversation(conversation_id, "demo_001")["counterpart"]
+        self.assertIn("interests", counterpart)
+        self.assertNotIn("tags", counterpart)
 
     def test_unlock_creates_a_collaboration_task_before_revealing_a_point(self) -> None:
         with self.app.app_context():

@@ -26,7 +26,8 @@
 - Duolingo 使用无需凭据的公开 Profile endpoint 作为可选 Live 数据源；固定 HTTPS、用户名白名单、5 秒超时和 256 KiB 响应上限，并且只保存规范化标签。Keep、场地、短信验证、商家和 POS 继续使用明确标记的 Fixture/Demo 流程。
 - Demo 提供 22 条确定性的 Fixture 行为标签、8 条自填标签和 3 条透明派生标签。派生标签始终保持未认证，不能冒充第三方证据。
 - 已补齐双向年龄/性别过滤、标签相似度、手机号门槛、同桌性别策略、活动成团/归档/核销约束，以及需要双方完成协作任务的渐进解锁。
+- PRD 最终会议决议优先于早期阶段表：`self_only` 行为标签在 L0–L4 均不得返回给匹配对象；L3 只展示本人填写的兴趣。
 - 已加入 Session 绑定 CSRF、生产密钥 fail-closed、生产环境 Demo 路由禁用和敏感字段最小化。当前仍是黑客松 Demo，不代表生产身份核验、支付、商家或合规能力已完成。
 - PRD 第 5 章视觉 token 已落入独立契约层；桌面 Edge 对首页、标签、连接、匹配、会话和活动主流程做过真实浏览器检查。移动端真实截图因浏览器自动化运行时不可用未完成，验收矩阵将该项保持为 `PARTIAL`。
-- 最终本地门禁：47/47 Python tests、4/4 Node tests、compileall、`uv lock --check`、`uv sync --locked` 和 Harness 6/6 均通过。
-- 实现期间远端 `main` 推进到 `89e80a9eb3b21cd22441be218302f429c8d78471`（文档提交）；发布分支必须在推送前吸收并复核这项并行变更。
+- 最终本地门禁：48/48 Python tests、4/4 Node tests、compileall、`uv lock --check`、`uv sync --locked` 和扩展后的 Harness 6/6 均通过。
+- 实现期间远端 `main` 推进到 `89e80a9eb3b21cd22441be218302f429c8d78471`（文档提交）；发布分支已 rebase 吸收，并把基于旧代码的生产缺口文档改为当前分支的事实与路线图。

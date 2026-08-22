@@ -62,12 +62,13 @@
         </div>
       </section>
 
-      {% if conversation.counterpart.tags %}
-        <section class="relation-unlocks" aria-labelledby="unlocked-tags-title">
-          <div><span>L3 REVEALED</span><h2 id="unlocked-tags-title">L3 已解锁标签</h2></div>
+      {% if conversation.counterpart.interests %}
+        <section class="relation-unlocks" aria-labelledby="unlocked-interests-title">
+          <div><span>L3 REVEALED</span><h2 id="unlocked-interests-title">L3 已解锁兴趣</h2></div>
           <ul>
-            {% for tag in conversation.counterpart.tags %}<li>{{ tag.name }} <small>{{ tag.source }}</small></li>{% endfor %}
+            {% for interest in conversation.counterpart.interests %}<li>{{ interest }}</li>{% endfor %}
           </ul>
+          <p>第三方行为标签始终仅本人可见。</p>
         </section>
       {% endif %}
 
@@ -254,7 +255,7 @@
                 <button type="submit"{% if unlock_complete %} disabled aria-disabled="true"{% endif %}>
                   <span class="tool-number">03 / POINT</span>
                   <img class="tool-visual" src="{{ url_for('static', filename='img/chat-tool-unlock.webp') }}" width="720" height="720" loading="lazy" decoding="async" alt="">
-                  <span class="tool-copy"><strong>{{ '群组解锁' if not is_direct else '解锁匹配点' }}</strong><small>{{ '让全桌自然开口' if not is_direct else '发现一条真实线索' }}</small></span>
+                  <span class="tool-copy"><strong>{{ '群组解锁' if not is_direct else '解锁匹配点' }}</strong><small>{{ '让全桌自然开口' if not is_direct else '发现一条共同线索' }}</small></span>
                   <span class="tool-state">{{ '全部完成' if unlock_complete else '可解锁' }}</span>
                 </button>
               </form>

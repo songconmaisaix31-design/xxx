@@ -92,7 +92,7 @@ current_user  # dict 或 None
 tag_id, category, name, value, source, data_mode, verified, visibility, updated_at
 ```
 
-来源标记请保留：`duolingo`、`keep`、`derived`、`self`。`data_mode` 为 `live`、`fixture`、`derived` 或 `self_reported`；只有成功的 Live 外部请求可令 `verified=true`，Derived 始终未认证。所有行为标签的 `visibility` 均为 `self_only`。在“我的标签”页展示来源与模式徽标是产品真实性设计的一部分。
+来源标记请保留：`duolingo`、`keep`、`derived`、`self_reported`。`data_mode` 为 `live`、`fixture`、`derived` 或 `self_reported`；只有成功的 Live 外部请求可令 `verified=true`，Derived 始终未认证。所有行为标签的 `visibility` 均为 `self_only`。在“我的标签”页展示来源与模式徽标是产品真实性设计的一部分。
 
 `connections` 是按数据源索引的对象，例如 `connections.get('duolingo')`。Duolingo Live 表单提交 `mode=live` 与公开 `identifier`；Fixture 表单提交 `mode=fixture`。Keep 只接受 Fixture。失败时 flash 返回稳定错误码；页面不得请求、保存或渲染第三方密码、access token 或原始响应。
 
@@ -138,12 +138,12 @@ conversation.counterpart = {
   anonymous_alias, level,
   # L1 起：city, age_range
   # L2 起：interest_category, avatar_mode
-  # L3 起：interests, tags, avatar_mode
+  # L3 起：interests, avatar_mode
   # L4 起：contact_exchange_available
 }
 ```
 
-前端必须完全按后端是否给出字段决定展示；不能根据阶段值自行推测、补全或缓存对方资料。L0 只能显示匿名代号、匹配度/问号和关系进度。L1 解锁城市与年龄段，L2 解锁兴趣类别与模糊头像。当前 L3 返回完整标签，但它与 `visibility=self_only` 冲突，不能视为已批准的产品契约；后端完成可见性修复后，前端只显示安全投影。L4 目前只显示“可自愿交换联系方式”，没有实际交换表单或双方同意流程。
+前端必须完全按后端是否给出字段决定展示；不能根据阶段值自行推测、补全或缓存对方资料。L0 只能显示匿名代号、匹配度/问号和关系进度。L1 解锁城市与年龄段，L2 解锁兴趣类别与模糊头像，L3 只解锁本人填写的兴趣与清晰占位状态；`self_only` 行为标签在所有阶段都不返回给对方。L4 目前只显示“可自愿交换联系方式”，没有实际交换表单或双方同意流程。
 
 `conversation.messages` 内每条包含 `sender_id`、`message_type`（`text` / `system_card`）、`content`、`metadata`、`created_at`。系统卡片不能设计成单方私信；它必须在双方/全群聊天流中统一呈现。消息文字最大 500 字。
 
@@ -161,7 +161,7 @@ conversation.counterpart = {
 alias, interest_tags  # 仅 1–2 个兴趣标签
 ```
 
-群聊内禁止出现真实姓名、年龄、照片、联系方式或完整个人标签。`conversation.is_archived=true` 时前端必须隐藏发送控件，仅保留历史查看；但当前正常进入 `ended` 后的活动不再被定时查询，七天自动归档存在已知缺陷，不能仅依赖当前调度实现数据保留策略。
+群聊内禁止出现真实姓名、年龄、照片、联系方式或完整个人标签。活动结束后群聊可继续查看，结束 7 天后由状态任务设置 `conversation.is_archived=true`；前端必须隐藏发送控件，仅保留历史查看，服务端同时拒绝消息和工具写入。
 
 ### 5.5 饭局广场与详情
 
@@ -262,7 +262,7 @@ pending_review ──approve──→ recruiting → formed → ongoing → ende
 | `recruiting` | 报名中 | 报名；用户发起人可取消 / 审核 |
 | `formed` | 已成团 | 已通过成员可进匿名群聊；若商家局显示权益 |
 | `ongoing` | 进行中 | 仅保留活动信息、群聊和权益状态 |
-| `ended` | 已结束 | 不再报名；群聊当前仍可查看，正常七天归档有已知缺陷 |
+| `ended` | 已结束 | 不再报名；群聊可查看，结束 7 天后归档并转为只读 |
 | `cancelled` | 已取消 | 不再报名；商家权益失效 |
 
 后端在每次请求时检查到期活动，生产还必须每 5 分钟执行 `flask --app run.py process-events`。前端不应自行根据浏览器时间切换状态，而是重新请求服务端渲染页面。
