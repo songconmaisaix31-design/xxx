@@ -4,6 +4,7 @@ import re
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from app import create_app
 from app.config import Config
@@ -78,6 +79,37 @@ class JudgeExperienceTests(unittest.TestCase):
         profile = self.client.get("/profile").get_data(as_text=True)
         self.assertIn("Public Live、Fixture 或 unavailable", profile)
         self.assertIn("下一步：匿名匹配", profile)
+
+    def test_private_profile_labels_fixture_provenance_only_when_rendered(self) -> None:
+        self.login_demo()
+        fixture_tag = {
+            "tag_id": "fixture-provenance-sentinel",
+            "category": "学习",
+            "name": "Fixture provenance sentinel",
+            "value": {"days": 7},
+            "source": "duolingo",
+            "verified": False,
+            "visibility": "self_only",
+            "data_mode": "fixture",
+        }
+
+        with patch("app.routes.auth.profile_tags", return_value=[fixture_tag]):
+            response = self.client.get("/profile")
+        self.assertEqual(response.status_code, 200)
+        html = response.get_data(as_text=True)
+        boundary_start = html.index('<div class="profile-truth-boundary">')
+        boundary = html[boundary_start : html.index("</div>", boundary_start)]
+        fixture_badge = '<span class="status-pill status-neutral">演示数据 Fixture</span>'
+        fixture_disclaimer = "<p>用于演示流程，不是账号实况</p>"
+        self.assertIn("SELF ONLY · 不会公开", boundary)
+        self.assertIn(fixture_badge, boundary)
+        self.assertIn(fixture_disclaimer, boundary)
+
+        public_live_tag = {**fixture_tag, "data_mode": "public_live"}
+        with patch("app.routes.auth.profile_tags", return_value=[public_live_tag]):
+            public_live_html = self.client.get("/profile").get_data(as_text=True)
+        self.assertNotIn(fixture_badge, public_live_html)
+        self.assertNotIn(fixture_disclaimer, public_live_html)
 
     def test_match_path_remains_percentage_only_and_native_without_javascript(self) -> None:
         self.login_demo()
