@@ -1,0 +1,17 @@
+{
+  "recorded_at": "2026-08-22T19:54:00Z",
+  "logical_task": "GOV-002",
+  "branch": "songconmaisaix31-design/governance-data-base",
+  "sha": "1bff1f3000be762111b97713cae178bb37fd8381",
+  "parent_sha": "69762f334ca834e983bf47fb07fc69db957b42eb",
+  "files": [
+    ".agents/fleet.json",
+    ".agents/plans/hackathon-prize.json"
+  ],
+  "purpose": "Assign tests/test_e2e_harness.py to INT-001 so the obsolete authorization route expectation can be updated without restoring a forbidden compatibility alias.",
+  "verification": {
+    "kit_tests": "9 passed",
+    "git_diff_check": "passed",
+    "remote_publication": "pending because GitHub connectivity failed twice"
+  }
+}
