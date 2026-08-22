@@ -1,0 +1,13 @@
+{
+  "recorded_at": "2026-08-22T19:46:00Z",
+  "logical_task": "UX-001",
+  "task_id": "task_0ba8f8c2f098",
+  "previous_dispatch_id": "ctx_ffc4d27a0ef3",
+  "dispatch_id": "ctx_d9bc25e73963",
+  "retry_request": "64cf7f06-3031-4eca-9eb7-6869486c45de",
+  "state": "ready",
+  "stage": "input_accepted",
+  "terminal_handle": "term_421fb24c-ef2e-4127-93a6-d07244e44c8e",
+  "worktree": "C:/Users/DW/orca/workspaces/xxx/trk-experience-ux-001",
+  "safety": "Reused the same clean worktree and idle Codex terminal after the previous failed prompt had completed; no duplicate task or branch was created."
+}

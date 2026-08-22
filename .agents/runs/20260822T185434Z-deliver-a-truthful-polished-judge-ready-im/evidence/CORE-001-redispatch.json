@@ -1,0 +1,13 @@
+{
+  "recorded_at": "2026-08-22T19:43:00Z",
+  "logical_task": "CORE-001",
+  "task_id": "task_e69a61028b75",
+  "previous_dispatch_id": "ctx_8814f5e6ca86",
+  "dispatch_id": "ctx_98e05d9bb253",
+  "retry_request": "5f1d71f5-aa05-49f8-981f-2709d4ad575f",
+  "state": "ready",
+  "stage": "input_accepted",
+  "terminal_handle": "term_6c2dfc2f-1571-43ef-aae6-36dcfadc9b1f",
+  "worktree": "C:/Users/DW/orca/workspaces/xxx/trk-core-core-001",
+  "safety": "Reused the same clean worktree and existing idle Codex terminal; no duplicate task or branch was created."
+}

@@ -1,0 +1,13 @@
+{
+  "recorded_at": "2026-08-22T19:48:00Z",
+  "logical_task": "DATA-001",
+  "task_id": "task_e2e144d258f8",
+  "previous_dispatch_id": "ctx_95fe6e3ff4e8",
+  "dispatch_id": "ctx_43e763e1b4a4",
+  "retry_request": "5bab9326-0763-48f0-bfe5-36a90f8c2bd7",
+  "state": "ready",
+  "stage": "input_accepted",
+  "terminal_handle": "term_ecd819e4-a340-442a-a838-9ad5280d76d1",
+  "worktree": "C:/Users/DW/orca/workspaces/xxx/trk-data-data-001",
+  "safety": "Interrupted only the stale-capability agent turn, preserved its worktree changes, started a clean idle Codex terminal in the same worktree, and bound the existing task without creating another branch."
+}
