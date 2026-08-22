@@ -9,3 +9,6 @@ dependencies = [
 
 [tool.uv]
 package = false
+
+[tool.vercel]
+entrypoint = "index:app"
