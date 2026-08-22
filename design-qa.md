@@ -2,7 +2,7 @@
 
 ## 比较目标
 
-- 流程真值：`D:/xiazai/prototype2.0.html`。按用户澄清，仅参考首页双入口、待匹配、三阶段计算、单个结果、换一位和进入会话的状态顺序，不将其作为视觉还原目标。
+- 流程参考：仓库根目录 `prototype2.0.html`。按用户澄清，仅参考首页双入口、待匹配、三阶段计算、单个结果、换一位和进入会话的状态顺序，不将其作为视觉还原目标。
 - 视觉真值：`brand-spec.md` 与 `app/static/qa/mobile-home.png`，即现有“可信关系实验板”视觉系统。
 - 实现证据：
   - `docs/qa/match-flow-ready-mobile-390.png`

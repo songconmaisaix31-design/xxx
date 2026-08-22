@@ -1,6 +1,8 @@
 # TagPulse CLI
 
-`tools/harness_cli.py` 是项目的零依赖 Harness Engineering 控制台。它只使用 Python 标准库，并通过当前解释器启动检查，因此会自动使用已激活虚拟环境中的 Flask。
+`tools/harness_cli.py` 是项目的零额外 Python 依赖 Harness Engineering 控制台。编排器本身只使用 Python 标准库，并通过当前解释器启动检查，因此会自动使用已激活虚拟环境中的 Flask。默认和 `core` 管道还会执行 `node --test`，所以完整验证需要 Python 3.10+、项目 Python 依赖以及支持 Node 内置测试运行器的 Node.js；应用运行本身不需要 Node，也没有 npm 依赖。
+
+当前默认全量管道包含 28 项 Python 测试与 4 项 Node 测试：23 项核心/专项检查、5 条完整产品旅程、4 项匹配动效状态检查。
 
 ## 常用命令
 
@@ -23,6 +25,8 @@
 # 启动开发服务器
 .\harness.cmd serve
 ```
+
+全局 `--no-color` 必须放在子命令之前，例如 `.\harness.cmd --no-color run --suite core --fail-fast`。
 
 跨平台或不希望使用 Windows 启动器时，将 `.\harness.cmd` 替换为 `python tools/harness_cli.py` 即可。
 

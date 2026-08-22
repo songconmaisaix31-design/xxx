@@ -89,7 +89,7 @@ current_user  # dict 或 None
 tag_id, category, name, value, source, verified, visibility, updated_at
 ```
 
-来源标记请保留：`duolingo`、`keep`、`derived`、`self`。`verified=true` 表示经第三方来源认证；所有 MVP 行为标签的 `visibility` 均为 `self_only`。在“我的标签”页展示来源徽标是产品真实性设计的一部分。
+来源标记请保留：`duolingo`、`keep`、`derived`、`self`。`verified=true` 表示经第三方来源认证；所有 MVP 行为标签的 `visibility` 均为 `self_only`。在“我的标签”页展示来源徽标是产品真实性设计的一部分。当前后端在 L3 会话仍会返回对方全部标签，这与 `self_only` 契约冲突，属于 [P0 生产缺口](PRODUCTION_GAPS_AND_ROADMAP.md#p0-10-对齐标签可见性与真实披露)；前端不得进一步扩大披露范围，后端修复后应只渲染明确标记为可解锁且已获同意的标签。
 
 `connections` 是按数据源索引的对象，例如 `connections.get('duolingo')`。授权表单当前必须提交隐藏值 `authorization_code=demo-authorized`；真实接入时前端改为 OAuth 回调后提交服务端所需的授权码，页面结构不需要改为 SPA。失败时 flash 中会含稳定错误码，例如 `authorization_denied` 或 `invalid_token`。
 
@@ -97,13 +97,13 @@ tag_id, category, name, value, source, verified, visibility, updated_at
 
 候选集合只存在于服务端。`GET /matches` 仅接收 `candidate_count` 用于决定是否可开始；`GET /matches/searching` 只接收当前 `attempt_id`，不得渲染候选 ID、匿名代号、分数、标签或结果 JSON。
 
-服务端完成匹配后，`match_detail.html` 的 `match` 只有：
+服务端完成匹配后，`match_detail.html` 当前实际使用的字段只有：
 
 ```text
-candidate.id, candidate.anonymous_alias, raw_score, display_score, common_point_count
+candidate.id, display_score, common_point_count
 ```
 
-允许在最终结果展示：匿名代号、`display_score`、氛围文案、`?` 占位卡。禁止展示或从其他页面补取：照片、真实姓名、年龄、性别、学历、职业、城市、兴趣详情、第三方标签、`raw_score`、权重或逐项相似度。
+`match` 服务对象目前仍携带完整 `candidate` 与 `raw_score`，只是模板没有渲染。这是过宽模板上下文的 P0 缺口，后端应改成显式安全投影。修复前允许在最终结果展示的仍只有 `display_score`、氛围文案和 `?` 占位卡；禁止展示或从对象中补取匿名代号、邮箱、密码哈希、照片、年龄、性别、学历、职业、城市、兴趣详情、第三方标签、`raw_score`、权重或逐项相似度。
 
 `raw_score` 仅用于服务端排序，绝不渲染；`display_score` 是将原始分线性映射至 60–98 的体验分。页面文案不能暗示用户可以调节匹配权重。
 
@@ -140,7 +140,7 @@ conversation.counterpart = {
 }
 ```
 
-前端必须完全按后端是否给出字段决定展示；不能根据阶段值自行推测、补全或缓存对方资料。L0 只能显示匿名代号、匹配度/问号和关系进度。L1 解锁城市与年龄段，L2 解锁兴趣类别与模糊头像，L3 才可显示完整标签，L4 才显示“可自愿交换联系方式”。没有任何路径可把第三方标签在 L0 匹配结果中展示出来。
+前端必须完全按后端是否给出字段决定展示；不能根据阶段值自行推测、补全或缓存对方资料。L0 只能显示匿名代号、匹配度/问号和关系进度。L1 解锁城市与年龄段，L2 解锁兴趣类别与模糊头像。当前 L3 返回完整标签，但它与 `visibility=self_only` 冲突，不能视为已批准的产品契约；后端完成可见性修复后，前端只显示安全投影。L4 目前只显示“可自愿交换联系方式”，没有实际交换表单或双方同意流程。
 
 `conversation.messages` 内每条包含 `sender_id`、`message_type`（`text` / `system_card`）、`content`、`metadata`、`created_at`。系统卡片不能设计成单方私信；它必须在双方/全群聊天流中统一呈现。消息文字最大 500 字。
 
@@ -158,15 +158,15 @@ conversation.counterpart = {
 alias, interest_tags  # 仅 1–2 个兴趣标签
 ```
 
-群聊内禁止出现真实姓名、年龄、照片、联系方式或完整个人标签。活动结束 7 天后后端会设置 `conversation.is_archived`，前端必须隐藏发送控件，仅保留历史查看。
+群聊内禁止出现真实姓名、年龄、照片、联系方式或完整个人标签。`conversation.is_archived=true` 时前端必须隐藏发送控件，仅保留历史查看；但当前正常进入 `ended` 后的活动不再被定时查询，七天自动归档存在已知缺陷，不能仅依赖当前调度实现数据保留策略。
 
 ### 5.5 饭局广场与详情
 
 每个 `event` 具有 `host_type`（`user` / `merchant`）、`is_merchant`、`status`、`status_label`、时间地点、`approved_count`、`max_size`、`gender_counts`、`required_tag_labels`、`display_score`、`merchant_benefit`。
 
-浏览阶段只展示饭局元信息、人数、性别构成、商家标识、权益和“与你的匹配度”。不展示成员列表。`event.viewer_membership` 存在时只可展示当前用户的报名状态与共同标签数量。审核列表 `applicants` 只提供 `match_score`、`common_tag_count`、`joined_at` 和提交审核必须用的内部 `user_id`；视觉上请仅称为“申请 #1”等，不显示或推断用户身份。
+浏览阶段只展示饭局元信息、人数、性别构成、商家标识、权益和“与你的匹配度”。不展示成员列表。`event.viewer_membership` 存在时只可展示当前用户的报名状态与共同标签数量。审核列表 `applicants` 当前提供 `match_score`、`common_tag_count`、`joined_at` 和提交审核使用的内部 `user_id`；视觉上仅称为“申请 #1”等。稳定 `user_id` 仍可能被发起人跨活动关联，后端后续必须改为每次报名独立的 opaque Application ID。
 
-附近模式是一次请求范围内的筛选：`GET /events?lat=<纬度>&lng=<经度>&accuracy=<米>&radius=<公里>&sort=distance`。经纬度必须成对出现，范围分别为 `[-90, 90]` 与 `[-180, 180]`；`accuracy` 为浏览器可选回传的定位精度，半径为 `0–50km`，推荐 UI 选项为 `1/3/5/10/20/50`。定位成功页会服务端渲染“你的位置”、四位小数坐标、浏览器精度和最近白名单 POI 参照点。浏览器只有在用户点击“使用当前位置”后才可调用 Geolocation；禁止自动请求权限，禁止把精确坐标写入 localStorage、sessionStorage、账户或数据库。服务端只用白名单 POI 坐标计算 Haversine 直线估算距离。拒绝权限、浏览器不支持或参数非法时，页面必须保留城市筛选和全部活动降级路径。
+附近模式当前使用 `GET /events?lat=<纬度>&lng=<经度>&accuracy=<米>&radius=<公里>&sort=distance`。经纬度必须成对出现，范围分别为 `[-90, 90]` 与 `[-180, 180]`；`accuracy` 为浏览器可选回传的定位精度，半径为 `0–50km`，推荐 UI 选项为 `1/3/5/10/20/50`。定位成功页会服务端渲染“你的位置”、四位小数坐标、浏览器精度和最近白名单 POI 参照点。浏览器只有在用户点击“使用当前位置”后才可调用 Geolocation；禁止自动请求权限，禁止把精确坐标写入 localStorage、sessionStorage、账户或数据库。服务端只用白名单 POI 坐标计算 Haversine 直线估算距离。拒绝权限、浏览器不支持或参数非法时，页面必须保留城市筛选和全部活动降级路径。坐标仍会进入地址栏、浏览器历史、Referer 与访问日志，这是 P1 隐私缺口，不得将“不落库”描述为“无痕”。
 
 用户发起活动的初始状态为 `pending_review`。广场、附近列表和非发起人的详情页都不会暴露待审或驳回活动；发起人可查看自己的待审详情。管理员通过后状态变为 `recruiting`，拒绝后为 `rejected`。
 
@@ -203,7 +203,7 @@ alias, interest_tags  # 仅 1–2 个兴趣标签
 | 举报 | `/conversations/<id>/report`，字段 `reason`（1–200） |
 | 拉黑 | `/conversations/<id>/block`，仅一对一会话 |
 
-所有工具结果由后端生成并作为 `system_card` 消息返回，前端不掷骰子、不随机抽题、不在客户端决定解锁内容。`DEMO_MODE` 打开时才显示推进阶段的演示按钮。任务入口使用 `app/static/img/chat-tool-{dice,task,unlock}.webp` 三张装饰图；图片 `alt=""`，因为同一按钮内已有完整可见名称与说明。手机端工具区为横向吸附卡组，不应退化成三个被挤窄的栏。
+所有工具结果由后端生成并作为 `system_card` 消息返回，前端不掷骰子、不随机抽题、不在客户端决定解锁内容。`DEMO_MODE` 打开时才显示推进阶段的演示按钮；当前服务端只检查全局模式、没有校验账户本身必须是 Demo，因此这不是生产权限边界，真实模式必须关闭且后端需要补充账户类型校验。任务入口使用 `app/static/img/chat-tool-{dice,task,unlock}.webp` 三张装饰图；图片 `alt=""`，因为同一按钮内已有完整可见名称与说明。手机端工具区为横向吸附卡组，不应退化成三个被挤窄的栏。
 
 增强环境下，举报入口初始 `aria-expanded="false"` 且保持白色；原生 `dialog` 成功打开后脚本才设为 `true`，对应黄色打开态，关闭、Esc 或打开失败时必须恢复 `false`。无 `HTMLDialogElement` 时保留服务端表单回退。
 
@@ -258,7 +258,7 @@ pending_review ──approve──→ recruiting → formed → ongoing → ende
 | `recruiting` | 报名中 | 报名；用户发起人可取消 / 审核 |
 | `formed` | 已成团 | 已通过成员可进匿名群聊；若商家局显示权益 |
 | `ongoing` | 进行中 | 仅保留活动信息、群聊和权益状态 |
-| `ended` | 已结束 | 不再报名；活动结束后 7 天仍可看群聊 |
+| `ended` | 已结束 | 不再报名；群聊当前仍可查看，正常七天归档有已知缺陷 |
 | `cancelled` | 已取消 | 不再报名；商家权益失效 |
 
 后端在每次请求时检查到期活动，生产还必须每 5 分钟执行 `flask --app run.py process-events`。前端不应自行根据浏览器时间切换状态，而是重新请求服务端渲染页面。
@@ -308,7 +308,7 @@ V2 核心令牌位于 `app/static/css/brutalist-foundation.css` 的 `:root`；`a
 | 饭局详情 | `.event-detail-hero`、`.detail-grid`、`.group-entry`、`.coupon-panel` | 决策区、活动事实、安全边界、成团/权益状态 |
 | 管理后台 | `.admin-shell`、`.admin-queue-card`、`.admin-account-table`、`.admin-audit` | 活动、举报、只读账户与审计使用不同任务表面，保持项目视觉一致 |
 
-系统卡片的 class 判定必须优先于发送者判定：`message_type == 'system_card'` 时始终使用 `.message.system`，不能因为触发工具的人是本人就画成私信气泡。
+系统卡片的 class 判定必须优先于发送者判定：`message_type == 'system_card'` 时始终使用 `.system-event` 及其 `system-*` 变体，不能因为触发工具的人是本人就画成 `.chat-message` 私信气泡。
 
 ### 8.4 响应式与无障碍
 
@@ -316,7 +316,7 @@ V2 核心令牌位于 `app/static/css/brutalist-foundation.css` 的 `:root`；`a
 - `320–429px`：全部功能单列；登录态页头只保留品牌与退出，四个核心任务使用固定底部导航；表单控件为 16px，触控目标至少 44px。
 - `430px`：大手机恢复部分双列事实和“输入 + 行动”结构，但不会把密集桌面卡片压进窄列。
 - `560px`：标签与匹配卡可进入两列，会话成员和活动元信息开始横向组合。
-- `760px`：平板恢复部分双栏工作区；登录态仍使用底部任务导航，聊天工具箱进入侧栏。
+- `760px`：平板恢复部分双栏工作区；登录态仍使用底部任务导航。当前 `.mission-workspace` 仍为单列，聊天工具箱不会在此断点进入侧栏。
 - `900px`：切换为桌面页头导航并隐藏底部导航，聊天、匹配结果和饭局详情恢复完整多栏结构。
 - `1100px`：启用完整编辑式桌面网格、最大硬阴影与宽筛选条。
 - 页面最小宽度为 320px；所有内容列使用 `min-width: 0` 与可换行策略，禁止制造横向滚动。
@@ -354,7 +354,7 @@ V2 核心令牌位于 `app/static/css/brutalist-foundation.css` 的 `:root`；`a
 
 ## 9. 后端已明确处理与暂未覆盖的边界
 
-已处理：输入长度/枚举/人数/真实 POI 校验、活动时段冲突、重复报名、匿名审核、标签来源、真实/演示候选隔离、匹配 attempt 校验、direct 会话去重、成员权限、拉黑后只读与举报记录、请求期附近定位、管理员活动/举报审核与审计日志、群聊归档、商家权益的成团后发放和手动核销。
+已处理：输入长度/枚举/人数/POI 白名单校验、活动时段冲突、重复报名、匿名审核页面、标签来源、真实/演示候选隔离、匹配 attempt 校验、direct 会话去重、成员权限、拉黑后只读与举报记录、请求期附近定位、管理员活动/举报审核与审计日志、已归档会话只读、商家演示权益的成团后发放和手动核销。
 
 MVP 限制：Mock OAuth，不含 WebSocket/SSE 实时推送、地图瓦片/路线导航、真实支付/POS、媒体/语音、商家自助后台、通知推送、出席信誉分、活动后评价。正式发布前还要增加 CSRF、限流、细粒度管理员角色、生产密钥、真实手机号验证、异步任务调度和隐私合规授权页。
 

@@ -16,10 +16,9 @@ python -m unittest discover -s tests -p "test_e2e_harness.py" -v
 python -m unittest discover -s tests -v
 node --test tests/match_flow.test.mjs
 python -m compileall -q app tests
-flask --app run.py process-events
 ```
 
-测试成功时不写入 `instance/realtags.sqlite3`，也不依赖之前运行过的页面数据。
+以上回归命令成功时不写入 `instance/realtags.sqlite3`，也不依赖之前运行过的页面数据。`flask --app run.py process-events` 是会初始化并更新本地业务库的运维命令，不属于只读回归；需要验证活动时间逻辑时，E2E 会在临时数据库中直接调用同一个 `refresh_event_statuses(now=...)` 服务函数。
 
 ## 覆盖流程
 

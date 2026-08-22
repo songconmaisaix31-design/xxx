@@ -1,6 +1,6 @@
 # V2 图像资产生成记录
 
-两项资产均使用 Codex 内置 ImageGen 生成，没有使用 CLI、API key 或外部下载。
+本文件完整保留两项 V2 基础资产的 ImageGen 提示词，并登记后来加入的三张会话工具图。基础资产没有使用 CLI、API key 或外部下载；三张会话图的精确历史提示词未随文件提交，因此这里只记录事实元数据，不反向编造提示词。
 
 ## 纸张点阵纹理
 
@@ -20,3 +20,12 @@
 
 > Create a single polished square brand icon asset for a Chinese privacy-first social matching product called Real Tags / 真实标签, matching the provided neo-brutalist design direction. Composition: warm ivory background, one bold black rounded-square outer frame, inside an abstract original symbol suggesting two anonymous signals finding resonance and a small verified dot. Use only flat solid colors: black #12110E, electric purple #5B48FF, acid green #51D000, sunflower yellow #FFE45C, with at most a tiny coral #FF5F41 accent. Very thick consistent black strokes, compact geometric construction, optically centered, high contrast, crisp at 24px favicon size, generous safe margin. No text, no letters, no numbers, no emoji, no gradients, no shadows outside the icon, no mockup, no device frame, no extra objects, no transparency halo. Output one centered icon on a square 1:1 canvas.
 
+## 会话任务工具图
+
+| 项目路径 | 用途 | 当前规格 |
+| --- | --- | --- |
+| `app/static/img/chat-tool-dice.webp` | 摇骰子话题工具 | 720×720 WebP，装饰图 |
+| `app/static/img/chat-tool-task.webp` | 随机任务卡工具 | 720×720 WebP，装饰图 |
+| `app/static/img/chat-tool-unlock.webp` | 匹配点解锁工具 | 720×720 WebP，装饰图 |
+
+三张图片在 `conversation.html` 中使用空 `alt`，因为同一按钮已经提供完整可见名称与说明；同时声明固定宽高、`loading="lazy"` 和 `decoding="async"`。如需重生成，应先补写新的可复现提示词、模型与日期，再替换资产。

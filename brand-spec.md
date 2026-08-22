@@ -147,6 +147,9 @@ V2 的视觉语言是「可信关系实验室」：把真实数据、匿名边�
 | 视觉参考 | `docs/design-reference-brutalist.png` | 设计方向与 QA 比对 |
 | 纸张点阵纹理 | `app/static/img/paper-dot-grid.png` | 页面背景，低对比铺陈 |
 | 品牌标记 / favicon | `app/static/img/brand-mark.png` | 页头识别与浏览器标签 |
+| 摇骰子工具图 | `app/static/img/chat-tool-dice.webp` | 会话“摇骰子出话题”任务卡 |
+| 任务卡工具图 | `app/static/img/chat-tool-task.webp` | 会话“抽任务卡”任务卡 |
+| 解锁工具图 | `app/static/img/chat-tool-unlock.webp` | 会话“匹配点解锁”任务卡 |
 
 纸张纹理由内置图像生成工具按「暖象牙色、极浅规则点阵、无文字、无图标、无渐变」生成。它必须保持低对比，不可抢夺正文注意力。
 
