@@ -39,7 +39,10 @@ def register():
             flash(str(error), "error")
         else:
             set_current_user(user_id)
-            flash("注册成功。下一步可同步无需凭据的公开行为数据，或载入明确标注的演示数据。", "success")
+            success_message = "注册成功，已自动登录。下一步可同步无需凭据的公开行为数据。"
+            if current_app.config["DEMO_MODE"]:
+                success_message += "也可载入明确标注的演示数据。"
+            flash(success_message, "success")
             return redirect(url_for("auth.connections"))
     return render_template(
         "register.html", cities=CITIES, genders=GENDERS, match_genders=MATCH_GENDERS,

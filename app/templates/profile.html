@@ -16,7 +16,7 @@
         <div><dt>类型</dt><dd>{{ user.mbti }}</dd></div>
         <div><dt>目的</dt><dd>{{ user.purposes|join('、') }}</dd></div>
       </dl>
-      <p class="profile-verification"><span aria-hidden="true"></span>手机号验证：{{ '已完成（演示）' if user.phone_verified else '未完成' }}</p>
+      <p class="profile-verification"><span aria-hidden="true"></span>手机号验证：{% if user.phone_verified %}{{ '已完成（演示）' if demo_mode else '已验证' }}{% else %}未完成{% endif %}</p>
     </div>
     <div class="profile-journey-actions">
       <a class="button profile-connections-action" href="{{ url_for('auth.connections') }}">确认数据来源</a>

@@ -44,6 +44,31 @@ python run.py
 
 打开 `http://127.0.0.1:5000`。本地默认启用 `DEMO_MODE=1`，可点击“进入预置演示账号”，或使用 `demo@realtags.local` / `demo-password`；审核后台位于 `/admin/login`，演示管理员为 `admin@realtags.local` / `admin-password`。真实注册账户与演示账户使用完全隔离的候选池，不会匹配到无人回复的演示账号。
 
+### Isolated real-user test database
+
+Run the dedicated no-Fixture profile from its isolated worktree:
+
+```powershell
+.\.venv\Scripts\python.exe run_real_user_test.py
+```
+
+Open `http://127.0.0.1:5001`. This command always uses
+`instance/real-user-test.sqlite3`, forces `DEMO_MODE=0`, binds only to loopback,
+and refuses to start if the database contains demo or Fixture records. The
+database persists across restarts, while the in-memory session signing key does
+not; after a restart, existing users log in normally.
+
+Create a real administrator only through the interactive hidden-password prompt:
+
+```powershell
+.\.venv\Scripts\flask.exe --app "run_real_user_test:create_real_user_test_app()" create-admin
+```
+
+Real phone verification is not implemented. New users can register, log in,
+connect credential-free public profiles, match, chat, report, block, and browse
+events. They cannot create an offline event until a real phone-verification
+provider and consent flow are integrated; the environment never fakes this flag.
+
 部署真实环境时显式关闭演示数据并更换密钥：
 
 ```powershell

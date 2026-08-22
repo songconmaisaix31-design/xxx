@@ -35,3 +35,12 @@
 - Vercel function-local SQLite is ephemeral and may reset between instances or deployments. This URL is hackathon Demo evidence only, not production durability or availability evidence.
 - Deployment secrets live only in Vercel environment settings. Record variable names, never values; do not pull them into `.env` files.
 - Rollback removes only AliDNS record `2091285074485882880` and detaches only `realtags.davidwang.space` from `realtags-prize-demo`.
+
+## 2026-08-23: Isolated real-user test environment
+
+- The real-user test worktree is `C:\Users\DW\orca\workspaces\xxx\realtags-real-user-test`; its branch must remain separate from `main` and the public demo branch.
+- `run_real_user_test.py` forces `DEMO_MODE=0`, binds to `127.0.0.1:5001`, and uses the ignored persistent database `instance/real-user-test.sqlite3`.
+- Startup rejects databases containing demo users, the demo administrator, Fixture tags/connections, or Fixture merchant events. Automated user-flow tests use temporary databases only.
+- Registration persists all submitted profile fields, establishes the session, and redirects to `/profile/connections`; production copy does not invite Fixture loading.
+- Real phone verification remains unavailable. Never set `phone_verified` automatically or claim event-host eligibility without a real verification provider and consent flow.
+- The Vercel demo remains ephemeral and separate. A public persistent real-user environment requires an explicitly selected managed database and a verified migration before any deployment or DNS change.
