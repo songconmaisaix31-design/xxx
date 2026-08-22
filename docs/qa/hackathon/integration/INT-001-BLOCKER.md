@@ -4,6 +4,13 @@
 > and one ownership blocker. It is not final gate, screenshot, deployment, or
 > judge-ready evidence.
 
+> **Superseded by [`FINAL_GATE_RECEIPT.md`](FINAL_GATE_RECEIPT.md).** The
+> owner-scoped UX-002 correction was formally
+> accepted at `ac9c0d608c0b61ea0dbb93e885481a1cc2aa07b7` and merged without
+> conflicts as `ddac0977d8369b75f38c27822aca7bdab398dddc`. The strict assembled
+> gate then passed with `PASS=17 FAIL=0 SKIP=0`. The failure counts below are
+> intentionally preserved as historical evidence, not current candidate status.
+
 Observed at `2026-08-22T20:27:55Z` in
 `songconmaisaix31-design/trk-integration-int-001`.
 

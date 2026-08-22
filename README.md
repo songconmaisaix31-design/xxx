@@ -2,6 +2,25 @@
 
 基于 PRD 实现的 Flask + Jinja2 多页面服务端渲染应用。没有 React/Vue、前端路由、Hash 路由或单一入口 HTML；每个页面由独立 Flask 路由渲染。
 
+## Hackathon release candidate (INT-001)
+
+Judges should use the integrated evidence from
+`songconmaisaix31-design/trk-integration-int-001`, not the isolated worker
+screenshots or QA-stage assembly notes:
+
+- [Final claims ledger](docs/qa/hackathon/integration/FINAL_CLAIMS.md)
+- [Final gate receipt](docs/qa/hackathon/integration/FINAL_GATE_RECEIPT.md)
+- [Final visual evidence](docs/qa/hackathon/integration/FINAL_VISUAL_EVIDENCE.md)
+- [Fresh integrated screenshots](docs/qa/hackathon/integration/screenshots/)
+
+The candidate keeps four evidence classes separate: **Public Live** means a
+bounded credential-free public response passed the frozen mapper and does not
+prove account ownership; **Fixture** means deterministic synthetic demo data;
+**Unavailable** means the source is intentionally disabled for P0; and
+**Roadmap** means it is not implemented. This is a local hackathon candidate,
+not evidence of an official third-party API, public deployment, production
+readiness, real merchant integration, users, revenue, or match-quality results.
+
 ## 运行
 
 ```powershell

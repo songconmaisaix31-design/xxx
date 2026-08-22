@@ -3,9 +3,9 @@
 ## Outcome
 
 Produce one judge-ready release candidate from the frozen governance base by
-merging the accepted DATA-001, CORE-001, UX-001, and QA-001 heads exactly,
-applying only integration-owned assembly fixes, and publishing current evidence
-from the assembled candidate.
+merging the accepted DATA-001, CORE-001, UX-001, QA-001, and UX-002 heads
+exactly, applying only integration-owned assembly fixes, and publishing current
+evidence from the assembled candidate.
 
 ## Acceptance criteria
 
@@ -14,7 +14,7 @@ from the assembled candidate.
    (`eddb9dd3add3d898db1b5e6a419e835d48bda400`) remains an ancestor.
 2. Each accepted worker head is the exact second parent of its own clean,
    two-parent `--no-ff` merge commit, in this order: DATA-001, CORE-001,
-   UX-001, QA-001.
+   UX-001, QA-001, UX-002. ARCH-001 remains inherited from the frozen base.
 3. Every commit on the integration first-parent chain contains `[INT-001]` and
    integration-authored changes stay inside the task allowlist.
 4. The strict assembly gate, Python syntax and unit suites, acceptance suite,
@@ -58,7 +58,7 @@ from the assembled candidate.
 
 1. Verify the frozen base and remote dependency heads.
 2. Commit this integration specification.
-3. Perform four clean exact-SHA `--no-ff` merges.
+3. Perform five clean exact-SHA `--no-ff` merges.
 4. Run the strict assembly gate to identify integration-only failures.
 5. Apply the smallest allowed assembly fixes and rerun focused checks.
 6. Run the complete required gate set plus demo/production startup, bounded
