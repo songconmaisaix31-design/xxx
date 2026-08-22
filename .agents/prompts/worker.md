@@ -46,4 +46,7 @@ python scripts/worker_finish.py \
   --summary "完成内容、验证结果和剩余限制"
 ```
 
+当前 Orca 运行时可能注入旧式 `dispatch_...` 或新版 `ctx_...` 身份。必须原样传给 `worker_finish.py`，不得把回执动作名 `dispatch_input` 当作 ID。
+如果任务基线中的旧版 helper 拒绝有效的 `ctx_...`，不要越权修改 `scripts/**`。先完成同等的 gate、测试、干净工作树与远端 SHA 检查，再从当前被派发终端使用 `orca orchestration send --type worker_done` 和注入的精确 Task/Dispatch ID 发送一次结果。
+
 失败也必须调用一次，使用 `--outcome failed`。发送 `worker_done` 后停止修改，等待新的 Dispatch。

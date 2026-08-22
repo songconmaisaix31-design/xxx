@@ -17,4 +17,7 @@ git merge --no-ff origin/<worker-branch> \
 7. 运行全量构建、测试、Fixture 黄金路径和 Smoke Test。
 8. commit + push 后使用 `worker_finish.py` 报告远端 SHA。
 
+当前 Orca 运行时可能注入旧式 `dispatch_...` 或新版 `ctx_...` 身份。必须原样传给 `worker_finish.py`，不得把回执动作名 `dispatch_input` 当作 ID。
+如果任务基线中的旧版 helper 拒绝有效的 `ctx_...`，不要越权修改 `scripts/**`。先完成同等的 gate、测试、干净工作树与远端 SHA 检查，再从当前被派发终端使用 `orca orchestration send --type worker_done` 和注入的精确 Task/Dispatch ID 发送一次结果。
+
 机器门禁会验证：依赖 SHA 已被精确 no-ff 合入、每个 merge 可由 Git 自动重算、第一父链没有越权修改、提交信息包含集成任务 ID。

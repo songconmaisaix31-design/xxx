@@ -6,7 +6,16 @@ from pathlib import Path
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 
-from common import path_matches, pattern_within, patterns_overlap, run, validate_plan  # noqa: E402
+from common import (  # noqa: E402
+    find_dispatch_id,
+    is_dispatch_id,
+    path_matches,
+    pattern_within,
+    patterns_overlap,
+    run,
+    validate_plan,
+)
+from fleet import release_unknown_terminal_is_inert  # noqa: E402
 
 
 class ProcessTests(unittest.TestCase):
@@ -19,6 +28,31 @@ class ProcessTests(unittest.TestCase):
             ]
         )
         self.assertEqual(cp.stdout, "\u2713")
+
+    def test_current_runtime_context_dispatch_id_is_selected(self):
+        receipt = {
+            "result": {
+                "dispatchId": "ctx_233b430f3462",
+                "effects": [{"kind": "dispatch_input"}],
+            }
+        }
+        self.assertEqual(find_dispatch_id(receipt), "ctx_233b430f3462")
+        self.assertTrue(is_dispatch_id("ctx_233b430f3462"))
+        self.assertTrue(is_dispatch_id("dispatch_0123abcdef"))
+        self.assertFalse(is_dispatch_id("dispatch_input"))
+
+    def test_release_unknown_requires_an_inert_exact_worker(self):
+        inspection = {
+            "result": {
+                "dispatch": {"status": "completed"},
+                "worker": {"stage": "settled"},
+                "terminal": {"connected": False, "writable": False},
+                "observation": {"exactWorker": True},
+            }
+        }
+        self.assertTrue(release_unknown_terminal_is_inert(inspection))
+        inspection["result"]["terminal"]["writable"] = True
+        self.assertFalse(release_unknown_terminal_is_inert(inspection))
 
 
 class PatternTests(unittest.TestCase):

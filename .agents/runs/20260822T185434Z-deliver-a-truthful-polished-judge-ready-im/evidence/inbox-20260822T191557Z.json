@@ -1,0 +1,50 @@
+{
+  "id": "d34b088c-aee8-477a-b000-9ba365b7dff7",
+  "ok": true,
+  "result": {
+    "runId": "run_2969d06ac2f4",
+    "messages": [
+      {
+        "id": "msg_b467c8065fb9",
+        "run_id": "run_2969d06ac2f4",
+        "from_handle": "dispatch:ctx_233b430f3462",
+        "to_handle": "run:run_2969d06ac2f4",
+        "subject": "Setup succeeded for worker ctx_233b430f3462",
+        "body": "",
+        "type": "status",
+        "priority": "normal",
+        "thread_id": null,
+        "payload": "{\"dispatchId\":\"ctx_233b430f3462\",\"setupState\":\"succeeded\",\"terminalHandle\":\"term_b3e334ce-176f-408a-b99a-979f71e60173\"}",
+        "read": 0,
+        "sequence": 147,
+        "created_at": "2026-08-22T18:55:04Z",
+        "delivered_at": null,
+        "sender_pane_key": null,
+        "delivery_contract": "current_delivery"
+      },
+      {
+        "id": "msg_e9ea13b7dab0",
+        "run_id": "run_2969d06ac2f4",
+        "from_handle": "term_cc21718c-d90a-4393-8d32-8bc192e4e126",
+        "to_handle": "run:run_2969d06ac2f4",
+        "subject": "ARCH-001 contracts frozen",
+        "body": "Produced and pushed the four frozen architecture artifacts at eddb9dd3add3d898db1b5e6a419e835d48bda400, covering implementation and technical specifications, normalized source and error contracts, exact worker boundaries, and the P0 matrix. Current bounded probes verified narrow Duolingo, GitHub REST, and LeetCode public-profile mappings, while the isolated Harness, gate, diff, clean-tree, and remote-SHA checks all passed. Application implementation remains for downstream lanes; the project memory file was not updated because it is outside this worker's allowlist, and the repository worker-finish helper still rejects the current ctx_ dispatch grammar.",
+        "type": "worker_done",
+        "priority": "normal",
+        "thread_id": null,
+        "payload": "{\"taskId\":\"task_0f3edd6b16d7\",\"dispatchId\":\"ctx_233b430f3462\",\"outcome\":\"succeeded\",\"filesModified\":[\"docs/specs/IMPLEMENTATION_SPEC.md\",\"docs/specs/TECHNICAL_SPEC.md\",\"docs/contracts/DATA_SOURCE_CONTRACT.md\",\"docs/acceptance/P0_ACCEPTANCE_MATRIX.md\"],\"reportPath\":\"docs/specs/IMPLEMENTATION_SPEC.md\"}",
+        "read": 0,
+        "sequence": 150,
+        "created_at": "2026-08-22T19:14:05Z",
+        "delivered_at": null,
+        "sender_pane_key": "273bafe9-144c-46c9-b10d-99e219ae0808:faac42ff-0627-46dc-944b-36c48e544ca2",
+        "delivery_contract": "current_delivery"
+      }
+    ],
+    "count": 2,
+    "acknowledged": null
+  },
+  "_meta": {
+    "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+  }
+}

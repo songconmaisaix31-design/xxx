@@ -23,6 +23,7 @@ from common import (
     command_exists,
     commit_subject,
     commit_subjects,
+    find_dispatch_id,
     find_branch,
     find_key,
     find_prefixed,
@@ -120,6 +121,64 @@ def orca(root: Path, args: list[str], label: str, dry_run: bool = False) -> dict
     if value.get("ok") is False:
         raise FleetError(f"{label} failed: {json.dumps(value, ensure_ascii=False)}")
     return value
+
+
+def release_unknown_terminal_is_inert(inspection: Mapping[str, Any]) -> bool:
+    result = inspection.get("result")
+    if not isinstance(result, Mapping):
+        return False
+    dispatch = result.get("dispatch")
+    worker = result.get("worker")
+    terminal = result.get("terminal")
+    observation = result.get("observation")
+    return bool(
+        isinstance(dispatch, Mapping)
+        and dispatch.get("status") == "completed"
+        and isinstance(worker, Mapping)
+        and worker.get("stage") == "settled"
+        and isinstance(terminal, Mapping)
+        and terminal.get("connected") is False
+        and terminal.get("writable") is False
+        and isinstance(observation, Mapping)
+        and observation.get("exactWorker") is True
+    )
+
+
+def settle_worker(root: Path, action: str, dispatch: str, dry_run: bool = False) -> dict[str, Any]:
+    """Settle one exact worker and safely tolerate an inert release_unknown.
+
+    Orca may exit 1 after closing a completed worker when it cannot prove the
+    final process stop. We advance only after `worker-show` proves the exact
+    dispatch is settled and its terminal is disconnected and non-writable.
+    """
+    cmd = ["orca", "orchestration", action, "--dispatch", dispatch, "--json"]
+    cp = run(cmd, cwd=root, dry_run=dry_run, echo=True, check=False)
+    if dry_run:
+        return {"ok": True, "dry_run": True, "command": cmd}
+    receipt = parse_json(cp.stdout, action)
+    if not isinstance(receipt, dict) or receipt.get("ok") is False:
+        raise FleetError(f"{action} failed: {json.dumps(receipt, ensure_ascii=False)}")
+    if cp.returncode == 0:
+        return receipt
+    state = find_key(receipt, {"state"})
+    if state != "release_unknown":
+        raise FleetError(f"{action} exited {cp.returncode}: {json.dumps(receipt, ensure_ascii=False)}")
+    inspection = orca(
+        root,
+        ["orchestration", "worker-show", "--dispatch", dispatch],
+        "worker-show after release_unknown",
+    )
+    if not release_unknown_terminal_is_inert(inspection):
+        raise FleetError(
+            "worker settlement remains unsafe after release_unknown: "
+            + json.dumps(inspection, ensure_ascii=False)
+        )
+    return {
+        "ok": True,
+        "state": "release_unknown_inspected_inert",
+        "release": receipt,
+        "inspection": inspection,
+    }
 
 
 def repo_selector(root: Path, cfg: Mapping[str, Any], dry_run: bool = False) -> str:
@@ -356,7 +415,7 @@ def render_spec(root: Path, cfg: Mapping[str, Any], state: Mapping[str, Any], ta
         "## Dependency evidence", "", *(deps or ["- None"]), "",
         "## Mandatory first commands", "", "```bash", " \\\n  ".join(init),
         "python scripts/gate.py check --preflight", "```", "",
-        "The Orca worker preamble contains the actual task_... and dispatch_... IDs. Use those exact IDs in worker_finish.py.",
+        "The Orca worker preamble contains the actual task_... ID and dispatch identity (dispatch_... or ctx_...). Use those exact IDs in worker_finish.py.",
         "", "---", "", contract,
     ]
     return "\n".join(lines)
@@ -397,9 +456,9 @@ def dispatch_wave(root: Path, cfg: Mapping[str, Any], state: dict[str, Any], wav
         elif task.get("effort"):
             raise FleetError(f"task {tid}: effort requires model")
         started = orca(root, cmd, f"start worker {tid}", dry_run)
-        dispatch = find_prefixed(started, "dispatch_") or (f"dispatch_dry_{tid.lower()}" if dry_run else None)
+        dispatch = find_dispatch_id(started) or (f"dispatch_dry_{tid.lower()}" if dry_run else None)
         if not dispatch:
-            raise FleetError(f"worker-start receipt missing dispatch_ ID for {tid}")
+            raise FleetError(f"worker-start receipt missing dispatch identity for {tid}")
         task["dispatch_id"] = dispatch
         task["branch"] = find_branch(started) or task["workspace_name"]
         task["status"] = "dispatched"
@@ -551,7 +610,7 @@ def do_accept(root: Path, cfg: Mapping[str, Any], args: argparse.Namespace) -> i
     dispatch = task.get("dispatch_id")
     if dispatch:
         action = "worker-retain" if args.retain else "worker-release"
-        evidence["settlement"] = orca(root, ["orchestration", action, "--dispatch", dispatch], action, args.dry_run)
+        evidence["settlement"] = settle_worker(root, action, dispatch, args.dry_run)
     evidence_path = Path(state["run_dir"]) / "evidence" / f"{args.task}-accepted.json"
     save_json(evidence_path, evidence)
     update_waves(state)

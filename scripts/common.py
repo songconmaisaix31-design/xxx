@@ -159,6 +159,28 @@ def find_key(value: Any, names: set[str]) -> Any | None:
     return None
 
 
+def is_dispatch_id(value: Any) -> bool:
+    return isinstance(value, str) and bool(
+        re.fullmatch(r"(?:dispatch|ctx)_[A-Za-z0-9-]{6,}", value)
+    )
+
+
+def find_dispatch_id(value: Any) -> str | None:
+    """Return the runtime dispatch identity without matching action labels.
+
+    Orca 1.4.188 returns a `ctx_...` dispatchId while older runtimes returned
+    `dispatch_...`. Receipts also contain the action label `dispatch_input`,
+    which must never be mistaken for an identity.
+    """
+    keyed = find_key(value, {"dispatchId", "dispatch_id"})
+    if is_dispatch_id(keyed):
+        return str(keyed)
+    for item in walk(value):
+        if is_dispatch_id(item):
+            return str(item)
+    return None
+
+
 def find_branch(value: Any) -> str | None:
     found = find_key(value, {"branch", "branchName", "branch_name", "gitBranch", "ref"})
     if not isinstance(found, str) or not found:

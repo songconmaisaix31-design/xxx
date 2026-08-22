@@ -19,6 +19,7 @@ from common import (
     git_root,
     git_sha,
     integration_analysis,
+    is_dispatch_id,
     load_config,
     load_context,
     now,
@@ -67,8 +68,8 @@ def main() -> int:
 def finish(args: argparse.Namespace) -> int:
     if not args.task_id.startswith("task_"):
         raise FleetError("--task-id must be the injected Orca task_... ID")
-    if not args.dispatch_id.startswith("dispatch_"):
-        raise FleetError("--dispatch-id must be the injected Orca dispatch_... ID")
+    if not is_dispatch_id(args.dispatch_id):
+        raise FleetError("--dispatch-id must be the injected Orca dispatch_... or ctx_... identity")
     root = git_root()
     cfg = load_config(root)
     ctx = load_context(root)
