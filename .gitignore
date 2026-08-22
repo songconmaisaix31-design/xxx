@@ -2,7 +2,9 @@ __pycache__/
 *.py[cod]
 .venv/
 instance/
+*.sqlite3
 .pytest_cache/
+.coverage
 .env
 .env.*
 !.env.example
