@@ -185,6 +185,7 @@
             "app/templates/admin_event_review.html",
             "app/templates/admin_login.html",
             "app/templates/admin_report_review.html",
+            "tests/test_e2e_harness.py",
             "tools/harness_cli.py"
           ],
           "spec": "Start from accepted ARCH-001. Fetch and merge each accepted DATA-001, CORE-001, UX-001, and QA-001 exact remote SHA using clean two-parent --no-ff merges. Abort and escalate on conflicts instead of editing another track. Make only minimal integration-owned adjustments needed for the runbook and acceptance gate, including making harness.cmd prefer the worktree .venv interpreter when present. Run syntax, all Python tests, acceptance tests, Node tests, the HTTP harness, diff checks, and current visual smoke checks. Verify demo mode plus DEMO_MODE=0 startup without reading secrets. Commit and push a clean candidate; never modify or merge into main.",

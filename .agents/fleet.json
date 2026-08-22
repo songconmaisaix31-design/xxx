@@ -141,6 +141,7 @@
         "app/templates/admin_event_review.html",
         "app/templates/admin_login.html",
         "app/templates/admin_report_review.html",
+        "tests/test_e2e_harness.py",
         "tools/harness_cli.py"
       ],
       "checks": [
