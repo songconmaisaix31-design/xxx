@@ -1,0 +1,13 @@
+{
+  "recorded_at": "2026-08-22T20:14:00Z",
+  "logical_task": "GOV-006",
+  "branch": "songconmaisaix31-design/governance-data-base",
+  "sha": "013633354f8b84e5ef5370bf8ace0b81ed1fc0f5",
+  "parent_sha": "97ecb35612f9c00c834aa94dcd47224480eb60a8",
+  "purpose": "Restore valid immutable worker ownership and give INT-001 only a new non-overlapping integration evidence directory for final claims, screenshots, and sanitized Public Live results.",
+  "verification": {
+    "kit_tests": "9 passed",
+    "git_diff_check": "passed",
+    "remote_publication": "published and verified at 013633354f8b84e5ef5370bf8ace0b81ed1fc0f5 by exact ls-remote SHA"
+  }
+}

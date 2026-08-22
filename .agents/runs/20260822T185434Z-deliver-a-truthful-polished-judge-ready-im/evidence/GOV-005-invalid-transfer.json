@@ -1,0 +1,13 @@
+{
+  "recorded_at": "2026-08-22T20:13:00Z",
+  "logical_task": "GOV-005",
+  "branch": "songconmaisaix31-design/governance-data-base",
+  "sha": "97ecb35612f9c00c834aa94dcd47224480eb60a8",
+  "parent_sha": "fb752e82b326c83a89bcb6697348bc359af39f19",
+  "purpose": "Attempted static ownership transfer after UX-001 and QA-001 completion.",
+  "verification": {
+    "kit_tests": "failed: three historical task paths fell outside their original track ownership",
+    "remote_publication": "published before the native Python exit code was checked; superseded by GOV-006",
+    "accepted_for_integration": false
+  }
+}

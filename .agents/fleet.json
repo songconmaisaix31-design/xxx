@@ -143,9 +143,6 @@
         "app/templates/admin_report_review.html",
         "tests/test_e2e_harness.py",
         "tools/harness_cli.py",
-        "submission/**",
-        "docs/qa/hackathon/acceptance/**",
-        "docs/qa/hackathon/ui/**",
         "docs/qa/hackathon/integration/**"
       ],
       "checks": [
