@@ -183,6 +183,19 @@ class ChatMissionDeckTests(unittest.TestCase):
         self.assertIn("messageLog.scrollTop = messageLog.scrollHeight;", chat_js)
         self.assertIn("dialog.hidden = false;", chat_js)
         self.assertIn("dialog.hidden = true;", chat_js)
+        self.assertRegex(chat_css, r"\.safety-launch\s*\{[^}]*color:\s*var\(--neo-ink\);")
+        self.assertIn('.report-launch[aria-expanded="true"]', chat_css)
+        self.assertIn('button.setAttribute("aria-expanded", String(isOpen));', chat_js)
+
+        launchers = {
+            attrs.get("data-dialog-open"): attrs
+            for tag, attrs in dom.elements_with("data-dialog-open")
+            if tag == "button"
+        }
+        self.assertEqual(set(launchers), {"report-dialog", "block-dialog"})
+        self.assertEqual(launchers["report-dialog"].get("aria-controls"), "report-dialog")
+        self.assertEqual(launchers["report-dialog"].get("aria-expanded"), "false")
+        self.assertEqual(launchers["report-dialog"].get("aria-haspopup"), "dialog")
 
         tool_forms = {
             form["attrs"].get("data-tool"): form["attrs"]
@@ -195,6 +208,30 @@ class ChatMissionDeckTests(unittest.TestCase):
         self.assertIn("tool-unlock", self._classes(tool_forms["unlock"]))
         self.assertEqual(tool_forms["dice"].get("data-tool-state"), "ready")
         self.assertEqual(tool_forms["task_card"].get("data-tool-state"), "random")
+
+        tool_images = {
+            attrs.get("src"): attrs
+            for tag, attrs in dom.elements
+            if tag == "img" and "tool-visual" in self._classes(attrs)
+        }
+        expected_images = {
+            "/static/img/chat-tool-dice.webp",
+            "/static/img/chat-tool-task.webp",
+            "/static/img/chat-tool-unlock.webp",
+        }
+        self.assertEqual(set(tool_images), expected_images)
+        for image_url in expected_images:
+            image_path = Path(self.app.root_path) / "static" / image_url.removeprefix("/static/")
+            with self.subTest(image=image_url):
+                self.assertTrue(image_path.is_file())
+                image_header = image_path.read_bytes()[:12]
+                self.assertEqual(image_header[:4], b"RIFF")
+                self.assertEqual(image_header[8:12], b"WEBP")
+                self.assertEqual(tool_images[image_url].get("alt"), "")
+                self.assertEqual(tool_images[image_url].get("loading"), "lazy")
+                self.assertEqual(tool_images[image_url].get("decoding"), "async")
+                self.assertEqual(tool_images[image_url].get("width"), "720")
+                self.assertEqual(tool_images[image_url].get("height"), "720")
 
     def test_group_block_is_absent_and_archived_chat_is_read_only(self) -> None:
         with self.app.app_context():

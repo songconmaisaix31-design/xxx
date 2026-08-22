@@ -50,6 +50,26 @@
       </div>
     </section>
 
+    <section class="content-section admin-accounts" aria-labelledby="accounts-title">
+      <div class="section-heading-line"><div><p class="eyebrow">ACCOUNT DIRECTORY</p><h2 id="accounts-title">注册账户（{{ registered_users|length }}）</h2><p>仅供后台核验；不展示密码或第三方授权内容。</p></div></div>
+      <form class="admin-account-search" method="get" role="search">
+        <label for="account-search">搜索账户</label>
+        <div><input id="account-search" name="q" value="{{ account_query }}" maxlength="80" placeholder="邮箱、匿名代号或城市"><button class="button secondary" type="submit">搜索</button></div>
+      </form>
+      <div class="admin-account-table-wrap">
+        <table class="admin-account-table">
+          <thead><tr><th scope="col">账号邮箱</th><th scope="col">匿名代号</th><th scope="col">城市</th><th scope="col">手机验证</th><th scope="col">注册时间</th><th scope="col">已授权数据源</th></tr></thead>
+          <tbody>
+            {% for user in registered_users %}
+              <tr><td data-label="账号邮箱">{{ user.email }}</td><td data-label="匿名代号">{{ user.anonymous_alias }}</td><td data-label="城市">{{ user.city }}</td><td data-label="手机验证">{{ '已验证' if user.phone_verified else '未验证' }}</td><td data-label="注册时间">{{ user.created_at }}</td><td data-label="已授权数据源">{{ user.authorized_source_count }}</td></tr>
+            {% else %}
+              <tr><td class="admin-account-empty" colspan="6">未找到匹配的注册账户。</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <section class="content-section admin-audit" aria-labelledby="audit-title">
       <div class="section-heading-line"><div><p class="eyebrow">AUDIT TRAIL</p><h2 id="audit-title">最近操作</h2></div></div>
       <div class="detail-panel admin-audit-list">

@@ -116,6 +116,40 @@
   font-weight: 750;
 }
 
+.admin-accounts {
+  border-top: var(--neo-border-heavy) solid var(--neo-ink);
+  padding-top: var(--neo-space-6);
+}
+
+.admin-accounts .section-heading-line { margin-bottom: var(--neo-space-4); }
+.admin-accounts .section-heading-line > div > p:last-child { color: var(--neo-muted); font-size: 0.84rem; }
+
+.admin-account-search {
+  display: grid;
+  gap: var(--neo-space-2);
+  margin-bottom: var(--neo-space-4);
+}
+
+.admin-account-search label { font-size: 0.8rem; font-weight: 800; }
+.admin-account-search > div { display: flex; gap: var(--neo-space-2); max-width: 38rem; }
+.admin-account-search input { min-width: 0; flex: 1; }
+
+.admin-account-table-wrap {
+  overflow-x: auto;
+  border: var(--neo-border) solid var(--neo-ink);
+  border-radius: var(--neo-radius-card);
+  background: var(--neo-paper);
+  box-shadow: var(--neo-shadow-xs);
+}
+
+.admin-account-table { width: 100%; min-width: 48rem; border-collapse: collapse; font-size: 0.82rem; }
+.admin-account-table th,
+.admin-account-table td { border-bottom: var(--neo-border-thin) solid var(--neo-ink); padding: 0.85rem 0.9rem; text-align: left; vertical-align: top; }
+.admin-account-table th { background: var(--neo-yellow); font-size: 0.7rem; letter-spacing: 0.05em; }
+.admin-account-table tbody tr:last-child td { border-bottom: 0; }
+.admin-account-table td:last-child { text-align: center; font-family: var(--neo-font-mono); font-weight: 800; }
+.admin-account-empty { color: var(--neo-muted); text-align: center !important; }
+
 .admin-audit {
   border: var(--neo-border-heavy) solid var(--neo-ink);
   border-radius: var(--neo-radius-panel);
@@ -250,6 +284,22 @@
   .admin-event-queue .event-action,
   .admin-event-queue .button,
   .admin-report-queue .button { width: 100%; }
+
+  .admin-account-search > div { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .admin-account-search .button { width: 100%; }
+  .admin-account-table { min-width: 0; }
+  .admin-account-table thead { display: none; }
+  .admin-account-table,
+  .admin-account-table tbody,
+  .admin-account-table tr,
+  .admin-account-table td { display: block; width: 100%; }
+  .admin-account-table tr { border-bottom: var(--neo-border) solid var(--neo-ink); padding: 0.4rem 0; }
+  .admin-account-table tbody tr:last-child { border-bottom: 0; }
+  .admin-account-table td { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: var(--neo-space-3); border: 0; padding: 0.35rem 0.8rem; overflow-wrap: anywhere; }
+  .admin-account-table td::before { color: var(--neo-muted); content: attr(data-label); font-size: 0.72rem; font-weight: 800; }
+  .admin-account-table td:last-child { text-align: left; }
+  .admin-account-table .admin-account-empty { display: block; padding: 1rem; }
+  .admin-account-table .admin-account-empty::before { content: none; }
 
   .admin-audit { border-width: var(--neo-border); border-radius: 1rem; }
 

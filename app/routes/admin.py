@@ -10,6 +10,7 @@ from ..services.moderation import (
     get_event_for_review,
     get_report_for_review,
     list_pending_events,
+    list_registered_users,
     list_reports,
     recent_audit_logs,
     review_event,
@@ -50,11 +51,14 @@ def logout():
 @bp.get("/")
 @admin_login_required
 def dashboard():
+    account_query = request.args.get("q", "")
     return render_template(
         "admin_dashboard.html",
         admin=current_admin(),
         pending_events=list_pending_events(),
         pending_reports=list_reports(),
+        registered_users=list_registered_users(account_query),
+        account_query=account_query.strip()[:80],
         audit_logs=recent_audit_logs(),
     )
 

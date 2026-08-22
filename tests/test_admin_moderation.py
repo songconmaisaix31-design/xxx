@@ -109,6 +109,27 @@ class AdminModerationTests(unittest.TestCase):
             self.assertEqual(flask_session.get("admin_id"), "admin_demo")
             self.assertNotIn("user_id", flask_session)
 
+    def test_dashboard_lists_limited_registered_accounts_and_supports_search(self) -> None:
+        self._login_admin()
+        with self.app.app_context():
+            password_hash = get_db().execute(
+                "SELECT password_hash FROM users WHERE id = ?", ("demo_001",)
+            ).fetchone()["password_hash"]
+
+        dashboard = self.client.get("/admin/").get_data(as_text=True)
+        self.assertIn("注册账户（4）", dashboard)
+        self.assertIn("demo@realtags.local", dashboard)
+        self.assertIn("晨光旅人", dashboard)
+        self.assertIn("已授权数据源", dashboard)
+        self.assertNotIn(password_hash, dashboard)
+        self.assertNotIn("mock-duolingo-token", dashboard)
+        self.assertNotIn("mock-keep-token", dashboard)
+
+        searched = self.client.get("/admin/?q=%E5%A4%9C%E8%88%AA").get_data(as_text=True)
+        self.assertIn("注册账户（1）", searched)
+        self.assertIn("sora@realtags.local", searched)
+        self.assertNotIn("demo@realtags.local", searched)
+
     def test_admin_approves_pending_event_once_and_audits_it(self) -> None:
         event_id = self._create_pending_event()
         self._login_admin()

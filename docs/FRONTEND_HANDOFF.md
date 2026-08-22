@@ -61,7 +61,7 @@
 | 发起饭局 | `GET/POST /events/new` | `event_form.html` | `pois`、`tags`、`default_start` | 发布后详情 |
 | 饭局详情 | `GET /events/<id>` | `event_detail.html` | `event`、`applicants`、`coupon`、`demo_mode` | 报名、审核、取消、群聊、核销、举报 |
 | 管理员登录 | `GET/POST /admin/login` | `admin_login.html` | 无 | 成功后 `/admin/` |
-| 审核控制台 | `GET /admin/` | `admin_dashboard.html` | `admin`、`pending_events`、`pending_reports`、`audit_logs` | 打开活动/举报审核 |
+| 审核控制台 | `GET /admin/` | `admin_dashboard.html` | `admin`、`pending_events`、`pending_reports`、`registered_users`、`account_query`、`audit_logs` | 搜索账户、打开活动/举报审核 |
 | 活动审核 | `GET /admin/events/<id>`、`POST .../review` | `admin_event_review.html` | `admin`、`event` | `approve` / `reject` |
 | 举报审核 | `GET /admin/reports/<id>`、`POST .../review` | `admin_report_review.html` | `admin`、`report` | `resolved` / `dismissed` |
 
@@ -199,7 +199,9 @@ alias, interest_tags  # 仅 1–2 个兴趣标签
 | 举报 | `/conversations/<id>/report`，字段 `reason`（1–200） |
 | 拉黑 | `/conversations/<id>/block`，仅一对一会话 |
 
-所有工具结果由后端生成并作为 `system_card` 消息返回，前端不掷骰子、不随机抽题、不在客户端决定解锁内容。`DEMO_MODE` 打开时才显示推进阶段的演示按钮。
+所有工具结果由后端生成并作为 `system_card` 消息返回，前端不掷骰子、不随机抽题、不在客户端决定解锁内容。`DEMO_MODE` 打开时才显示推进阶段的演示按钮。任务入口使用 `app/static/img/chat-tool-{dice,task,unlock}.webp` 三张装饰图；图片 `alt=""`，因为同一按钮内已有完整可见名称与说明。手机端工具区为横向吸附卡组，不应退化成三个被挤窄的栏。
+
+增强环境下，举报入口初始 `aria-expanded="false"` 且保持白色；原生 `dialog` 成功打开后脚本才设为 `true`，对应黄色打开态，关闭、Esc 或打开失败时必须恢复 `false`。无 `HTMLDialogElement` 时保留服务端表单回退。
 
 ### 6.4 发起饭局：`POST /events/new`
 
@@ -230,6 +232,7 @@ alias, interest_tags  # 仅 1–2 个兴趣标签
 ### 6.6 管理员审核
 
 - 管理员使用与普通用户完全分离的 `admin_id` session；普通登录态不能访问 `/admin/`。
+- 注册账户目录为只读白名单视图，可用 `GET /admin/?q=<邮箱|匿名代号|城市>` 搜索；只允许返回邮箱、匿名代号、城市、手机验证、注册时间及已连接数据源数量，禁止查询或渲染 `password_hash`、`access_token`。
 - 活动决定提交到 `POST /admin/events/<id>/review`：字段 `decision=approve|reject`；拒绝时 `rejection_reason` 必填且最多 500 字。
 - 举报决定提交到 `POST /admin/reports/<id>/review`：字段 `decision=resolved|dismissed`，可带 `note`（最多 500 字）。
 - 所有决定使用 PRG 跳转，后端防止重复处理和非法状态转换；前端不能乐观修改队列或伪造完成状态。
@@ -298,7 +301,7 @@ V2 核心令牌位于 `app/static/css/brutalist-foundation.css` 的 `:root`；`a
 | 会话详情 | `.mission-header`、`.relation-deck`、`.mission-log`、`.mission-drawer` | 借鉴任务台排版，但完整沿用项目令牌；不同系统任务拥有不同票据结构 |
 | 饭局广场 | `.nearby-panel`、`.filter-bar`、`.event-list`、`.event-row` | 请求期定位说明、附近状态和编辑式活动条目 |
 | 饭局详情 | `.event-detail-hero`、`.detail-grid`、`.group-entry`、`.coupon-panel` | 决策区、活动事实、安全边界、成团/权益状态 |
-| 管理后台 | `.admin-shell`、`.admin-queue-card`、`.admin-audit` | 活动、举报与审计三种不同任务表面，保持项目视觉一致 |
+| 管理后台 | `.admin-shell`、`.admin-queue-card`、`.admin-account-table`、`.admin-audit` | 活动、举报、只读账户与审计使用不同任务表面，保持项目视觉一致 |
 
 系统卡片的 class 判定必须优先于发送者判定：`message_type == 'system_card'` 时始终使用 `.message.system`，不能因为触发工具的人是本人就画成私信气泡。
 
@@ -315,7 +318,7 @@ V2 核心令牌位于 `app/static/css/brutalist-foundation.css` 的 `:root`；`a
 - 底部导航和页脚包含 `env(safe-area-inset-*)`；页面底部预留导航高度，不能遮住表单、危险操作或页脚。
 - `prefers-reduced-motion` 会关闭平滑滚动与过渡；`forced-colors` 保留按钮、状态和当前导航边界。
 - flash 错误使用 `role="alert"`，成功/提示使用 `role="status"`；聊天消息流使用有名称的 `role="log"`，消息显示“我 / 对方 / 系统任务”而非只靠颜色区分。
-- 举报原因有真实 `<label>`；重复审核按钮有包含申请序号的 `aria-label`；待解锁问号对读屏器隐藏，只保留父级完整描述。
+- 举报原因有真实 `<label>`；弹窗入口同步 `aria-controls` / `aria-haspopup="dialog"` / `aria-expanded`；重复审核按钮有包含申请序号的 `aria-label`；待解锁问号对读屏器隐藏，只保留父级完整描述。
 
 ### 8.5 动效与渐进增强
 

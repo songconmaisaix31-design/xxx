@@ -219,16 +219,17 @@
               <form class="tool-card tool-dice" method="post" action="{{ url_for('chat.tool', conversation_id=conversation.id, tool='dice') }}" data-tool="dice" data-tool-state="ready">
                 <button type="submit">
                   <span class="tool-number">01 / D6</span>
-                  <strong class="tool-dice-value">D6</strong>
-                  <small>摇骰子 · 随机开启话题</small>
+                  <img class="tool-visual" src="{{ url_for('static', filename='img/chat-tool-dice.webp') }}" width="720" height="720" loading="lazy" decoding="async" alt="">
+                  <span class="tool-copy"><strong class="tool-dice-value">摇骰子</strong><small>随机开启一个共同话题</small></span>
                   <span class="tool-state">随时可用</span>
                 </button>
               </form>
 
               <form class="tool-card tool-task" method="post" action="{{ url_for('chat.tool', conversation_id=conversation.id, tool='task_card') }}" data-tool="task_card" data-tool-state="random">
                 <button type="submit">
-                  <span class="tool-title-pair"><span class="tool-number">02 / CARD</span><strong>抽任务卡</strong></span>
-                  <small>触发一项共同任务</small>
+                  <span class="tool-number">02 / CARD</span>
+                  <img class="tool-visual" src="{{ url_for('static', filename='img/chat-tool-task.webp') }}" width="720" height="720" loading="lazy" decoding="async" alt="">
+                  <span class="tool-copy"><strong>抽任务卡</strong><small>触发一项共同任务</small></span>
                   <span class="tool-state">随机抽取</span>
                 </button>
               </form>
@@ -237,7 +238,8 @@
               <form class="tool-card tool-unlock{% if unlock_complete %} is-complete{% endif %}" method="post" action="{{ url_for('chat.tool', conversation_id=conversation.id, tool='unlock') }}" data-tool="unlock" data-tool-state="{{ 'complete' if unlock_complete else 'ready' }}">
                 <button type="submit"{% if unlock_complete %} disabled aria-disabled="true"{% endif %}>
                   <span class="tool-number">03 / POINT</span>
-                  <span class="tool-unlock-copy"><strong>{{ '群组解锁' if not is_direct else '解锁匹配点' }}</strong><small>{{ '让全桌自然开口' if not is_direct else '发现一条真实线索' }}</small></span>
+                  <img class="tool-visual" src="{{ url_for('static', filename='img/chat-tool-unlock.webp') }}" width="720" height="720" loading="lazy" decoding="async" alt="">
+                  <span class="tool-copy"><strong>{{ '群组解锁' if not is_direct else '解锁匹配点' }}</strong><small>{{ '让全桌自然开口' if not is_direct else '发现一条真实线索' }}</small></span>
                   <span class="tool-state">{{ '全部完成' if unlock_complete else '可解锁' }}</span>
                 </button>
               </form>
@@ -259,8 +261,8 @@
 
         <div class="safety-launchers" aria-label="安全操作">
           <div><span>SAFETY</span><strong>安全与举报</strong><p>遇到不适内容时，随时提交服务端记录。</p></div>
-          <button class="safety-launch report-launch" type="button" data-dialog-open="report-dialog">举报会话</button>
-          {% if is_direct %}<button class="safety-launch block-launch" type="button" data-dialog-open="block-dialog">拉黑对方</button>{% endif %}
+          <button class="safety-launch report-launch" type="button" data-dialog-open="report-dialog" aria-controls="report-dialog" aria-haspopup="dialog" aria-expanded="false">举报会话</button>
+          {% if is_direct %}<button class="safety-launch block-launch" type="button" data-dialog-open="block-dialog" aria-controls="block-dialog" aria-haspopup="dialog" aria-expanded="false">拉黑对方</button>{% endif %}
         </div>
 
         <details class="danger-zone safety-fallback" id="safety-fallback">

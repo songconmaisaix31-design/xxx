@@ -49,8 +49,13 @@
   if (!launchers.length || dialogs.length !== launchers.length) return;
   shell.dataset.chatEnhanced = "true";
 
+  const setLauncherState = (button, isOpen) => {
+    button.setAttribute("aria-expanded", String(isOpen));
+  };
+
   let lastLauncher = null;
   launchers.forEach((button) => {
+    setLauncherState(button, false);
     button.addEventListener("click", () => {
       const dialog = document.getElementById(button.dataset.dialogOpen);
       if (!(dialog instanceof window.HTMLDialogElement) || dialog.open) return;
@@ -58,8 +63,10 @@
       dialog.hidden = false;
       try {
         dialog.showModal();
+        setLauncherState(button, true);
       } catch (_) {
         dialog.hidden = true;
+        setLauncherState(button, false);
         lastLauncher = null;
         delete shell.dataset.chatEnhanced;
         return;
@@ -79,6 +86,8 @@
     });
 
     dialog.addEventListener("close", () => {
+      const launcher = launchers.find((button) => button.dataset.dialogOpen === dialog.id);
+      if (launcher) setLauncherState(launcher, false);
       if (lastLauncher && document.contains(lastLauncher)) lastLauncher.focus();
       lastLauncher = null;
       dialog.hidden = true;

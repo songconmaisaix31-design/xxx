@@ -180,6 +180,28 @@ def list_reports(status: str = REPORT_PENDING_STATUS) -> list[dict]:
     return [dict(row) for row in rows]
 
 
+def list_registered_users(query: str = "") -> list[dict]:
+    """Return the limited account fields needed for the administrator's read-only view."""
+    query = query.strip()[:80]
+    conditions = ""
+    params: tuple[str, ...] = ()
+    if query:
+        conditions = "WHERE u.email LIKE ? OR u.anonymous_alias LIKE ? OR u.city LIKE ?"
+        like_query = f"%{query}%"
+        params = (like_query, like_query, like_query)
+    rows = get_db().execute(
+        f"""SELECT u.email, u.anonymous_alias, u.city, u.phone_verified, u.created_at,
+                   COUNT(CASE WHEN ec.status = 'connected' THEN 1 END) AS authorized_source_count
+            FROM users u
+            LEFT JOIN external_connections ec ON ec.user_id = u.id
+            {conditions}
+            GROUP BY u.id, u.email, u.anonymous_alias, u.city, u.phone_verified, u.created_at
+            ORDER BY u.created_at DESC, u.email""",
+        params,
+    ).fetchall()
+    return [dict(row) for row in rows]
+
+
 def get_report_for_review(report_id: str) -> dict | None:
     row = get_db().execute(f"{_REPORT_SELECT} WHERE r.id = ?", (report_id,)).fetchone()
     return dict(row) if row else None
