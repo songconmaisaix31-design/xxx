@@ -142,12 +142,17 @@
         "app/templates/admin_login.html",
         "app/templates/admin_report_review.html",
         "tests/test_e2e_harness.py",
-        "tools/harness_cli.py"
+        "tools/harness_cli.py",
+        "submission/**",
+        "docs/qa/hackathon/acceptance/**",
+        "docs/qa/hackathon/ui/**",
+        "docs/qa/hackathon/integration/**"
       ],
       "checks": [
         ".venv\\Scripts\\python.exe -m compileall -q app tools",
         ".venv\\Scripts\\python.exe -m unittest discover -s tests -v",
         ".venv\\Scripts\\python.exe -m unittest discover -s tests/acceptance -v",
+        ".venv\\Scripts\\python.exe tools/hackathon_acceptance.py --require-assembly",
         "node --test tests/match_flow.test.mjs",
         "harness.cmd --no-color",
         "git diff --check"
