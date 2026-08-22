@@ -159,7 +159,25 @@ class ChatMissionDeckTests(unittest.TestCase):
 
         dialog_ids = {attrs.get("id") for tag, attrs in dom.elements if tag == "dialog"}
         self.assertEqual({"report-dialog", "block-dialog"}, dialog_ids)
+        for _, attrs in dom.elements_with("id"):
+            if attrs.get("id") in dialog_ids:
+                self.assertIn("hidden", attrs)
         self.assertTrue(dom.elements_with("id", "safety-fallback"))
+
+        canvas = [
+            attrs
+            for tag, attrs in dom.elements
+            if tag == "section" and "conversation-canvas" in self._classes(attrs)
+        ]
+        self.assertEqual(len(canvas), 1)
+
+        chat_css = (Path(self.app.root_path) / "static" / "css" / "chat-mission-deck.css").read_text(encoding="utf-8")
+        chat_js = (Path(self.app.root_path) / "static" / "js" / "chat-mission-deck.js").read_text(encoding="utf-8")
+        self.assertIn(".safety-dialog:not([open])", chat_css)
+        self.assertIn(".mission-workspace", chat_css)
+        self.assertIn("grid-template-columns: minmax(0, 1fr);", chat_css)
+        self.assertIn("dialog.hidden = false;", chat_js)
+        self.assertIn("dialog.hidden = true;", chat_js)
 
         tool_forms = {
             form["attrs"].get("data-tool"): form["attrs"]

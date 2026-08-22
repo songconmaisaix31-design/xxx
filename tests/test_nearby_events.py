@@ -6,7 +6,7 @@ from pathlib import Path
 
 from app import create_app
 from app.config import Config
-from app.services.events import POI_LOCATIONS, list_events
+from app.services.events import POI_LOCATIONS, list_events, parse_nearby_query
 from app.services.users import ValidationError
 
 
@@ -30,6 +30,7 @@ class NearbyEventsTests(unittest.TestCase):
         args = {
             "lat": str(origin["lat"]),
             "lng": str(origin["lng"]),
+            "accuracy": "18.4",
             "radius": "50",
             "sort": "distance",
         }
@@ -48,6 +49,13 @@ class NearbyEventsTests(unittest.TestCase):
         self.assertLess(html.index("读书与独立电影分享局"), html.index("周末跑步后的早午餐"))
         self.assertEqual(html.count('class="distance-chip"'), 3)
         self.assertIn("距离为估算值", html)
+        self.assertIn("你的位置", html)
+        self.assertIn("31.2253, 121.4420", html)
+        self.assertIn("浏览器精度", html)
+        self.assertIn("约 18 m", html)
+        self.assertIn("最近白名单 POI", html)
+        self.assertIn("知味里·静安店", html)
+        self.assertIn("不会保存到你的账户、会话或数据库", html)
         self.assertIn('method="get" action="/events"', html)
         with self.client.session_transaction() as flask_session:
             self.assertNotIn("lat", flask_session)
@@ -61,6 +69,7 @@ class NearbyEventsTests(unittest.TestCase):
             {"lat": "31", "lng": "121", "radius": "0"},
             {"lat": "31", "lng": "121", "radius": "50.1"},
             {"lat": "nan", "lng": "121", "radius": "5"},
+            {"lat": "31", "lng": "121", "accuracy": "nan", "radius": "5"},
         )
         with self.app.app_context():
             for query in invalid_queries:
@@ -93,6 +102,16 @@ class NearbyEventsTests(unittest.TestCase):
         self.assertIn("已保留城市筛选和全部活动", script)
         self.assertNotIn("fetch(", script)
         self.assertNotIn("localStorage", script)
+        self.assertIn("position.coords.accuracy", script)
+
+    def test_location_summary_uses_the_nearest_whitelisted_poi_and_rounds_for_display(self) -> None:
+        nearby = parse_nearby_query({"lat": "31.22534", "lng": "121.44196", "accuracy": "12.7"})
+
+        self.assertEqual(nearby["lat_param"], "31.2253")
+        self.assertEqual(nearby["lng_param"], "121.4420")
+        self.assertEqual(nearby["accuracy_m"], 13)
+        self.assertEqual(nearby["nearest_poi"]["id"], "poi_001")
+        self.assertEqual(nearby["nearest_poi"]["distance_km"], 0.0)
 
     def test_unlocated_listing_preserves_the_existing_service_contract(self) -> None:
         with self.app.app_context():

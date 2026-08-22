@@ -28,8 +28,9 @@
 
     navigator.geolocation.getCurrentPosition(
       function (position) {
-        form.elements.lat.value = position.coords.latitude.toFixed(5);
-        form.elements.lng.value = position.coords.longitude.toFixed(5);
+        form.elements.lat.value = position.coords.latitude.toFixed(4);
+        form.elements.lng.value = position.coords.longitude.toFixed(4);
+        form.elements.accuracy.value = Math.round(position.coords.accuracy);
         form.elements.city.value = "";
         form.elements.sort.value = "distance";
         form.elements.sort.querySelector('[value="distance"]').disabled = false;

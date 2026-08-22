@@ -35,7 +35,7 @@ def index():
     except ValidationError as error:
         flash(f"{error} 已回退为城市与全部活动筛选。", "error")
         filters = request.args.to_dict()
-        for key in ("lat", "lng", "radius"):
+        for key in ("lat", "lng", "accuracy", "radius"):
             filters.pop(key, None)
         if filters.get("sort") == "distance":
             filters.pop("sort")

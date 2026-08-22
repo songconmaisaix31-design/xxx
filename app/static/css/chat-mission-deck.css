@@ -331,17 +331,38 @@
   font-weight: 850;
 }
 
+.conversation-canvas {
+  margin-top: 0.85rem;
+  overflow: clip;
+  border: var(--neo-border-heavy) solid var(--neo-ink);
+  border-radius: var(--neo-radius-panel);
+  background: var(--neo-paper);
+  box-shadow: var(--neo-shadow-lg);
+}
+
+.conversation-canvas > .relation-deck,
+.conversation-canvas > .group-route {
+  padding-inline: clamp(1rem, 3vw, 2rem);
+}
+
+.conversation-canvas > .relation-unlocks,
+.conversation-canvas > .contact-unlock {
+  padding-inline: clamp(1rem, 3vw, 2rem);
+}
+
+.chat-page .conversation-canvas .chat-jump {
+  margin: 0.35rem clamp(1rem, 3vw, 2rem);
+}
+
 .mission-workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.38fr);
-  align-items: start;
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
   margin-top: 0.5rem;
 }
 
 .mission-log {
   min-width: 0;
-  border-top: var(--neo-border-heavy) solid var(--neo-ink);
   background: rgba(255, 254, 250, 0.72);
 }
 
@@ -669,10 +690,12 @@
 }
 
 .mission-command {
-  position: sticky;
-  top: 1rem;
+  position: static;
   display: grid;
   gap: 0.75rem;
+  border-top: var(--neo-border-heavy) solid var(--neo-ink);
+  background: var(--neo-paper-deep);
+  padding: clamp(0.9rem, 2.5vw, 1.35rem);
 }
 
 .chat-page .mission-composer {
@@ -1004,6 +1027,12 @@
   padding: 0;
 }
 
+/* Native dialog normally supplies this, but this guard survives broad dialog rules. */
+.safety-dialog:not([open]),
+.safety-dialog[hidden] {
+  display: none !important;
+}
+
 .safety-dialog::backdrop {
   background: rgba(18, 17, 14, 0.68);
 }
@@ -1015,7 +1044,36 @@
 }
 
 .report-dialog {
-  border-top-color: var(--neo-yellow);
+  border-color: var(--neo-ink);
+  border-top-color: var(--neo-coral);
+  background: #fff0ec;
+  background: color-mix(in srgb, var(--neo-coral) 12%, var(--neo-paper));
+  box-shadow: var(--neo-shadow-lg), 8px 8px 0 var(--neo-coral);
+}
+
+.report-dialog .dialog-heading {
+  border: var(--neo-border-thin) solid var(--neo-ink);
+  background: var(--neo-paper-deep);
+  box-shadow: var(--neo-shadow-xs);
+  padding: 0.85rem;
+}
+
+.report-dialog .dialog-heading > span {
+  display: inline-flex;
+  border: var(--neo-border-thin) solid var(--neo-ink);
+  border-radius: var(--neo-radius-pill);
+  background: var(--neo-coral);
+  color: var(--neo-ink);
+  padding: 0.2rem 0.45rem;
+}
+
+.report-dialog label {
+  border-left: var(--neo-border-heavy) solid var(--neo-coral);
+  padding-left: 0.75rem;
+}
+
+.report-dialog textarea {
+  background: var(--neo-paper);
 }
 
 .block-dialog {
@@ -1115,16 +1173,12 @@
   }
 
   .mission-command {
-    position: sticky;
-    top: auto;
-    bottom: 0;
-    z-index: 60;
-    background: var(--neo-cream);
-    padding: 0.35rem 0 0.65rem;
+    position: static;
+    padding: 0.75rem;
   }
 
   .mission-log {
-    border-bottom: var(--neo-border-heavy) solid var(--neo-ink);
+    border-bottom: 0;
   }
 }
 
@@ -1134,7 +1188,7 @@
   }
 
   .mission-command {
-    bottom: calc(var(--mobile-dock-height) + env(safe-area-inset-bottom));
+    padding-bottom: calc(0.65rem + env(safe-area-inset-bottom));
   }
 }
 
@@ -1196,6 +1250,17 @@
     grid-template-columns: minmax(0, 1fr);
     gap: 0.65rem;
     padding: 1rem 0 0.75rem;
+  }
+
+  .conversation-canvas > .relation-deck,
+  .conversation-canvas > .group-route,
+  .conversation-canvas > .relation-unlocks,
+  .conversation-canvas > .contact-unlock {
+    padding-inline: 0.75rem;
+  }
+
+  .chat-page .conversation-canvas .chat-jump {
+    margin-inline: 0.75rem;
   }
 
   .relation-copy {
@@ -1346,7 +1411,7 @@
 
   .mission-command {
     gap: 0.5rem;
-    margin-inline: -0.2rem;
+    margin-inline: 0;
   }
 
   .chat-page .mission-composer,

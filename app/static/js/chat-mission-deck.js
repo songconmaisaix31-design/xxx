@@ -48,7 +48,15 @@
       const dialog = document.getElementById(button.dataset.dialogOpen);
       if (!(dialog instanceof window.HTMLDialogElement) || dialog.open) return;
       lastLauncher = button;
-      dialog.showModal();
+      dialog.hidden = false;
+      try {
+        dialog.showModal();
+      } catch (_) {
+        dialog.hidden = true;
+        lastLauncher = null;
+        delete shell.dataset.chatEnhanced;
+        return;
+      }
       const firstField = dialog.querySelector("textarea, input:not([type='hidden'])");
       if (firstField) firstField.focus();
     });
@@ -66,6 +74,7 @@
     dialog.addEventListener("close", () => {
       if (lastLauncher && document.contains(lastLauncher)) lastLauncher.focus();
       lastLauncher = null;
+      dialog.hidden = true;
     });
   });
 })();

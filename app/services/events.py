@@ -32,6 +32,7 @@ POI_LOCATIONS = {
 }
 DEFAULT_RADIUS_KM = 5.0
 MAX_RADIUS_KM = 50.0
+MAX_LOCATION_ACCURACY_M = 100_000.0
 
 
 def _decode_event(row) -> dict | None:
@@ -84,6 +85,7 @@ def parse_nearby_query(args) -> dict:
     """Validate request-scoped coordinates without persisting them."""
     lat_text = (args.get("lat") or "").strip()
     lng_text = (args.get("lng") or "").strip()
+    accuracy_text = (args.get("accuracy") or "").strip()
     radius_text = (args.get("radius") or str(DEFAULT_RADIUS_KM)).strip()
     if bool(lat_text) != bool(lng_text):
         raise ValidationError("定位参数不完整，请重新获取当前位置。")
@@ -101,14 +103,35 @@ def parse_nearby_query(args) -> dict:
         raise ValidationError("当前位置的经纬度无效，请重新定位。") from error
     if not math.isfinite(lat) or not -90 <= lat <= 90 or not -180 <= lng <= 180:
         raise ValidationError("当前位置超出有效经纬度范围，请重新定位。")
-    return {
+    location = {
         "active": True,
         "lat": lat,
         "lng": lng,
-        "lat_param": f"{lat:.5f}",
-        "lng_param": f"{lng:.5f}",
+        # Four decimals keep the request useful for nearby filtering without claiming a precise address.
+        "lat_param": f"{lat:.4f}",
+        "lng_param": f"{lng:.4f}",
         "radius_km": radius_km,
     }
+    if accuracy_text:
+        try:
+            accuracy_m = float(accuracy_text)
+        except ValueError as error:
+            raise ValidationError("浏览器定位精度无效，请重新定位。") from error
+        if not math.isfinite(accuracy_m) or not 0 <= accuracy_m <= MAX_LOCATION_ACCURACY_M:
+            raise ValidationError("浏览器定位精度超出有效范围，请重新定位。")
+        location["accuracy_m"] = round(accuracy_m)
+        location["accuracy_param"] = str(round(accuracy_m))
+
+    poi_id, poi = min(
+        POI_LOCATIONS.items(),
+        key=lambda item: haversine_km(lat, lng, item[1]["lat"], item[1]["lng"]),
+    )
+    location["nearest_poi"] = {
+        "id": poi_id,
+        "name": POIS[poi_id]["name"],
+        "distance_km": round(haversine_km(lat, lng, poi["lat"], poi["lng"]), 1),
+    }
+    return location
 
 
 def haversine_km(lat_a: float, lng_a: float, lat_b: float, lng_b: float) -> float:

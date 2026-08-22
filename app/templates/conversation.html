@@ -38,6 +38,7 @@
       </a>
     </header>
 
+    <section class="conversation-canvas" aria-label="会话画布">
     {% if is_direct %}
       <section class="relation-deck" data-relation-level="{{ conversation.progress.level }}" aria-labelledby="relation-title">
         <div class="relation-copy">
@@ -283,9 +284,10 @@
         </details>
       </aside>
     </div>
+    </section>
   </div>
 
-  <dialog class="safety-dialog report-dialog" id="report-dialog" aria-labelledby="report-dialog-title">
+  <dialog class="safety-dialog report-dialog" id="report-dialog" aria-labelledby="report-dialog-title" hidden>
     <form method="post" action="{{ url_for('chat.report', conversation_id=conversation.id) }}">
       <div class="dialog-heading"><span>REPORT / SERVER RECORD</span><h2 id="report-dialog-title">举报这段会话</h2><p>请说明具体问题。审核人员会根据会话记录跟进，不会通知对方你的身份。</p></div>
       <label for="dialog-report-reason">举报原因
@@ -296,7 +298,7 @@
   </dialog>
 
   {% if is_direct %}
-    <dialog class="safety-dialog block-dialog" id="block-dialog" aria-labelledby="block-dialog-title">
+    <dialog class="safety-dialog block-dialog" id="block-dialog" aria-labelledby="block-dialog-title" hidden>
       <form method="post" action="{{ url_for('chat.block', conversation_id=conversation.id) }}">
         <div class="dialog-heading"><span>BLOCK / DIRECT ONLY</span><h2 id="block-dialog-title">确认拉黑 {{ conversation.counterpart.anonymous_alias }}</h2><p>提交后，你们将无法再建立新的一对一会话。该操作与举报不同，不会自动生成举报记录。</p></div>
         <label class="block-confirm"><input type="checkbox" name="confirm" value="yes" required><span>我已了解拉黑后的影响</span></label>

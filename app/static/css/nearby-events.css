@@ -62,6 +62,43 @@
   margin-top: var(--neo-space-3);
 }
 
+.nearby-events-page .location-summary {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--neo-space-3) var(--neo-space-5);
+  border: var(--neo-border-thin) solid var(--neo-ink);
+  background: var(--neo-paper);
+  box-shadow: var(--neo-shadow-sm);
+  padding: var(--neo-space-4);
+}
+
+.nearby-events-page .location-summary-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  min-width: 6.5rem;
+  border-left: var(--neo-border-heavy) solid var(--neo-green);
+  font-family: var(--neo-font-mono);
+  padding-left: var(--neo-space-3);
+}
+
+.nearby-events-page .location-summary-label strong { font-size: 1rem; }
+.nearby-events-page .location-summary-label small { font-size: 0.62rem; font-weight: 850; letter-spacing: 0.08em; }
+
+.nearby-events-page .location-summary dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--neo-space-3);
+  margin: 0;
+}
+
+.nearby-events-page .location-summary dl div { min-width: 0; }
+.nearby-events-page .location-summary dt { color: var(--neo-muted); font-size: 0.68rem; font-weight: 800; }
+.nearby-events-page .location-summary dd { margin: 0.2rem 0 0; font-weight: 850; overflow-wrap: anywhere; }
+.nearby-events-page .location-summary > p { grid-column: 2; margin: 0; color: var(--neo-muted); font-size: 0.75rem; font-weight: 700; }
+
 .nearby-events-page .events-filter {
   grid-template-columns: minmax(7.5rem, 0.55fr) repeat(4, minmax(8.5rem, 1fr));
 }
@@ -119,9 +156,14 @@
   }
 
   .nearby-events-page .nearby-status,
-  .nearby-events-page .nearby-fallback {
+  .nearby-events-page .nearby-fallback,
+  .nearby-events-page .location-summary {
     grid-column: auto;
   }
+
+  .nearby-events-page .location-summary { grid-template-columns: 1fr; }
+  .nearby-events-page .location-summary dl { grid-template-columns: 1fr; }
+  .nearby-events-page .location-summary > p { grid-column: auto; }
 
   .nearby-events-page .events-filter {
     grid-template-columns: minmax(0, 1fr);

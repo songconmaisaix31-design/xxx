@@ -28,12 +28,24 @@
         尚未使用定位。你仍可按城市筛选，或直接浏览全部活动。
       {% endif %}
     </p>
+    {% if nearby.active %}
+      <section class="location-summary" aria-label="你的位置">
+        <div class="location-summary-label"><strong>你的位置</strong><small>REQUEST ONLY</small></div>
+        <dl>
+          <div><dt>经纬度</dt><dd>{{ nearby.lat_param }}, {{ nearby.lng_param }}</dd></div>
+          <div><dt>浏览器精度</dt><dd>{% if nearby.accuracy_m is defined %}约 {{ nearby.accuracy_m }} m{% else %}浏览器未提供{% endif %}</dd></div>
+          <div><dt>最近白名单 POI</dt><dd>{{ nearby.nearest_poi.name }} · {{ '不足 0.1 km' if nearby.nearest_poi.distance_km < 0.1 else nearby.nearest_poi.distance_km ~ ' km' }}</dd></div>
+        </dl>
+        <p>坐标以 4 位小数回显，仅用于本次 GET 请求的附近筛选；不会保存到你的账户、会话或数据库。</p>
+      </section>
+    {% endif %}
     <noscript><p class="nearby-fallback">浏览器脚本关闭时无法获取当前位置，城市筛选与全部活动仍可正常使用。</p></noscript>
   </section>
 
   <form id="events-filter" class="filter-bar events-filter" method="get" action="{{ url_for('events.index') }}" aria-label="筛选饭局">
     <input id="filter-lat" type="hidden" name="lat" value="{{ nearby.lat_param if nearby.active else '' }}">
     <input id="filter-lng" type="hidden" name="lng" value="{{ nearby.lng_param if nearby.active else '' }}">
+    <input id="filter-accuracy" type="hidden" name="accuracy" value="{{ nearby.accuracy_param if nearby.active and nearby.accuracy_param is defined else '' }}">
     <div class="filter-heading"><span>FILTER</span><strong>筛选饭局</strong></div>
     <label for="filter-city">城市<select id="filter-city" name="city"><option value="">全部城市</option>{% for city in cities %}<option value="{{ city }}" {% if filters.get('city') == city %}selected{% endif %}>{{ city }}</option>{% endfor %}</select></label>
     <label for="filter-tag">目标标签<select id="filter-tag" name="tag"><option value="">全部标签</option>{% for tag_id, label in tags.items() %}<option value="{{ tag_id }}" {% if filters.get('tag') == tag_id %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
