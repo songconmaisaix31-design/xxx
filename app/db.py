@@ -37,7 +37,14 @@ CREATE TABLE IF NOT EXISTS external_connections (
     source TEXT NOT NULL,
     status TEXT NOT NULL,
     access_token TEXT,
-    refreshed_at TEXT NOT NULL,
+    refreshed_at TEXT,
+    data_mode TEXT NOT NULL DEFAULT 'fixture',
+    external_subject TEXT,
+    identity_assurance TEXT NOT NULL DEFAULT 'synthetic_fixture',
+    last_state TEXT NOT NULL DEFAULT 'ready',
+    last_error_code TEXT,
+    last_attempted_at TEXT,
+    mapping_version TEXT NOT NULL DEFAULT 'legacy-fixture-v1',
     PRIMARY KEY (user_id, source)
 );
 
@@ -51,7 +58,11 @@ CREATE TABLE IF NOT EXISTS tags (
     source TEXT NOT NULL,
     verified INTEGER NOT NULL DEFAULT 0,
     visibility TEXT NOT NULL DEFAULT 'self_only',
-    updated_at TEXT NOT NULL
+    updated_at TEXT NOT NULL,
+    data_mode TEXT NOT NULL DEFAULT 'fixture',
+    evidence_kind TEXT NOT NULL DEFAULT 'direct',
+    identity_assurance TEXT NOT NULL DEFAULT 'synthetic_fixture',
+    mapping_version TEXT NOT NULL DEFAULT 'legacy-fixture-v1'
 );
 CREATE INDEX IF NOT EXISTS idx_tags_user ON tags(user_id);
 
@@ -233,6 +244,82 @@ def _migrate_schema(db: sqlite3.Connection) -> None:
             db.execute(f"ALTER TABLE reports ADD COLUMN {name} {definition}")
     db.execute("CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status, created_at)")
 
+    connection_columns = {
+        row["name"]: row for row in db.execute("PRAGMA table_info(external_connections)").fetchall()
+    }
+    connection_additions = {
+        "data_mode": "TEXT NOT NULL DEFAULT 'fixture'",
+        "external_subject": "TEXT",
+        "identity_assurance": "TEXT NOT NULL DEFAULT 'synthetic_fixture'",
+        "last_state": "TEXT NOT NULL DEFAULT 'ready'",
+        "last_error_code": "TEXT",
+        "last_attempted_at": "TEXT",
+        "mapping_version": "TEXT NOT NULL DEFAULT 'legacy-fixture-v1'",
+    }
+    for name, definition in connection_additions.items():
+        if name not in connection_columns:
+            db.execute(f"ALTER TABLE external_connections ADD COLUMN {name} {definition}")
+    connection_columns = {
+        row["name"]: row for row in db.execute("PRAGMA table_info(external_connections)").fetchall()
+    }
+    if connection_columns["refreshed_at"]["notnull"]:
+        _make_connection_refresh_nullable(db)
+    # Public-source P0 never uses stored credentials, including legacy mock values.
+    db.execute("UPDATE external_connections SET access_token = NULL WHERE access_token IS NOT NULL")
+
+    tag_columns = {row["name"] for row in db.execute("PRAGMA table_info(tags)").fetchall()}
+    tag_additions = {
+        "data_mode": "TEXT NOT NULL DEFAULT 'fixture'",
+        "evidence_kind": "TEXT NOT NULL DEFAULT 'direct'",
+        "identity_assurance": "TEXT NOT NULL DEFAULT 'synthetic_fixture'",
+        "mapping_version": "TEXT NOT NULL DEFAULT 'legacy-fixture-v1'",
+    }
+    for name, definition in tag_additions.items():
+        if name not in tag_columns:
+            db.execute(f"ALTER TABLE tags ADD COLUMN {name} {definition}")
+    db.execute(
+        """UPDATE tags
+           SET data_mode = 'fixture', verified = 0,
+               identity_assurance = 'synthetic_fixture', visibility = 'self_only',
+               evidence_kind = CASE WHEN source = 'derived' THEN 'derived' ELSE 'direct' END
+           WHERE mapping_version = 'legacy-fixture-v1'"""
+    )
+
+
+def _make_connection_refresh_nullable(db: sqlite3.Connection) -> None:
+    """Rebuild the legacy table so a first failed attempt has no fake success time."""
+    db.execute("DROP TABLE IF EXISTS external_connections_v2")
+    db.execute(
+        """CREATE TABLE external_connections_v2 (
+               user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+               source TEXT NOT NULL,
+               status TEXT NOT NULL,
+               access_token TEXT,
+               refreshed_at TEXT,
+               data_mode TEXT NOT NULL DEFAULT 'fixture',
+               external_subject TEXT,
+               identity_assurance TEXT NOT NULL DEFAULT 'synthetic_fixture',
+               last_state TEXT NOT NULL DEFAULT 'ready',
+               last_error_code TEXT,
+               last_attempted_at TEXT,
+               mapping_version TEXT NOT NULL DEFAULT 'legacy-fixture-v1',
+               PRIMARY KEY (user_id, source)
+           )"""
+    )
+    db.execute(
+        """INSERT INTO external_connections_v2 (
+               user_id, source, status, access_token, refreshed_at, data_mode,
+               external_subject, identity_assurance, last_state, last_error_code,
+               last_attempted_at, mapping_version
+           )
+           SELECT user_id, source, status, access_token, refreshed_at, data_mode,
+                  external_subject, identity_assurance, last_state, last_error_code,
+                  last_attempted_at, mapping_version
+           FROM external_connections"""
+    )
+    db.execute("DROP TABLE external_connections")
+    db.execute("ALTER TABLE external_connections_v2 RENAME TO external_connections")
+
 
 def _seed_admin(db: sqlite3.Connection) -> None:
     if db.execute("SELECT 1 FROM admins WHERE email = ?", ("admin@realtags.local",)).fetchone():
@@ -273,38 +360,110 @@ def _insert_user(db: sqlite3.Connection, user: dict) -> None:
     )
 
 
-def _insert_tag(db: sqlite3.Connection, user_id: str, tag_id: str, category: str, name: str,
-                value: object, source: str, verified: bool) -> None:
+def _insert_tag(
+    db: sqlite3.Connection,
+    user_id: str,
+    tag_id: str,
+    category: str,
+    name: str,
+    value: object,
+    source: str,
+    *,
+    evidence_kind: str = "direct",
+    mapping_version: str = "legacy-fixture-v1",
+) -> None:
     db.execute(
-        """INSERT INTO tags (user_id, tag_id, category, name, value_json, source, verified, visibility, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, 'self_only', ?)""",
-        (user_id, tag_id, category, name, json.dumps(value, ensure_ascii=False), source, int(verified), utcnow()),
+        """INSERT INTO tags (
+               user_id, tag_id, category, name, value_json, source, verified,
+               visibility, updated_at, data_mode, evidence_kind,
+               identity_assurance, mapping_version
+           ) VALUES (?, ?, ?, ?, ?, ?, 0, 'self_only', ?, 'fixture', ?,
+                     'synthetic_fixture', ?)""",
+        (
+            user_id,
+            tag_id,
+            category,
+            name,
+            json.dumps(value, ensure_ascii=False, separators=(",", ":")),
+            source,
+            utcnow(),
+            evidence_kind,
+            mapping_version,
+        ),
     )
 
 
 def _seed_behavior_tags(db: sqlite3.Connection, user_id: str, languages: list[str], sports: list[str],
                         learning_hours: list[int], sport_hours: list[int], streak: int, weekly_times: int) -> None:
     """Seed a 12-tag source-labelled behavior profile; all tags remain self_only."""
-    _insert_tag(db, user_id, "lang_learning", "学习", "在学语种", {"items": languages}, "duolingo", True)
-    _insert_tag(db, user_id, "lang_streak", "学习", "连续打卡天数", {"days": streak}, "duolingo", True)
-    _insert_tag(db, user_id, "learning_consistency", "学习", "学习坚持度", {"level": "硬核" if streak >= 200 else "稳定"}, "duolingo", True)
-    _insert_tag(db, user_id, "learning_active_hours", "学习", "学习活跃时段", {"hours": learning_hours}, "duolingo", True)
-    _insert_tag(db, user_id, "learning_level", "学习", "当前等级", {"level": max(3, streak // 40), "xp": streak * 52}, "duolingo", True)
-    _insert_tag(db, user_id, "sport_primary", "运动", "主要运动类型", {"items": sports}, "keep", True)
-    _insert_tag(db, user_id, "sport_weekly", "运动", "周运动频次", {"times": weekly_times}, "keep", True)
-    _insert_tag(db, user_id, "sport_total", "运动", "累计运动量", {"km": weekly_times * 72}, "keep", True)
-    _insert_tag(db, user_id, "sport_active_hours", "运动", "运动活跃时段", {"hours": sport_hours}, "keep", True)
-    _insert_tag(db, user_id, "sport_intensity", "运动", "运动强度等级", {"level": "进阶" if weekly_times >= 3 else "入门"}, "keep", True)
-    _insert_tag(db, user_id, "self_discipline", "复合", "自律程度", {"level": "高" if streak >= 150 else "中"}, "derived", True)
-    _insert_tag(db, user_id, "active_time_overlap", "复合", "活跃时间画像", {"hours": sorted(set(learning_hours) | set(sport_hours))}, "derived", True)
+    _insert_tag(db, user_id, "lang_learning", "学习", "在学语种", {"items": languages}, "duolingo")
+    _insert_tag(db, user_id, "lang_streak", "学习", "连续打卡天数", {"days": streak}, "duolingo")
+    _insert_tag(db, user_id, "learning_consistency", "学习", "学习坚持度", {"level": "硬核" if streak >= 200 else "稳定"}, "duolingo", evidence_kind="derived")
+    _insert_tag(db, user_id, "learning_active_hours", "学习", "学习活跃时段", {"hours": learning_hours}, "duolingo", evidence_kind="derived")
+    _insert_tag(db, user_id, "learning_level", "学习", "当前等级", {"level": max(3, streak // 40), "xp": streak * 52}, "duolingo", evidence_kind="derived")
+    _insert_tag(db, user_id, "sport_primary", "运动", "主要运动类型", {"items": sports}, "keep")
+    _insert_tag(db, user_id, "sport_weekly", "运动", "周运动频次", {"times": weekly_times}, "keep")
+    _insert_tag(db, user_id, "sport_total", "运动", "累计运动量", {"km": weekly_times * 72}, "keep")
+    _insert_tag(db, user_id, "sport_active_hours", "运动", "运动活跃时段", {"hours": sport_hours}, "keep")
+    _insert_tag(db, user_id, "sport_intensity", "运动", "运动强度等级", {"level": "进阶" if weekly_times >= 3 else "入门"}, "keep")
+    _insert_tag(db, user_id, "self_discipline", "复合", "自律程度", {"level": "高" if streak >= 150 else "中"}, "derived", evidence_kind="derived")
+    _insert_tag(db, user_id, "active_time_overlap", "复合", "活跃时间画像", {"hours": sorted(set(learning_hours) | set(sport_hours))}, "derived", evidence_kind="derived")
+
+
+def _seed_offline_fixture(db: sqlite3.Connection, user_id: str) -> None:
+    from .services.data_sources.fixtures import OFFLINE_FIXTURE_VERSION, offline_fixture_tags
+
+    tags = offline_fixture_tags(user_id)
+    for tag in tags:
+        _insert_tag(
+            db,
+            user_id,
+            tag.tag_id,
+            tag.category,
+            tag.name,
+            tag.value,
+            tag.source,
+            evidence_kind=tag.evidence_kind,
+            mapping_version=tag.mapping_version,
+        )
+
+    loaded_at = utcnow()
+    for source in sorted({tag.source for tag in tags}):
+        db.execute(
+            """INSERT INTO external_connections (
+                   user_id, source, status, access_token, refreshed_at, data_mode,
+                   external_subject, identity_assurance, last_state, last_error_code,
+                   last_attempted_at, mapping_version
+               ) VALUES (?, ?, 'connected', NULL, ?, 'fixture', NULL,
+                         'synthetic_fixture', 'ready', NULL, ?, ?)""",
+            (user_id, source, loaded_at, loaded_at, OFFLINE_FIXTURE_VERSION),
+        )
+
+
+def _upgrade_legacy_demo_fixture(db: sqlite3.Connection) -> None:
+    from .services.data_sources.fixtures import OFFLINE_FIXTURE_VERSION
+
+    snapshot_count = db.execute(
+        "SELECT COUNT(*) AS count FROM tags WHERE user_id = 'demo_001' AND mapping_version = ?",
+        (OFFLINE_FIXTURE_VERSION,),
+    ).fetchone()["count"]
+    live_count = db.execute(
+        "SELECT COUNT(*) AS count FROM tags WHERE user_id = 'demo_001' AND data_mode = 'public_live'"
+    ).fetchone()["count"]
+    if snapshot_count >= 21 or live_count:
+        return
+    db.execute("DELETE FROM tags WHERE user_id = 'demo_001'")
+    db.execute("DELETE FROM external_connections WHERE user_id = 'demo_001'")
+    _seed_offline_fixture(db, "demo_001")
 
 
 def _seed_database(db: sqlite3.Connection) -> None:
     if db.execute("SELECT 1 FROM users WHERE id = 'demo_001'").fetchone():
         # Keep the checked-in demo state repairable across schema/code updates.
+        _upgrade_legacy_demo_fixture(db)
         if db.execute("SELECT 1 FROM events WHERE id = 'event_002'").fetchone():
             _ensure_seed_group_conversation(db, "event_002")
-            db.commit()
+        db.commit()
         return
 
     users = (
@@ -324,16 +483,10 @@ def _seed_database(db: sqlite3.Connection) -> None:
     for user in users:
         _insert_user(db, user)
 
-    _seed_behavior_tags(db, "demo_001", ["英语", "日语"], ["跑步", "瑜伽"], [22, 23], [19, 20], 271, 4)
+    _seed_offline_fixture(db, "demo_001")
     _seed_behavior_tags(db, "demo_002", ["英语", "日语"], ["跑步", "力量训练"], [21, 22], [20, 21], 186, 4)
     _seed_behavior_tags(db, "demo_003", ["英语"], ["跑步", "骑行"], [7, 8], [6, 7], 83, 5)
     _seed_behavior_tags(db, "demo_004", ["韩语", "英语"], ["瑜伽"], [20, 21], [18, 19], 122, 2)
-    for source in ("duolingo", "keep"):
-        db.execute(
-            "INSERT INTO external_connections (user_id, source, status, access_token, refreshed_at) VALUES (?, ?, 'connected', ?, ?)",
-            ("demo_001", source, f"mock-{source}-token", utcnow()),
-        )
-
     start = datetime.now(timezone.utc).replace(microsecond=0) + timedelta(days=5)
     _insert_seed_event(
         db, "event_001", "merchant", "merchant_001", "AI 从业者交流晚餐", "poi_001", start,
