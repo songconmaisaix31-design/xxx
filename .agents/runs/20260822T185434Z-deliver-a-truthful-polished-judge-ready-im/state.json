@@ -3,7 +3,7 @@
   "run_id": "run_2969d06ac2f4",
   "objective": "Deliver a truthful, polished, judge-ready implementation of the RealTags PRD on an isolated hackathon branch without changing main",
   "created_at": "2026-08-22T18:54:34Z",
-  "updated_at": "2026-08-22T20:25:18Z",
+  "updated_at": "2026-08-22T20:35:31Z",
   "run_dir": "C:\\Users\\DW\\orca\\workspaces\\xxx\\fleet-control-hackathon-prize\\.agents\\runs\\20260822T185434Z-deliver-a-truthful-polished-judge-ready-im",
   "repo_selector": "id:15b0721e-5834-4702-a6f0-5155ebf31346",
   "coordinator_branch": "fleet-control-hackathon-prize",
@@ -59,9 +59,9 @@
       "tasks": [
         "UX-002"
       ],
-      "status": "dispatched",
+      "status": "completed",
       "dispatched_at": "2026-08-22T20:25:18Z",
-      "completed_at": null
+      "completed_at": "2026-08-22T20:35:31Z"
     },
     {
       "id": "integration",
@@ -304,17 +304,17 @@
       ],
       "agent": "codex",
       "wave": "experience-correction",
-      "status": "dispatched",
+      "status": "completed",
       "workspace_name": "trk-experience-ux-002",
       "orca_task_id": "task_4abfa19eed12",
       "dispatch_id": "ctx_60e15c8da875",
-      "branch": "trk-experience-ux-002",
+      "branch": "songconmaisaix31-design/trk-experience-ux-002",
       "base_ref": "origin/songconmaisaix31-design/trk-experience-ux-001",
       "base_sha": "4c298caaa62d7f5b522b22a3f38ab7ded93f9253",
-      "head_sha": null,
-      "summary": null,
+      "head_sha": "ac9c0d608c0b61ea0dbb93e885481a1cc2aa07b7",
+      "summary": "Truthful Fixture badge and disclaimer added with Public Live-negative SSR coverage; 7 focused tests, 6/6 full harness, scope gate, clean worktree, and exact remote SHA independently verified.",
       "dispatched_at": "2026-08-22T20:25:18Z",
-      "completed_at": null
+      "completed_at": "2026-08-22T20:35:29Z"
     },
     "INT-001": {
       "id": "INT-001",

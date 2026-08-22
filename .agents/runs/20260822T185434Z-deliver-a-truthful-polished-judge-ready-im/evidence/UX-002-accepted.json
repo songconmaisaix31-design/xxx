@@ -1,0 +1,42 @@
+{
+  "recorded_at": "2026-08-22T20:35:28Z",
+  "logical_task_id": "UX-002",
+  "outcome": "succeeded",
+  "summary": "Truthful Fixture badge and disclaimer added with Public Live-negative SSR coverage; 7 focused tests, 6/6 full harness, scope gate, clean worktree, and exact remote SHA independently verified.",
+  "branch": "songconmaisaix31-design/trk-experience-ux-002",
+  "provided_sha": "ac9c0d608c0b61ea0dbb93e885481a1cc2aa07b7",
+  "remote_sha": "ac9c0d608c0b61ea0dbb93e885481a1cc2aa07b7",
+  "files": [
+    "app/templates/profile.html",
+    "tests/test_judge_experience.py"
+  ],
+  "commit_subjects": [
+    "fix(experience): expose fixture profile provenance [UX-002]"
+  ],
+  "integration": null,
+  "fetch": {
+    "fresh": true,
+    "branch": "songconmaisaix31-design/trk-experience-ux-002",
+    "expected_sha": "ac9c0d608c0b61ea0dbb93e885481a1cc2aa07b7"
+  },
+  "settlement": {
+    "id": "f0f9aa96-d116-4e8e-86a3-71ba1a66c2ed",
+    "ok": true,
+    "result": {
+      "dispatchId": "ctx_60e15c8da875",
+      "state": "released",
+      "processAction": "closed_agent_terminal",
+      "archive": {
+        "source": "transcript",
+        "status": "captured"
+      },
+      "mutation": {
+        "requestId": "1fb34ad3-b597-4367-bb62-851e626d5727",
+        "replayed": false
+      }
+    },
+    "_meta": {
+      "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+    }
+  }
+}
