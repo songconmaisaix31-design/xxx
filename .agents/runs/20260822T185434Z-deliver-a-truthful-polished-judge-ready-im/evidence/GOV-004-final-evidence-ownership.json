@@ -1,0 +1,17 @@
+{
+  "recorded_at": "2026-08-22T20:11:00Z",
+  "logical_task": "GOV-004",
+  "branch": "songconmaisaix31-design/governance-data-base",
+  "sha": "fb752e82b326c83a89bcb6697348bc359af39f19",
+  "parent_sha": "b372e65306abc82b17e36959f532b6382df38901",
+  "files": [
+    ".agents/fleet.json",
+    ".agents/plans/hackathon-prize.json"
+  ],
+  "purpose": "Sequentially transfer final submission and QA/UI evidence paths to INT-001 after QA-001 and UX-001, so the integrator can replace isolated evidence with exact integrated-candidate results.",
+  "verification": {
+    "kit_tests": "9 passed",
+    "git_diff_check": "passed",
+    "remote_publication": "published and verified at fb752e82b326c83a89bcb6697348bc359af39f19 by exact ls-remote SHA"
+  }
+}
