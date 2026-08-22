@@ -52,7 +52,8 @@ freezes mappings but is not current QA live-success evidence.
 
 - [x] The submission pack separates Public Live, Fixture, Unavailable, and
   Roadmap.
-- [x] The pack contains no claim of deployment, users, revenue, conversion,
+- [x] The pack claims only the separately verified resettable public demo; it
+  contains no claim of production readiness, users, revenue, conversion,
   retention, match quality, judging score, approval, ranking, or award.
 - [x] Screenshots, contracts, source files, and skipped checks are not presented
   as successful runtime evidence.

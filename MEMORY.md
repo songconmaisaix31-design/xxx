@@ -24,3 +24,14 @@
 - Normalized external tags are self-only and are the only datasource input to matching. Raw upstream bodies, credentials, repository names, profile identity fields, raw match scores, and weight details must not enter storage or L0 output.
 - The offline judge path must remain resettable and credential-free. Demo accelerators and merchant benefits are Fixture behavior, never production, partner, payment, or deployment evidence.
 - Final publication must use a new candidate branch with exact remote SHA verification. Local and remote `main`, plus the protected source checkout at `C:\Users\DW\orca\xxx`, must not be modified.
+
+## 2026-08-23: Isolated public demo deployment
+
+- Deployment branch: `deploy/realtags-davidwang-space`; do not merge or push it to `main` without an explicit future request.
+- Public demo: `https://realtags.davidwang.space`, served by the new Vercel project `dwwww/realtags-prize-demo` (`prj_n3AqlfIYQICxn9nOSIsNbLVdp7Ov`).
+- AliDNS record `2091285074485882880` is the only deployment DNS mutation: `realtags` CNAME to `9df316820fdcbb4c.vercel-dns-017.com`, TTL 600.
+- Preserve the GitHub Pages apex A records, `www` CNAME, `/tags/` route, and the existing `tags` CNAME to `9ac6b2035aca735c.vercel-dns-017.com`. Never reuse or reconfigure the existing Vercel project `realtags-demo` for this deployment.
+- Vercel requires `framework: flask`, the top-level `index.py` app, runtime assets under generated `public/static`, and a writable `DATABASE_PATH` such as `/tmp/realtags.sqlite3`.
+- Vercel function-local SQLite is ephemeral and may reset between instances or deployments. This URL is hackathon Demo evidence only, not production durability or availability evidence.
+- Deployment secrets live only in Vercel environment settings. Record variable names, never values; do not pull them into `.env` files.
+- Rollback removes only AliDNS record `2091285074485882880` and detaches only `realtags.davidwang.space` from `realtags-prize-demo`.

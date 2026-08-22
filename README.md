@@ -17,9 +17,21 @@ The candidate keeps four evidence classes separate: **Public Live** means a
 bounded credential-free public response passed the frozen mapper and does not
 prove account ownership; **Fixture** means deterministic synthetic demo data;
 **Unavailable** means the source is intentionally disabled for P0; and
-**Roadmap** means it is not implemented. This is a local hackathon candidate,
-not evidence of an official third-party API, public deployment, production
+**Roadmap** means it is not implemented. The public demo below is deployment
+evidence only; it is not evidence of an official third-party API, production
 readiness, real merchant integration, users, revenue, or match-quality results.
+
+## Public hackathon demo
+
+- Demo: <https://realtags.davidwang.space>
+- Evidence: [public demo deployment receipt](docs/qa/hackathon/integration/PUBLIC_DEMO_DEPLOYMENT_RECEIPT.md)
+- Fast path: click **进入预置演示账号**, then open **我的标签**, **连接数据源**,
+  **匿名匹配**, **对话**, and **饭局**.
+
+This deployment uses synthetic demo data and function-local SQLite storage. It
+can reset between instances or deployments and is not a persistent production
+service. The existing blog, `/tags/`, and `tags.davidwang.space` are hosted
+separately and were not changed.
 
 ## 运行
 

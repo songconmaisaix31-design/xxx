@@ -43,6 +43,7 @@ snapshot and must never silently substitute Fixture data.
 ## Explicit non-claims
 
 This pack does not claim an official third-party API, account ownership,
-authenticated data access, a public deployment, production readiness, users,
+authenticated data access, production readiness, durable availability, users,
 partners, revenue, conversion, retention, match-quality metrics, judging score,
-approval, ranking, or award.
+approval, ranking, or award. The separately evidenced public deployment is a
+resettable demo only.

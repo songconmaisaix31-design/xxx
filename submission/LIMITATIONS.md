@@ -28,11 +28,12 @@
 
 ## Production gaps
 
-The candidate is a local hackathon product, not a production release. The
-frozen technical specification identifies missing production work including
-CSRF protection, rate limiting, production secret management, durable
-migrations, scheduled processing, HTTPS/WSGI operations, monitoring, privacy
-and compliance review, abuse operations, and deployment evidence.
+The candidate is publicly deployed as a resettable hackathon demo, not a
+production release. Vercel provides HTTPS and a managed WSGI runtime, but its
+function-local SQLite database is ephemeral. Missing production work includes
+durable managed storage and migrations, CSRF protection, rate limiting,
+scheduled processing, monitoring, privacy and compliance review, and abuse
+operations.
 
 No user, partner, commercial, quality, performance, approval, score, ranking,
 or award metric has been measured or claimed.

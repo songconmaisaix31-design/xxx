@@ -74,8 +74,9 @@ control until L4.
 
 > The tested product value is the private-signal-to-anonymous-conversation path.
 > Public Live, Fixture, Unavailable, and Roadmap are deliberately separated. We
-> are not claiming account ownership, a production deployment, users, revenue,
-> performance metrics, or a judging result.
+> are not claiming account ownership, production readiness, persistent service,
+> users, revenue, performance metrics, or a judging result. The public URL is a
+> resettable hackathon demo.
 
 ## Offline contingency
 

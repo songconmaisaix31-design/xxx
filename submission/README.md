@@ -3,6 +3,10 @@
 This directory is a judge-facing narrative and an evidence checklist. It does
 not replace executable verification.
 
+Public resettable demo: <https://realtags.davidwang.space>. Deployment evidence
+and its durability boundary are recorded in
+[`../docs/qa/hackathon/integration/PUBLIC_DEMO_DEPLOYMENT_RECEIPT.md`](../docs/qa/hackathon/integration/PUBLIC_DEMO_DEPLOYMENT_RECEIPT.md).
+
 ## Start here
 
 1. [`JUDGE_BRIEF.md`](JUDGE_BRIEF.md) — the product story and evidence boundary.

@@ -1,5 +1,9 @@
 # INT-001 Final Gate Receipt
 
+> Deployment follow-up: this receipt proves the original integrated local
+> candidate. The later isolated public-demo evidence is recorded in
+> [`PUBLIC_DEMO_DEPLOYMENT_RECEIPT.md`](PUBLIC_DEMO_DEPLOYMENT_RECEIPT.md).
+
 ## Candidate identity and assembly
 
 - Branch: `songconmaisaix31-design/trk-integration-int-001`
@@ -65,7 +69,8 @@ Neither probe read a secret file or reused the repository instance database.
 
 ## Evidence limitations
 
-Passing checks proves the recorded local candidate behavior. It does not prove
-a public deployment, production security, official third-party status, future
+Passing these checks proves the recorded local candidate behavior. The later
+deployment receipt separately proves a resettable public demo, but not
+production security, durable availability, official third-party status, future
 Public Live availability, account ownership, real merchants, or product
 outcomes.

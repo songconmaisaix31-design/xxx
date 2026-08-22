@@ -1,9 +1,11 @@
 # INT-001 Final Claims Ledger
 
-This ledger applies only to the assembled candidate on
-`songconmaisaix31-design/trk-integration-int-001`. It supersedes QA-stage
+This ledger applies to the assembled candidate on
+`songconmaisaix31-design/trk-integration-int-001` and its isolated deployment
+branch `deploy/realtags-davidwang-space`. It supersedes QA-stage
 assembly-pending language for this candidate but does not rewrite worker-owned
-evidence.
+evidence. Deployment evidence was added later and is recorded separately in
+[`PUBLIC_DEMO_DEPLOYMENT_RECEIPT.md`](PUBLIC_DEMO_DEPLOYMENT_RECEIPT.md).
 
 ## Supported claims
 
@@ -13,6 +15,7 @@ evidence.
 | Public Live | The current bounded credential-free smoke received mapper-accepted public responses from Duolingo, GitHub REST, and the exact LeetCode.com query. | The smoke records only source, state, normalized tag count, mapping version, and elapsed time. Public handles remain `unverified_public_handle`; availability can change. |
 | Fixture | The offline judge path uses deterministic synthetic tags, including the required 21-key vocabulary, with `verified=false`, `self_only`, and `synthetic_fixture` provenance. | Strict acceptance passed, repeated Keep Fixture loads were deterministic, the profile labels Fixture provenance, and `DEMO_MODE=0` rejected Fixture creation. Fixture is not current account data. |
 | Unavailable | NetEase, WeRead, Steam, GitHub GraphQL, and LeetCode.cn have no enabled P0 sync action; Keep live aggregation is not enabled and Keep is Fixture-only. | Integrated route and UI acceptance passed, including forged-route and no-side-effect checks. |
+| Public demo | The resettable hackathon build is reachable at `https://realtags.davidwang.space`. | The deployment receipt records Vercel `READY`, DNS isolation, HTTP 200 assets, and the signed-in demo path. Function-local SQLite is ephemeral and provides no production durability claim. |
 | Roadmap | Ownership verification, official or authenticated integrations, production operations, merchant operations, payments, and real commercial outcomes require future work. | These items have no present-tense implementation or result claim. |
 
 ## Current sanitized Public Live receipt
@@ -30,15 +33,16 @@ authorization header was recorded.
 
 This proves current response provenance and mapper acceptance for bounded
 public samples. It does not prove account ownership, identity, authentication,
-an official API, future availability, or a deployed end-to-end service.
+an official API, or future availability. The separate deployment receipt proves
+only the resettable end-to-end demo surface.
 
 ## Prohibited claims
 
 - Official Duolingo or LeetCode API integration.
 - Authenticated, ownership-verified, or identity-verified public handles.
 - Live Keep, NetEase, WeRead, Steam, GitHub GraphQL, or LeetCode.cn product data.
-- Public deployment, production readiness, security/compliance completion, or
-  service-level availability.
+- Persistent production operation, production readiness, security/compliance
+  completion, or service-level availability.
 - Real merchant onboarding, settlement, payment, POS integration, or coupon
   redemption.
 - Users, partners, conversion, retention, revenue, match quality, benchmark,
@@ -47,8 +51,8 @@ an official API, future availability, or a deployed end-to-end service.
 
 ## Judge-safe summary
 
-RealTags demonstrates a resettable local Fixture journey from private
+RealTags demonstrates a resettable public Fixture journey from private
 behavioral tags through anonymous matching, progressive chat, and restaurant
 events. Public Live adapters are a bounded public-response capability with
-unverified handles; unsupported sources remain visibly unavailable; production
-and commercial operation remain Roadmap.
+unverified handles; unsupported sources remain visibly unavailable; persistent
+production and commercial operation remain Roadmap.
