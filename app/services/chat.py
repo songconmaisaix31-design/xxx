@@ -6,9 +6,11 @@ import random
 from datetime import datetime
 from uuid import uuid4
 
+from flask import current_app
+
 from ..db import get_db, utcnow
 from .matching import calculate_match, is_hard_filter_match
-from .users import ValidationError, get_user, profile_tags
+from .users import ValidationError, get_user, matching_tags, profile_tags
 
 
 TASK_CARDS = {
@@ -127,11 +129,17 @@ def _ensure_interactive(conversation_id: str, user_id: str):
     return conversation
 
 
-def _insert_system(conversation_id: str, content: str, metadata: dict | None = None) -> None:
+def _insert_system(
+    conversation_id: str,
+    content: str,
+    metadata: dict | None = None,
+    *,
+    sender_id: str | None = None,
+) -> None:
     get_db().execute(
         """INSERT INTO messages (conversation_id, sender_id, message_type, content, metadata_json, created_at)
-           VALUES (?, NULL, 'system_card', ?, ?, ?)""",
-        (conversation_id, content, json.dumps(metadata or {}, ensure_ascii=False), utcnow()),
+           VALUES (?, ?, 'system_card', ?, ?, ?)""",
+        (conversation_id, sender_id, content, json.dumps(metadata or {}, ensure_ascii=False), utcnow()),
     )
 
 
@@ -211,31 +219,66 @@ def _shared_points(left_id: str, right_id: str) -> list[str]:
         points.append(f"你们都在寻找「{sorted(common_purpose)[0]}」")
     if common_interests:
         points.append(f"共同兴趣：{sorted(common_interests)[0]}")
-    left_tags = {tag["tag_id"]: tag["value"] for tag in profile_tags(left_id)}
-    right_tags = {tag["tag_id"]: tag["value"] for tag in profile_tags(right_id)}
-    languages = set(left_tags.get("lang_learning", {}).get("items", [])) & set(right_tags.get("lang_learning", {}).get("items", []))
-    sports = set(left_tags.get("sport_primary", {}).get("items", [])) & set(right_tags.get("sport_primary", {}).get("items", []))
+    left_tags = {tag["tag_id"]: tag["value"] for tag in matching_tags(left_id)}
+    right_tags = {tag["tag_id"]: tag["value"] for tag in matching_tags(right_id)}
+    left_languages = left_tags.get("learning_languages", left_tags.get("lang_learning", {})).get("items", [])
+    right_languages = right_tags.get("learning_languages", right_tags.get("lang_learning", {})).get("items", [])
+    languages = set(left_languages) & set(right_languages)
+    sports = set(left_tags.get("sport_primary", {}).get("items", [])) & set(
+        right_tags.get("sport_primary", {}).get("items", [])
+    )
+    coding = set(left_tags.get("coding_primary_languages", {}).get("items", [])) & set(
+        right_tags.get("coding_primary_languages", {}).get("items", [])
+    )
     if languages:
         points.append(f"都在学：{sorted(languages)[0]}")
     if sports:
         points.append(f"共同运动：{sorted(sports)[0]}")
+    if coding:
+        points.append(f"共同技术：{sorted(coding)[0]}")
     if left["city"] == right["city"]:
         points.append("你们在同一座城市")
     return points or ["你们都愿意从匿名对话开始认识彼此"]
 
 
-def relationship_progress(conversation_id: str) -> dict:
+def _demo_progress_level(conversation_id: str, viewer_id: str, legacy_offset: int) -> int:
+    rows = get_db().execute(
+        """SELECT metadata_json FROM messages
+           WHERE conversation_id = ? AND sender_id = ?
+             AND message_type = 'system_card'
+             AND json_extract(metadata_json, '$.kind') = 'demo_progress'""",
+        (conversation_id, viewer_id),
+    ).fetchall()
+    levels = [legacy_offset]
+    for row in rows:
+        metadata = json.loads(row["metadata_json"])
+        level = metadata.get("level")
+        if isinstance(level, int):
+            levels.append(level)
+    return max(0, min(4, max(levels)))
+
+
+def relationship_progress(conversation_id: str, viewer_id: str | None = None) -> dict:
     conversation = _conversation_row(conversation_id)
     if not conversation or conversation["type"] != "direct":
         return {"level": 0, "label": "群聊", "next_requirement": "使用破冰工具，让全桌都能自然开口。", "unlocked_points": []}
     members = _members(conversation_id)
     counts = get_db().execute(
-        """SELECT sender_id, COUNT(*) AS count, COUNT(DISTINCT substr(created_at, 1, 10)) AS active_days
+        """SELECT sender_id, COUNT(*) AS count
            FROM messages WHERE conversation_id = ? AND message_type = 'text' GROUP BY sender_id""", (conversation_id,)
     ).fetchall()
     text_count = sum(row["count"] for row in counts)
     both_spoke = len(counts) == 2 and all(row["count"] > 0 for row in counts)
-    active_days = max((row["active_days"] for row in counts), default=0)
+    active_days = get_db().execute(
+        """SELECT COUNT(*) AS count FROM (
+               SELECT substr(created_at, 1, 10) AS active_day
+               FROM messages
+               WHERE conversation_id = ? AND message_type = 'text'
+               GROUP BY active_day
+               HAVING COUNT(DISTINCT sender_id) = 2
+           )""",
+        (conversation_id,),
+    ).fetchone()["count"]
     tool_count = get_db().execute(
         "SELECT COUNT(*) AS count FROM messages WHERE conversation_id = ? AND message_type = 'system_card' AND json_extract(metadata_json, '$.kind') IN ('dice', 'task_card', 'match_point')",
         (conversation_id,),
@@ -253,7 +296,11 @@ def relationship_progress(conversation_id: str) -> dict:
         (conversation_id,),
     ).fetchall()
     target_points = _shared_points(members[0]["user_id"], members[1]["user_id"])
-    offset = conversation["demo_progress_offset"]
+    offset = (
+        _demo_progress_level(conversation_id, viewer_id, conversation["demo_progress_offset"])
+        if viewer_id
+        else conversation["demo_progress_offset"]
+    )
     level = max(natural_level, offset)
     if len(unlocked) >= len(target_points):
         level = max(level, 4)
@@ -283,7 +330,15 @@ def _visible_counterpart(viewer_id: str, conversation_id: str, progress: dict) -
         visible["avatar_mode"] = "blur"
     if progress["level"] >= 3:
         visible["interests"] = other["interests"]
-        visible["tags"] = profile_tags(other["user_id"])
+        eligible = {
+            (tag["tag_id"], json.dumps(tag["value"], sort_keys=True))
+            for tag in matching_tags(other["user_id"])
+        }
+        visible["tags"] = [
+            tag
+            for tag in profile_tags(other["user_id"])
+            if (tag["tag_id"], json.dumps(tag["value"], sort_keys=True)) in eligible
+        ]
         visible["avatar_mode"] = "clear_placeholder"
     if progress["level"] >= 4:
         visible["contact_exchange_available"] = True
@@ -308,7 +363,7 @@ def get_conversation(conversation_id: str, viewer_id: str) -> dict:
         messages.append(item)
     conversation["messages"] = messages
     if conversation["type"] == "direct":
-        progress = relationship_progress(conversation_id)
+        progress = relationship_progress(conversation_id, viewer_id)
         conversation["progress"] = progress
         conversation["counterpart"] = _visible_counterpart(viewer_id, conversation_id, progress)
         conversation["members"] = []
@@ -371,12 +426,21 @@ def use_tool(conversation_id: str, user_id: str, tool: str) -> str:
 
 
 def advance_demo_progress(conversation_id: str, user_id: str) -> int:
+    if not current_app.config.get("DEMO_MODE", False):
+        raise ValidationError("演示快捷操作只在 DEMO_MODE 中可用。")
     row = _ensure_interactive(conversation_id, user_id)
     if row["type"] != "direct":
         raise ValidationError("只有一对一会话可推进关系阶段。")
-    next_level = min(4, row["demo_progress_offset"] + 1)
-    get_db().execute("UPDATE conversations SET demo_progress_offset = ? WHERE id = ?", (next_level, conversation_id))
-    _insert_system(conversation_id, f"演示模式：关系阶段已推进至 L{next_level}。", {"kind": "demo_progress"})
+    current_level = relationship_progress(conversation_id, user_id)["level"]
+    if current_level >= 4:
+        raise ValidationError("你的关系阶段已经推进至 L4。")
+    next_level = current_level + 1
+    _insert_system(
+        conversation_id,
+        f"演示模式：你的可见阶段已推进至 L{next_level}。",
+        {"kind": "demo_progress", "level": next_level, "viewer_consent": True},
+        sender_id=user_id,
+    )
     get_db().commit()
     return next_level
 

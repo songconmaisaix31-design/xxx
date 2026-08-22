@@ -41,6 +41,23 @@ def _find_match(viewer_id: str, candidate_id: str | None) -> dict | None:
     return next((item for item in ranked_matches(viewer_id) if item["candidate"]["id"] == candidate_id), None)
 
 
+def _is_result_reference(flow: dict, supplied: str) -> bool:
+    return any(
+        isinstance(expected, str) and secrets.compare_digest(supplied, expected)
+        for expected in (flow.get("candidate_id"), flow.get("attempt_id"))
+    )
+
+
+def _result_projection(match: dict, attempt_id: str) -> dict:
+    """Return only fields permitted in the L0 template context."""
+    return {
+        "display_score": match["display_score"],
+        "common_point_count": match["common_point_count"],
+        # The existing template needs an action reference, never the profile id.
+        "candidate": {"id": attempt_id},
+    }
+
+
 def _start_attempt(user_id: str, match: dict, seen_ids: list[str]) -> dict:
     candidate_id = match["candidate"]["id"]
     flow = {
@@ -146,13 +163,17 @@ def search_retry():
 @login_required
 def detail(candidate_id: str):
     user = current_user()
-    match = _find_match(user["id"], candidate_id)
+    flow = _flow_for(user["id"])
+    if flow["phase"] != "result" or flow["candidate_id"] != candidate_id:
+        abort(404)
+    match = _find_match(user["id"], flow["candidate_id"])
     if match is None:
         abort(404)
-    # Candidate profile is intentionally not supplied to this template.
-    flow = _flow_for(user["id"])
-    attempt_id = flow["attempt_id"] if flow["phase"] == "result" and flow["candidate_id"] == candidate_id else None
-    return render_template("match_detail.html", match=match, attempt_id=attempt_id)
+    return render_template(
+        "match_detail.html",
+        match=_result_projection(match, flow["attempt_id"]),
+        attempt_id=flow["attempt_id"],
+    )
 
 
 @bp.post("/matches/<candidate_id>/start")
@@ -160,11 +181,11 @@ def detail(candidate_id: str):
 def start(candidate_id: str):
     user = current_user()
     flow = _flow_for(user["id"])
-    if flow["candidate_id"] != candidate_id or not _matches_attempt(flow, "result"):
+    if not _is_result_reference(flow, candidate_id) or not _matches_attempt(flow, "result"):
         flash("这次匹配结果已失效，请重新开始。", "info")
         return redirect(url_for("matches.index"))
     try:
-        conversation_id = start_direct_conversation(user["id"], candidate_id)
+        conversation_id = start_direct_conversation(user["id"], flow["candidate_id"])
     except ValidationError as error:
         flash(str(error), "error")
         return redirect(url_for("matches.index"))
