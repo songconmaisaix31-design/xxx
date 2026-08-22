@@ -92,7 +92,12 @@
       </section>
     {% endif %}
 
-    {% if not conversation.is_archived %}<a class="chat-jump" href="#composer">跳到消息输入</a>{% endif %}
+    {% if not conversation.is_archived %}
+      <nav class="chat-quick-actions" aria-label="会话快捷操作">
+        <a class="button" data-primary-action href="#mission-tools">先用破冰工具</a>
+        <a class="text-link chat-jump" href="#composer">直接发送消息</a>
+      </nav>
+    {% endif %}
 
     <div class="mission-workspace">
       <section class="mission-log" aria-labelledby="mission-log-title">
@@ -213,7 +218,7 @@
             </div>
           </form>
 
-          <details class="mission-drawer" open data-tool-drawer>
+          <details class="mission-drawer" id="mission-tools" open data-tool-drawer>
             <summary><span><small>MISSION DECK</small><strong>任务工具</strong></span><span class="drawer-state" data-drawer-label>收起</span></summary>
             <div class="tool-grid">
               <form class="tool-card tool-dice" method="post" action="{{ url_for('chat.tool', conversation_id=conversation.id, tool='dice') }}" data-tool="dice" data-tool-state="ready">
@@ -247,7 +252,7 @@
 
             {% if demo_mode and is_direct %}
               <form class="demo-progress-tool" method="post" action="{{ url_for('chat.demo_advance', conversation_id=conversation.id) }}">
-                <span>LAB / 当前 {{ conversation.progress.label }}</span>
+                <span>FIXTURE DEMO / 当前 {{ conversation.progress.label }}<small>仅加速三分钟演示，不代表自然关系进度</small></span>
                 <button type="submit"{% if conversation.progress.level >= 4 %} disabled aria-disabled="true"{% endif %}>演示：推进关系阶段</button>
               </form>
             {% endif %}

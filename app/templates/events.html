@@ -5,8 +5,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/nearby-events.css') }}">
   {% set budget_labels = {'under_50':'50 以下','50-100':'50–100','100-200':'100–200','200_plus':'200+'} %}
   <section class="page-heading event-heading" aria-labelledby="events-title">
-    <div><p class="eyebrow">3–10 PEOPLE / VERIFIED RESTAURANTS</p><h1 id="events-title">饭局广场</h1><p>浏览阶段只显示饭局信息、聚合人数与匹配度；成员身份始终保持匿名。</p></div>
-    <a class="button button-large" href="{{ url_for('events.create') }}">发起饭局</a>
+    <div><p class="eyebrow">STEP 04 / 3–10 PEOPLE / PUBLIC RESTAURANTS</p><h1 id="events-title">把同频带到一张餐桌。</h1><p>浏览阶段只显示主题、公开餐厅、聚合人数与匹配度；成员身份始终保持匿名。</p></div>
+    <a class="button button-large" data-primary-action href="{{ url_for('events.create') }}">发起主题饭局</a>
   </section>
 
   <section class="nearby-panel" aria-labelledby="nearby-title" data-nearby-active="{{ 'true' if nearby.active else 'false' }}">
@@ -61,7 +61,7 @@
       <article class="event-row">
         <div class="event-order"><span>{{ '%02d'|format(loop.index) }}</span><small>{{ 'MERCHANT' if event.is_merchant else 'COMMUNITY' }}</small></div>
         <div class="event-main">
-          <div class="event-status-line"><span class="status-pill {{ 'status-signal' if event.is_merchant else 'status-neutral' }}">{{ '商家饭局' if event.is_merchant else '用户发起' }}</span><span>{{ event.status_label }}</span></div>
+          <div class="event-status-line"><span class="status-pill {{ 'status-signal' if event.is_merchant else 'status-neutral' }}">{{ '商家饭局 · Fixture' if event.is_merchant else '用户发起' }}</span><span>{{ event.status_label }}</span></div>
           <h2>{{ event.title }}</h2>
           <p class="event-place"><strong>{{ event.start_at_display }}</strong><span>{{ event.poi_name }}</span></p>
           <dl class="event-meta"><div><dt>预算</dt><dd>{{ budget_labels[event.budget_level] }}</dd></div><div><dt>人数</dt><dd>{{ event.approved_count }}/{{ event.max_size }} 人</dd></div><div><dt>构成</dt><dd>男 {{ event.gender_counts.male }} / 女 {{ event.gender_counts.female }} / 未透露 {{ event.gender_counts.undisclosed }}</dd></div></dl>
