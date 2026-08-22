@@ -164,6 +164,41 @@
       ]
     },
     {
+      "id": "experience-correction",
+      "description": "Close the truthful Fixture-label gap found by strict assembled acceptance.",
+      "depends_on": [
+        "UX-001",
+        "QA-001"
+      ],
+      "base": {
+        "type": "task",
+        "task": "UX-001"
+      },
+      "tasks": [
+        {
+          "id": "UX-002",
+          "title": "Expose truthful Fixture provenance on the private profile",
+          "track": "experience",
+          "write_paths": [
+            "app/templates/profile.html",
+            "tests/test_judge_experience.py"
+          ],
+          "spec": "Starting from the accepted UX-001 SHA, make the private profile visibly distinguish Fixture tags from Public Live tags. Render the exact truthful badge '演示数据 Fixture' and disclaimer '用于演示流程，不是账号实况' when any rendered tag has data_mode=fixture. Keep the statement self-only and do not change tag values, persistence, source adapters, QA files, or unrelated visual structure. Add a focused SSR regression test. This is a corrective UX task discovered by the strict assembled acceptance gate.",
+          "acceptance": [
+            "A demo profile containing Fixture tags renders the exact badge and disclaimer",
+            "The profile does not misrepresent Fixture tags as verified account activity",
+            "Focused judge-experience tests and diff checks pass",
+            "Only the two owned files change"
+          ],
+          "checks": [
+            ".venv\\Scripts\\python.exe -m unittest discover -s tests -p \"test_judge_experience.py\" -v",
+            "git diff --check"
+          ],
+          "agent": "codex"
+        }
+      ]
+    },
+    {
       "id": "integration",
       "description": "Merge accepted exact SHAs, run complete gates, and publish a clean release candidate.",
       "depends_on": [
@@ -171,7 +206,8 @@
         "DATA-001",
         "CORE-001",
         "UX-001",
-        "QA-001"
+        "QA-001",
+        "UX-002"
       ],
       "base": {
         "type": "task",

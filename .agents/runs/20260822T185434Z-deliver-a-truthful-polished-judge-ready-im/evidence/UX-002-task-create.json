@@ -1,0 +1,30 @@
+{
+  "id": "fb289a55-45b7-45a1-97a6-925a0c379401",
+  "ok": true,
+  "result": {
+    "task": {
+      "id": "task_4abfa19eed12",
+      "parent_id": null,
+      "created_by_terminal_handle": "term_68691400-44fa-48dd-a7c7-1aca01ddfe7e",
+      "task_title": "[UX-002] Expose truthful Fixture provenance on the private profile",
+      "display_name": "[UX-002] Expose truthful Fixture provenance on the private profile",
+      "spec": "# Logical task UX-002\n\nTitle: Expose truthful Fixture provenance on the private profile\nTrack: experience\nOrca Run: run_2969d06ac2f4\nFrozen BASE_REF: origin/songconmaisaix31-design/trk-experience-ux-001\nFrozen BASE_SHA: 4c298caaa62d7f5b522b22a3f38ab7ded93f9253\nExpected workspace/branch: trk-experience-ux-002\n\n## Specification\n\nStarting from the accepted UX-001 SHA, make the private profile visibly distinguish Fixture tags from Public Live tags. Render the exact truthful badge '演示数据 Fixture' and disclaimer '用于演示流程，不是账号实况' when any rendered tag has data_mode=fixture. Keep the statement self-only and do not change tag values, persistence, source adapters, QA files, or unrelated visual structure. Add a focused SSR regression test. This is a corrective UX task discovered by the strict assembled acceptance gate.\n\n## Acceptance\n\n- A demo profile containing Fixture tags renders the exact badge and disclaimer\n- The profile does not misrepresent Fixture tags as verified account activity\n- Focused judge-experience tests and diff checks pass\n- Only the two owned files change\n\n## Exact write paths\n\n- `app/templates/profile.html`\n- `tests/test_judge_experience.py`\n\n## Required checks\n\n- `.venv\\Scripts\\python.exe -m unittest discover -s tests -p \"test_judge_experience.py\" -v`\n- `git diff --check`\n\n## Dependency evidence\n\n- UX-001: branch=songconmaisaix31-design/trk-experience-ux-001; sha=4c298caaa62d7f5b522b22a3f38ab7ded93f9253; track=experience\n- QA-001: branch=songconmaisaix31-design/trk-qa-qa-001; sha=6f4ba724ff9e24c338b3da05558630f6c29b6cce; track=qa\n\n## Mandatory first commands\n\n```bash\npython scripts/gate.py init \\\n  --track experience \\\n  --task UX-002 \\\n  --base 4c298caaa62d7f5b522b22a3f38ab7ded93f9253 \\\n  --write-path \"app/templates/profile.html\" \\\n  --write-path \"tests/test_judge_experience.py\" \\\n  --check \".venv\\\\Scripts\\\\python.exe -m unittest discover -s tests -p \\\"test_judge_experience.py\\\" -v\" \\\n  --check \"git diff --check\"\npython scripts/gate.py check --preflight\n```\n\nThe Orca worker preamble contains the actual task_... ID and dispatch identity (dispatch_... or ctx_...). Use those exact IDs in worker_finish.py.\n\n---\n\n# Directory-Owner Worker\n\n你是目录轨道 Worker，不是总控，也不是集成者。\n\n## 必须先做\n\n任务 Prompt 会给出 `TRACK`、`LOGICAL_TASK_ID`、`BASE_SHA`、`WRITE_PATHS` 和检查命令。先执行 Prompt 中生成的 `gate.py init` 命令，再执行：\n\n```bash\npython scripts/gate.py check --preflight\n```\n\n## 工作边界\n\n- 可以读取全仓库，但只能写任务列出的 `WRITE_PATHS`。\n- 禁止切换分支、合并、Rebase、Force Push、Hard Reset。\n- 禁止修改其他轨道、公共契约、根依赖、锁文件、部署和 CI，除非它们明确位于当前 `WRITE_PATHS`。\n- 禁止全仓库格式化和无关重构。\n- 跨轨需求使用 Orca `ask`、`question` 或 `escalation`，不要代改。\n- 优先复用已有契约、Fixture、SDK 和成熟开源组件。\n\n## 提交节奏\n\n每个可验证增量：\n\n```bash\npython scripts/gate.py check --run-checks\ngit add <owned-paths>\ngit commit -m \"feat(<track>): <summary> [<LOGICAL_TASK_ID>]\"\ngit push -u origin HEAD\n```\n\n已 push 提交不得 amend、rebase 或 force push；错误用新提交或 `git revert`。\n\n## 最终完成\n\n确认检查通过、工作区干净、HEAD 与远端一致后：\n\n```bash\npython scripts/worker_finish.py \\\n  --logical-task <LOGICAL_TASK_ID> \\\n  --task-id <ORCA_TASK_ID> \\\n  --dispatch-id <ORCA_DISPATCH_ID> \\\n  --base <BASE_SHA> \\\n  --outcome succeeded \\\n  --summary \"完成内容、验证结果和剩余限制\"\n```\n\n当前 Orca 运行时可能注入旧式 `dispatch_...` 或新版 `ctx_...` 身份。必须原样传给 `worker_finish.py`，不得把回执动作名 `dispatch_input` 当作 ID。\n如果任务基线中的旧版 helper 拒绝有效的 `ctx_...`，不要越权修改 `scripts/**`。先完成同等的 gate、测试、干净工作树与远端 SHA 检查，再从当前被派发终端使用 `orca orchestration send --type worker_done` 和注入的精确 Task/Dispatch ID 发送一次结果。\n\n失败也必须调用一次，使用 `--outcome failed`。发送 `worker_done` 后停止修改，等待新的 Dispatch。\n",
+      "status": "ready",
+      "deps": "[]",
+      "result": null,
+      "created_at": "2026-08-22 20:25:02",
+      "completed_at": null,
+      "run_id": "run_2969d06ac2f4",
+      "created_by_pane_key": "11b3d8b9-f73b-4178-86bb-7e833dc7acde:c1b8d902-2757-4582-af2c-979bfc1d63e6",
+      "created_by_process_incarnation": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/fleet-control-hackathon-prize@@7c5b6e5a:0b7f8e3a-22ff-4c3d-94ee-66051a9379d7",
+      "created_by_run_generation": 1
+    },
+    "mutation": {
+      "requestId": "9d317244-fbc2-4dd8-b04a-a23b6590af10",
+      "replayed": false
+    }
+  },
+  "_meta": {
+    "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+  }
+}

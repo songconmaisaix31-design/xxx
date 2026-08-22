@@ -1,0 +1,80 @@
+{
+  "id": "9e35ccb7-32e6-4958-8f18-54ded51fdfb5",
+  "ok": true,
+  "result": {
+    "runId": "run_2969d06ac2f4",
+    "taskId": "task_4abfa19eed12",
+    "dispatchId": "ctx_60e15c8da875",
+    "state": "ready",
+    "stage": "input_accepted",
+    "setup": {
+      "requested": "run",
+      "effective": "run",
+      "source": "explicit_request",
+      "hookFound": true,
+      "startupPolicy": "start-immediately",
+      "state": "running"
+    },
+    "launch": {
+      "requested": {
+        "agent": "codex",
+        "model": null,
+        "effort": null
+      },
+      "effective": {
+        "agent": "codex",
+        "model": null,
+        "effort": null
+      }
+    },
+    "timeoutMs": 60000,
+    "effects": [
+      {
+        "kind": "worktree",
+        "action": "created_top_level",
+        "id": "15b0721e-5834-4702-a6f0-5155ebf31346::C:/Users/DW/orca/workspaces/xxx/trk-experience-ux-002"
+      },
+      {
+        "kind": "terminal",
+        "role": "agent",
+        "action": "reused_agent_terminal",
+        "id": "term_531ed83b-faec-46a9-838e-f4708e87c38e",
+        "tabId": "2e2e1750-d825-46ca-b7ed-87ae8c25f344",
+        "leafId": "a833e17d-1299-4af1-bebd-3a59ae84361f"
+      },
+      {
+        "kind": "terminal",
+        "role": "setup",
+        "action": "created",
+        "id": "term_29fc9506-1c1b-4d84-81d4-a50bfae885a1",
+        "tabId": "9801fcfc-925f-43a6-8d6b-c4b9073f1388",
+        "leafId": "68cdb946-c64a-4d07-9ab6-17716ac61bc8"
+      },
+      {
+        "kind": "setup",
+        "action": "run",
+        "requested": "run",
+        "effective": "run",
+        "source": "explicit_request",
+        "hookFound": true,
+        "startupPolicy": "start-immediately",
+        "state": "running",
+        "terminalId": "term_29fc9506-1c1b-4d84-81d4-a50bfae885a1"
+      },
+      {
+        "kind": "dispatch_input",
+        "role": "agent",
+        "id": "term_531ed83b-faec-46a9-838e-f4708e87c38e",
+        "state": "accepted"
+      }
+    ],
+    "residualResources": [],
+    "mutation": {
+      "requestId": "1dfb775d-60de-4a08-a3c4-83ef8bcde9d6",
+      "replayed": false
+    }
+  },
+  "_meta": {
+    "runtimeId": "f25ccc5f-f0b3-48f0-afc1-86d9761b7411"
+  }
+}
