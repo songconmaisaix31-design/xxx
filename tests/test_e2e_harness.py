@@ -14,8 +14,10 @@ from pathlib import Path
 
 from app import create_app
 from app.config import Config
-from app.services.chat import get_conversation
+from app.db import get_db
+from app.services.chat import get_conversation, start_direct_conversation
 from app.services.events import get_event, refresh_event_statuses, viewer_coupon
+from app.services.matching import ranked_matches
 from app.services.users import profile_tags
 
 
@@ -102,6 +104,11 @@ class MvpWorkflowHarness(unittest.TestCase):
         with self.app.app_context():
             user_id = self._user_id("harness-user@example.test")
             tags = profile_tags(user_id)
+            self.assertEqual(ranked_matches(user_id), [])
+            self.assertNotIn(
+                user_id,
+                [item["candidate"]["id"] for item in ranked_matches("demo_001")],
+            )
         self.assertGreaterEqual(len(tags), 10)
         self.assertTrue(all(tag["visibility"] == "self_only" for tag in tags))
 
@@ -135,7 +142,10 @@ class MvpWorkflowHarness(unittest.TestCase):
         self.assertIn('data-match-state="result"', result)
         self.assertIn("隐藏共同点", result)
 
-        match = first.post(f"/matches/{flow['candidate_id']}/start")
+        match = first.post(
+            f"/matches/{flow['candidate_id']}/start",
+            data={"attempt_id": flow["attempt_id"]},
+        )
         self.assertEqual(match.status_code, 302)
         conversation_id = match.headers["Location"].rsplit("/", 1)[-1]
 
@@ -170,11 +180,31 @@ class MvpWorkflowHarness(unittest.TestCase):
             302,
         )
         self.assertEqual(first.post(f"/conversations/{conversation_id}/block").status_code, 302)
+        with self.app.app_context():
+            demo_card_count = get_db().execute(
+                """SELECT COUNT(*) AS count FROM messages
+                   WHERE conversation_id = ? AND json_extract(metadata_json, '$.kind') = 'demo_progress'""",
+                (conversation_id,),
+            ).fetchone()["count"]
+        self.assertEqual(first.post(f"/conversations/{conversation_id}/demo/advance").status_code, 302)
+        with self.app.app_context():
+            self.assertEqual(
+                get_db().execute(
+                    """SELECT COUNT(*) AS count FROM messages
+                       WHERE conversation_id = ? AND json_extract(metadata_json, '$.kind') = 'demo_progress'""",
+                    (conversation_id,),
+                ).fetchone()["count"],
+                demo_card_count,
+            )
         blocked = first.post("/matches/demo_002/start", follow_redirects=True).get_data(as_text=True)
-        self.assertIn("不可", blocked)
+        self.assertIn("失效", blocked)
         with self.app.app_context():
             conversation = get_conversation(conversation_id, "demo_001")
             report_count = self._report_count()
+            self.assertNotIn(
+                "demo_002",
+                [item["candidate"]["id"] for item in ranked_matches("demo_001")],
+            )
         self.assertEqual(conversation["progress"]["level"], 4)
         self.assertEqual(report_count, 1)
 
@@ -271,9 +301,194 @@ class MvpWorkflowHarness(unittest.TestCase):
 
     @staticmethod
     def _report_count() -> int:
-        from app.db import get_db
-
         return get_db().execute("SELECT COUNT(*) AS count FROM reports").fetchone()["count"]
+
+
+class RegisteredUserMatchChatHarness(unittest.TestCase):
+    """Production-mode proof that two newly registered people can match and converse."""
+
+    def setUp(self) -> None:
+        self.temp_dir = tempfile.TemporaryDirectory()
+        config = type(
+            "ProductionMatchHarnessConfig",
+            (Config,),
+            {
+                "TESTING": True,
+                "DATABASE": str(Path(self.temp_dir.name) / "registered-users.sqlite3"),
+                "SECRET_KEY": "registered-users-secret",
+                "DEMO_MODE": False,
+            },
+        )
+        self.app = create_app(config)
+
+    def tearDown(self) -> None:
+        self.temp_dir.cleanup()
+
+    def _register(self, email: str, alias: str):
+        client = self.app.test_client()
+        response = client.post(
+            "/register",
+            data={
+                "email": email,
+                "password": "strong-test-password",
+                "anonymous_alias": alias,
+                "birth_year": "1998",
+                "gender": "male",
+                "match_gender": "male",
+                "city": "北京",
+                "purposes": ["随便聊聊"],
+                "interests": ["游戏", "宠物"],
+                "mbti": "",
+                "zodiac": "",
+                "schedule": "",
+            },
+        )
+        self.assertEqual(response.status_code, 302, response.get_data(as_text=True))
+        self.assertEqual(response.headers["Location"], "/profile/connections")
+        with client.session_transaction() as flask_session:
+            user_id = flask_session["user_id"]
+        return client, user_id
+
+    def test_registered_users_match_once_and_exchange_persistent_messages(self) -> None:
+        guest = self.app.test_client()
+        self.assertNotIn("进入预置演示账号", guest.get("/").get_data(as_text=True))
+        self.assertEqual(guest.post("/demo/login").status_code, 404)
+        with self.app.app_context():
+            self.assertEqual(get_db().execute("SELECT COUNT(*) AS count FROM admins").fetchone()["count"], 0)
+        created_admin = self.app.test_cli_runner().invoke(
+            args=[
+                "create-admin",
+                "--email",
+                "real-admin@example.test",
+                "--display-name",
+                "真实审核员",
+                "--password",
+                "real-admin-password",
+            ]
+        )
+        self.assertEqual(created_admin.exit_code, 0, created_admin.output)
+
+        first, first_id = self._register("real-one@example.test", "北辰一号")
+        second, second_id = self._register("real-two@example.test", "北辰二号")
+        with self.app.app_context():
+            users = get_db().execute(
+                "SELECT id, mbti, zodiac, schedule, is_demo FROM users ORDER BY created_at"
+            ).fetchall()
+            self.assertEqual([row["id"] for row in users], [first_id, second_id])
+            self.assertTrue(all(row["is_demo"] == 0 for row in users))
+            self.assertTrue(all(row["mbti"] == "不知道" for row in users))
+            self.assertTrue(all(row["zodiac"] == "不知道" for row in users))
+            self.assertTrue(all(row["schedule"] == "正常" for row in users))
+            self.assertEqual([item["candidate"]["id"] for item in ranked_matches(first_id)], [second_id])
+            self.assertEqual([item["candidate"]["id"] for item in ranked_matches(second_id)], [first_id])
+
+        admin = self.app.test_client()
+        self.assertEqual(
+            admin.post(
+                "/admin/login",
+                data={"email": "real-admin@example.test", "password": "real-admin-password"},
+            ).status_code,
+            302,
+        )
+        account_directory = admin.get("/admin/").get_data(as_text=True)
+        self.assertIn("real-one@example.test", account_directory)
+        self.assertIn("真实账户", account_directory)
+
+        forged = first.post(
+            f"/matches/{second_id}/start",
+            data={"attempt_id": "forged-attempt"},
+        )
+        self.assertEqual(forged.status_code, 302)
+        self.assertTrue(forged.headers["Location"].endswith("/matches"))
+        with self.app.app_context():
+            self.assertEqual(get_db().execute("SELECT COUNT(*) AS count FROM conversations").fetchone()["count"], 0)
+
+        self.assertEqual(first.post("/matches/search/start").status_code, 302)
+        with first.session_transaction() as flask_session:
+            flow = dict(flask_session["match_flow"])
+        self.assertEqual(flow["candidate_id"], second_id)
+        complete = first.post(
+            "/matches/search/complete",
+            data={"attempt_id": flow["attempt_id"]},
+        )
+        self.assertEqual(complete.status_code, 302)
+        result = first.get(complete.headers["Location"]).get_data(as_text=True)
+        self.assertIn('name="attempt_id"', result)
+        self.assertIn("开启匿名会话", result)
+
+        started = first.post(
+            f"/matches/{second_id}/start",
+            data={"attempt_id": flow["attempt_id"]},
+        )
+        self.assertEqual(started.status_code, 302)
+        conversation_id = started.headers["Location"].rsplit("/", 1)[-1]
+        self.assertIn(conversation_id, second.get("/conversations").get_data(as_text=True))
+        self.assertIn("北辰一号", second.get("/conversations").get_data(as_text=True))
+
+        first_message = "甲方真实账户发来的第一条消息"
+        second_message = "乙方已经收到，现在回复"
+        self.assertEqual(
+            first.post(f"/conversations/{conversation_id}/messages", data={"content": first_message}).status_code,
+            302,
+        )
+        self.assertEqual(
+            second.post(f"/conversations/{conversation_id}/messages", data={"content": second_message}).status_code,
+            302,
+        )
+        for client in (first, second):
+            transcript = client.get(f"/conversations/{conversation_id}").get_data(as_text=True)
+            self.assertIn(first_message, transcript)
+            self.assertIn(second_message, transcript)
+
+        with self.app.app_context():
+            self.assertEqual(start_direct_conversation(second_id, first_id), conversation_id)
+            member_ids = {
+                row["user_id"]
+                for row in get_db().execute(
+                    "SELECT user_id FROM conversation_members WHERE conversation_id = ?",
+                    (conversation_id,),
+                ).fetchall()
+            }
+            self.assertEqual(member_ids, {first_id, second_id})
+            self.assertEqual(
+                get_db().execute(
+                    "SELECT COUNT(*) AS count FROM conversations WHERE type = 'direct'"
+                ).fetchone()["count"],
+                1,
+            )
+            self.assertEqual(
+                get_db().execute(
+                    """SELECT COUNT(*) AS count FROM messages
+                       WHERE conversation_id = ? AND json_extract(metadata_json, '$.kind') = 'match_started'""",
+                    (conversation_id,),
+                ).fetchone()["count"],
+                1,
+            )
+
+        outsider, _ = self._register("real-three@example.test", "北辰三号")
+        outsider.post(
+            f"/conversations/{conversation_id}/report",
+            data={"reason": "非成员不能写入举报"},
+        )
+        with self.app.app_context():
+            self.assertEqual(get_db().execute("SELECT COUNT(*) AS count FROM reports").fetchone()["count"], 0)
+
+        self.assertEqual(first.post(f"/conversations/{conversation_id}/block").status_code, 302)
+        blocked_message = "拉黑后不应落库"
+        self.assertEqual(
+            second.post(f"/conversations/{conversation_id}/messages", data={"content": blocked_message}).status_code,
+            302,
+        )
+        blocked_page = second.get(f"/conversations/{conversation_id}").get_data(as_text=True)
+        self.assertIn("这段会话已停止联系", blocked_page)
+        self.assertNotIn('id="composer"', blocked_page)
+        with self.app.app_context():
+            self.assertIsNone(
+                get_db().execute(
+                    "SELECT 1 FROM messages WHERE conversation_id = ? AND content = ?",
+                    (conversation_id, blocked_message),
+                ).fetchone()
+            )
 
 
 if __name__ == "__main__":

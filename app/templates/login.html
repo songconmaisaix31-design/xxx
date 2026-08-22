@@ -17,7 +17,7 @@
         <button class="button button-block" type="submit">登录</button>
       </form>
       <div class="form-divider"><span>或快速体验</span></div>
-      <form method="post" action="{{ url_for('auth.demo_login') }}"><button class="button secondary button-block" type="submit">使用预置演示账号</button></form>
+      {% if demo_mode %}<form method="post" action="{{ url_for('auth.demo_login') }}"><button class="button secondary button-block" type="submit">使用预置演示账号</button></form>{% endif %}
       <p class="form-switch">没有账号？<a class="text-link" href="{{ url_for('auth.register') }}">创建匿名账号</a></p>
     </div>
   </section>

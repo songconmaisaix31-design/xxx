@@ -12,7 +12,7 @@
           <a class="button" href="{{ url_for('matches.index') }}">开始一次匿名匹配</a>
           <a class="button secondary" href="{{ url_for('events.index') }}">逛兴趣饭局</a>
         {% else %}
-          <form class="inline-form" method="post" action="{{ url_for('auth.demo_login') }}"><button class="button" type="submit">进入预置演示账号</button></form>
+          {% if demo_mode %}<form class="inline-form" method="post" action="{{ url_for('auth.demo_login') }}"><button class="button" type="submit">进入预置演示账号</button></form>{% endif %}
           <a class="button secondary" href="{{ url_for('auth.register') }}">注册新账号</a>
         {% endif %}
       </div>

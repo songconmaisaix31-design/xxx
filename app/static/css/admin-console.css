@@ -142,7 +142,7 @@
   box-shadow: var(--neo-shadow-xs);
 }
 
-.admin-account-table { width: 100%; min-width: 48rem; border-collapse: collapse; font-size: 0.82rem; }
+.admin-account-table { width: 100%; min-width: 56rem; border-collapse: collapse; font-size: 0.82rem; }
 .admin-account-table th,
 .admin-account-table td { border-bottom: var(--neo-border-thin) solid var(--neo-ink); padding: 0.85rem 0.9rem; text-align: left; vertical-align: top; }
 .admin-account-table th { background: var(--neo-yellow); font-size: 0.7rem; letter-spacing: 0.05em; }

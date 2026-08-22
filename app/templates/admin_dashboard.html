@@ -58,12 +58,12 @@
       </form>
       <div class="admin-account-table-wrap">
         <table class="admin-account-table">
-          <thead><tr><th scope="col">账号邮箱</th><th scope="col">匿名代号</th><th scope="col">城市</th><th scope="col">手机验证</th><th scope="col">注册时间</th><th scope="col">已授权数据源</th></tr></thead>
+          <thead><tr><th scope="col">账号邮箱</th><th scope="col">账户类型</th><th scope="col">匿名代号</th><th scope="col">城市</th><th scope="col">手机验证</th><th scope="col">注册时间</th><th scope="col">已授权数据源</th></tr></thead>
           <tbody>
             {% for user in registered_users %}
-              <tr><td data-label="账号邮箱">{{ user.email }}</td><td data-label="匿名代号">{{ user.anonymous_alias }}</td><td data-label="城市">{{ user.city }}</td><td data-label="手机验证">{{ '已验证' if user.phone_verified else '未验证' }}</td><td data-label="注册时间">{{ user.created_at }}</td><td data-label="已授权数据源">{{ user.authorized_source_count }}</td></tr>
+              <tr><td data-label="账号邮箱">{{ user.email }}</td><td data-label="账户类型">{{ '演示账户' if user.is_demo else '真实账户' }}</td><td data-label="匿名代号">{{ user.anonymous_alias }}</td><td data-label="城市">{{ user.city }}</td><td data-label="手机验证">{{ '已验证' if user.phone_verified else '未验证' }}</td><td data-label="注册时间">{{ user.created_at }}</td><td data-label="已授权数据源">{{ user.authorized_source_count }}</td></tr>
             {% else %}
-              <tr><td class="admin-account-empty" colspan="6">未找到匹配的注册账户。</td></tr>
+              <tr><td class="admin-account-empty" colspan="7">未找到匹配的注册账户。</td></tr>
             {% endfor %}
           </tbody>
         </table>

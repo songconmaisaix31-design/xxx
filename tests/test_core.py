@@ -2,14 +2,17 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from pathlib import Path
 
 from app import create_app
 from app.config import Config
+from app.db import get_db, utcnow
 from app.services.chat import get_conversation, start_direct_conversation
 from app.services.events import get_event, refresh_event_statuses, signup_for_event, viewer_coupon
 from app.services.matching import ranked_matches
+from app.services.users import ValidationError
 from tools.harness_cli import build_parser, verification_stages
 
 
@@ -19,7 +22,12 @@ class CoreFlowTests(unittest.TestCase):
         config = type(
             "TestConfig",
             (Config,),
-            {"TESTING": True, "DATABASE": str(Path(self.temp_dir.name) / "test.sqlite3"), "SECRET_KEY": "test"},
+            {
+                "TESTING": True,
+                "DATABASE": str(Path(self.temp_dir.name) / "test.sqlite3"),
+                "SECRET_KEY": "test",
+                "DEMO_MODE": True,
+            },
         )
         self.app = create_app(config)
         self.client = self.app.test_client()
@@ -156,6 +164,117 @@ class CoreFlowTests(unittest.TestCase):
         self.assertEqual(conversation["progress"]["level"], 0)
         self.assertEqual(set(conversation["counterpart"]), {"anonymous_alias", "level"})
         self.assertNotIn("tags", conversation["counterpart"])
+
+    def test_direct_conversation_creation_is_unique_in_both_directions(self) -> None:
+        def start(left_id: str, right_id: str) -> str:
+            with self.app.app_context():
+                return start_direct_conversation(left_id, right_id)
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            conversation_ids = {
+                future.result()
+                for future in (
+                    executor.submit(start, "demo_001", "demo_002"),
+                    executor.submit(start, "demo_002", "demo_001"),
+                )
+            }
+        self.assertEqual(len(conversation_ids), 1)
+        with self.app.app_context():
+            conversation_id = conversation_ids.pop()
+            self.assertEqual(
+                get_db().execute(
+                    "SELECT COUNT(*) AS count FROM conversation_members WHERE conversation_id = ?",
+                    (conversation_id,),
+                ).fetchone()["count"],
+                2,
+            )
+            self.assertEqual(
+                get_db().execute(
+                    """SELECT COUNT(*) AS count FROM messages
+                       WHERE conversation_id = ? AND json_extract(metadata_json, '$.kind') = 'match_started'""",
+                    (conversation_id,),
+                ).fetchone()["count"],
+                1,
+            )
+            with self.assertRaises(ValidationError):
+                start_direct_conversation("demo_001", "demo_001")
+
+    def test_demo_sessions_are_invalidated_when_demo_mode_is_disabled(self) -> None:
+        production_config = type(
+            "ProductionSessionConfig",
+            (Config,),
+            {
+                "TESTING": True,
+                "DATABASE": self.app.config["DATABASE"],
+                "SECRET_KEY": "test",
+                "DEMO_MODE": False,
+            },
+        )
+        production_app = create_app(production_config)
+        user_client = production_app.test_client()
+        with user_client.session_transaction() as flask_session:
+            flask_session["user_id"] = "demo_001"
+        profile = user_client.get("/profile")
+        self.assertEqual(profile.status_code, 302)
+        self.assertTrue(profile.headers["Location"].endswith("/login"))
+        with user_client.session_transaction() as flask_session:
+            self.assertNotIn("user_id", flask_session)
+
+        admin_client = production_app.test_client()
+        with admin_client.session_transaction() as flask_session:
+            flask_session["admin_id"] = "admin_demo"
+        self.assertEqual(admin_client.get("/admin/").status_code, 302)
+        with admin_client.session_transaction() as flask_session:
+            self.assertNotIn("admin_id", flask_session)
+        self.assertEqual(admin_client.post("/demo/login").status_code, 404)
+
+        real_client = production_app.test_client()
+        registration = real_client.post(
+            "/register",
+            data={
+                "email": "legacy-real@example.test",
+                "password": "strong-test-password",
+                "anonymous_alias": "历史真实用户",
+                "birth_year": "1998",
+                "gender": "male",
+                "match_gender": "any",
+                "city": "北京",
+                "purposes": ["随便聊聊"],
+                "interests": ["阅读"],
+            },
+        )
+        self.assertEqual(registration.status_code, 302)
+        with real_client.session_transaction() as flask_session:
+            real_user_id = flask_session["user_id"]
+        legacy_conversation_id = "legacy_cross_pool_direct"
+        with production_app.app_context():
+            db = get_db()
+            db.execute(
+                "INSERT INTO conversations (id, type, event_id, created_at) VALUES (?, 'direct', NULL, ?)",
+                (legacy_conversation_id, utcnow()),
+            )
+            for user_id in (real_user_id, "demo_001"):
+                db.execute(
+                    """INSERT INTO conversation_members
+                       (conversation_id, user_id, group_alias, joined_at) VALUES (?, ?, NULL, ?)""",
+                    (legacy_conversation_id, user_id, utcnow()),
+                )
+            db.commit()
+        disabled = real_client.get(f"/conversations/{legacy_conversation_id}").get_data(as_text=True)
+        self.assertIn("该历史会话已停用", disabled)
+        self.assertNotIn('id="composer"', disabled)
+        real_client.post(
+            f"/conversations/{legacy_conversation_id}/messages",
+            data={"content": "跨池历史会话不应继续写入"},
+        )
+        with production_app.app_context():
+            self.assertEqual(
+                get_db().execute(
+                    "SELECT COUNT(*) AS count FROM messages WHERE conversation_id = ?",
+                    (legacy_conversation_id,),
+                ).fetchone()["count"],
+                0,
+            )
 
     def test_deadline_forms_merchant_event_and_issues_coupon(self) -> None:
         with self.app.app_context():

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
 
 from ..constants import CITIES, GENDERS, INTERESTS, MATCH_GENDERS, MBTIS, PURPOSES, SCHEDULES, ZODIACS
 from ..services.adapters import AdapterError, connect_source
@@ -54,6 +54,8 @@ def login():
 
 @bp.post("/demo/login")
 def demo_login():
+    if not current_app.config["DEMO_MODE"]:
+        abort(404)
     set_current_user("demo_001")
     flash("已进入预置演示账号。", "success")
     return redirect(url_for("auth.profile"))

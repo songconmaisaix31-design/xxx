@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import re
+import sqlite3
 from functools import wraps
+from uuid import uuid4
 
-from flask import flash, redirect, session, url_for
-from werkzeug.security import check_password_hash
+from flask import current_app, flash, redirect, session, url_for
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from ..db import get_db, utcnow
 from .users import ValidationError
@@ -16,18 +19,45 @@ REPORT_PENDING_STATUS = "pending"
 REPORT_DECISIONS = ("resolved", "dismissed")
 
 
+def create_admin(email: str, password: str, display_name: str) -> str:
+    email = email.strip().lower()
+    display_name = display_name.strip()
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+        raise ValidationError("请输入有效的管理员邮箱。")
+    if len(password) < 12:
+        raise ValidationError("管理员密码至少需要 12 位。")
+    if not 2 <= len(display_name) <= 40:
+        raise ValidationError("管理员显示名需为 2–40 个字符。")
+    admin_id = f"admin_{uuid4().hex[:12]}"
+    try:
+        get_db().execute(
+            """INSERT INTO admins (id, email, password_hash, display_name, is_active, created_at)
+               VALUES (?, ?, ?, ?, 1, ?)""",
+            (admin_id, email, generate_password_hash(password), display_name, utcnow()),
+        )
+        get_db().commit()
+    except sqlite3.IntegrityError as error:
+        raise ValidationError("该管理员邮箱已存在。") from error
+    return admin_id
+
+
 def get_admin(admin_id: str) -> dict | None:
     row = get_db().execute(
         "SELECT id, email, display_name, is_active, created_at FROM admins WHERE id = ?",
         (admin_id,),
     ).fetchone()
-    return dict(row) if row else None
+    if row is None or (row["id"] == "admin_demo" and not current_app.config["DEMO_MODE"]):
+        return None
+    return dict(row)
 
 
 def current_admin() -> dict | None:
     admin_id = session.get("admin_id")
     admin = get_admin(admin_id) if admin_id else None
-    return admin if admin and admin["is_active"] else None
+    if admin_id and (not admin or not admin["is_active"]):
+        session.pop("admin_id", None)
+        return None
+    return admin
 
 
 def authenticate_admin(email: str, password: str) -> dict:
@@ -35,7 +65,12 @@ def authenticate_admin(email: str, password: str) -> dict:
         "SELECT id, email, display_name, is_active, created_at, password_hash FROM admins WHERE email = ?",
         (email.strip().lower(),),
     ).fetchone()
-    if row is None or not row["is_active"] or not check_password_hash(row["password_hash"], password):
+    if (
+        row is None
+        or (row["id"] == "admin_demo" and not current_app.config["DEMO_MODE"])
+        or not row["is_active"]
+        or not check_password_hash(row["password_hash"], password)
+    ):
         raise ValidationError("管理员邮箱或密码错误。")
     return {key: row[key] for key in ("id", "email", "display_name", "is_active", "created_at")}
 
@@ -190,12 +225,12 @@ def list_registered_users(query: str = "") -> list[dict]:
         like_query = f"%{query}%"
         params = (like_query, like_query, like_query)
     rows = get_db().execute(
-        f"""SELECT u.email, u.anonymous_alias, u.city, u.phone_verified, u.created_at,
+        f"""SELECT u.email, u.anonymous_alias, u.city, u.phone_verified, u.is_demo, u.created_at,
                    COUNT(CASE WHEN ec.status = 'connected' THEN 1 END) AS authorized_source_count
             FROM users u
             LEFT JOIN external_connections ec ON ec.user_id = u.id
             {conditions}
-            GROUP BY u.id, u.email, u.anonymous_alias, u.city, u.phone_verified, u.created_at
+            GROUP BY u.id, u.email, u.anonymous_alias, u.city, u.phone_verified, u.is_demo, u.created_at
             ORDER BY u.created_at DESC, u.email""",
         params,
     ).fetchall()

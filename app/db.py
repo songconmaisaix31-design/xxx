@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS users (
     zodiac TEXT NOT NULL,
     schedule TEXT NOT NULL,
     phone_verified INTEGER NOT NULL DEFAULT 0,
+    is_demo INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL
 );
 
@@ -204,13 +205,22 @@ def init_db() -> None:
     db = get_db()
     db.executescript(SCHEMA)
     _migrate_schema(db)
-    _seed_admin(db)
     db.commit()
-    _seed_database(db)
+    if current_app.config.get("DEMO_MODE", False):
+        _seed_admin(db)
+        db.commit()
+        _seed_database(db)
 
 
 def _migrate_schema(db: sqlite3.Connection) -> None:
-    """Add moderation fields to databases created before the admin workflow."""
+    """Apply additive account and moderation migrations to existing databases."""
+    user_columns = {row["name"] for row in db.execute("PRAGMA table_info(users)").fetchall()}
+    if "is_demo" not in user_columns:
+        db.execute("ALTER TABLE users ADD COLUMN is_demo INTEGER NOT NULL DEFAULT 0")
+    db.execute(
+        "UPDATE users SET is_demo = 1 WHERE id IN ('demo_001', 'demo_002', 'demo_003', 'demo_004')"
+    )
+
     report_columns = {row["name"] for row in db.execute("PRAGMA table_info(reports)").fetchall()}
     additions = {
         "status": "TEXT NOT NULL DEFAULT 'pending'",
@@ -252,8 +262,8 @@ def _insert_user(db: sqlite3.Connection, user: dict) -> None:
     db.execute(
         """INSERT INTO users (
             id, email, password_hash, anonymous_alias, birth_year, gender, match_gender,
-            city, purposes_json, interests_json, mbti, zodiac, schedule, phone_verified, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            city, purposes_json, interests_json, mbti, zodiac, schedule, phone_verified, is_demo, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)""",
         (
             user["id"], user["email"], generate_password_hash("demo-password"), user["alias"],
             user["birth_year"], user["gender"], user["match_gender"], user["city"],
@@ -290,7 +300,7 @@ def _seed_behavior_tags(db: sqlite3.Connection, user_id: str, languages: list[st
 
 
 def _seed_database(db: sqlite3.Connection) -> None:
-    if db.execute("SELECT 1 FROM users LIMIT 1").fetchone():
+    if db.execute("SELECT 1 FROM users WHERE id = 'demo_001'").fetchone():
         # Keep the checked-in demo state repairable across schema/code updates.
         if db.execute("SELECT 1 FROM events WHERE id = 'event_002'").fetchone():
             _ensure_seed_group_conversation(db, "event_002")

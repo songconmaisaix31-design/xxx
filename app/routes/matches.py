@@ -159,6 +159,10 @@ def detail(candidate_id: str):
 @login_required
 def start(candidate_id: str):
     user = current_user()
+    flow = _flow_for(user["id"])
+    if flow["candidate_id"] != candidate_id or not _matches_attempt(flow, "result"):
+        flash("这次匹配结果已失效，请重新开始。", "info")
+        return redirect(url_for("matches.index"))
     try:
         conversation_id = start_direct_conversation(user["id"], candidate_id)
     except ValidationError as error:

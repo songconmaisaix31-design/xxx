@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import random
 from datetime import datetime
@@ -64,7 +65,7 @@ DICE_TOPICS = {
 
 def _members(conversation_id: str) -> list[dict]:
     rows = get_db().execute(
-        """SELECT cm.user_id, cm.group_alias, u.anonymous_alias, u.city, u.birth_year, u.interests_json
+        """SELECT cm.user_id, cm.group_alias, u.anonymous_alias, u.city, u.birth_year, u.interests_json, u.is_demo
            FROM conversation_members cm JOIN users u ON u.id = cm.user_id
            WHERE cm.conversation_id = ? ORDER BY cm.joined_at""", (conversation_id,)
     ).fetchall()
@@ -87,6 +88,45 @@ def _ensure_member(conversation_id: str, user_id: str):
         raise ValidationError("你不是此会话成员。")
 
 
+def _is_direct_blocked(conversation_id: str) -> bool:
+    row = _conversation_row(conversation_id)
+    if not row or row["type"] != "direct":
+        return False
+    member_ids = [member["user_id"] for member in _members(conversation_id)]
+    if len(member_ids) != 2:
+        return False
+    left_id, right_id = member_ids
+    return bool(
+        get_db().execute(
+            """SELECT 1 FROM blocks
+               WHERE (blocker_id = ? AND blocked_id = ?)
+                  OR (blocker_id = ? AND blocked_id = ?)
+               LIMIT 1""",
+            (left_id, right_id, right_id, left_id),
+        ).fetchone()
+    )
+
+
+def _is_cross_pool_direct(conversation_id: str) -> bool:
+    row = _conversation_row(conversation_id)
+    if not row or row["type"] != "direct":
+        return False
+    members = _members(conversation_id)
+    return len(members) == 2 and bool(members[0]["is_demo"]) != bool(members[1]["is_demo"])
+
+
+def _ensure_interactive(conversation_id: str, user_id: str):
+    _ensure_member(conversation_id, user_id)
+    conversation = _conversation_row(conversation_id)
+    if conversation["archived_at"]:
+        raise ValidationError("该会话已归档，不能继续互动。")
+    if _is_cross_pool_direct(conversation_id):
+        raise ValidationError("该历史会话已停用，不能继续互动。")
+    if _is_direct_blocked(conversation_id):
+        raise ValidationError("这段会话已停止联系，不能继续互动。")
+    return conversation
+
+
 def _insert_system(conversation_id: str, content: str, metadata: dict | None = None) -> None:
     get_db().execute(
         """INSERT INTO messages (conversation_id, sender_id, message_type, content, metadata_json, created_at)
@@ -97,7 +137,13 @@ def _insert_system(conversation_id: str, content: str, metadata: dict | None = N
 
 def start_direct_conversation(viewer_id: str, candidate_id: str) -> str:
     viewer, candidate = get_user(viewer_id), get_user(candidate_id)
-    if not candidate or not is_hard_filter_match(viewer, candidate):
+    if (
+        viewer_id == candidate_id
+        or not viewer
+        or not candidate
+        or bool(viewer["is_demo"]) != bool(candidate["is_demo"])
+        or not is_hard_filter_match(viewer, candidate)
+    ):
         raise ValidationError("该匿名匹配已不可用。")
     if get_db().execute(
         "SELECT 1 FROM blocks WHERE (blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)",
@@ -112,16 +158,22 @@ def start_direct_conversation(viewer_id: str, candidate_id: str) -> str:
     ).fetchone()
     if existing:
         return existing["id"]
-    conversation_id = f"direct_{uuid4().hex[:12]}"
+
+    pair_key = ":".join(sorted((viewer_id, candidate_id)))
+    conversation_id = f"direct_{hashlib.sha256(pair_key.encode()).hexdigest()[:20]}"
     db = get_db()
-    db.execute("INSERT INTO conversations (id, type, event_id, created_at) VALUES (?, 'direct', NULL, ?)", (conversation_id, utcnow()))
+    created = db.execute(
+        "INSERT OR IGNORE INTO conversations (id, type, event_id, created_at) VALUES (?, 'direct', NULL, ?)",
+        (conversation_id, utcnow()),
+    ).rowcount
     for user_id in (viewer_id, candidate_id):
         db.execute(
-            "INSERT INTO conversation_members (conversation_id, user_id, group_alias, joined_at) VALUES (?, ?, NULL, ?)",
+            "INSERT OR IGNORE INTO conversation_members (conversation_id, user_id, group_alias, joined_at) VALUES (?, ?, NULL, ?)",
             (conversation_id, user_id, utcnow()),
         )
-    score = calculate_match(viewer, candidate)
-    _insert_system(conversation_id, f"匿名会话已建立。你们的匹配度为 {score['display_score']}%，先从一个问题开始吧。", {"kind": "match_started"})
+    if created:
+        score = calculate_match(viewer, candidate)
+        _insert_system(conversation_id, f"匿名会话已建立。你们的匹配度为 {score['display_score']}%，先从一个问题开始吧。", {"kind": "match_started"})
     db.commit()
     return conversation_id
 
@@ -244,8 +296,9 @@ def get_conversation(conversation_id: str, viewer_id: str) -> dict:
     if row is None:
         raise ValidationError("会话不存在。")
     conversation = dict(row)
-    if conversation["archived_at"]:
-        conversation["is_archived"] = True
+    conversation["is_archived"] = bool(conversation["archived_at"])
+    conversation["is_disabled"] = _is_cross_pool_direct(conversation_id)
+    conversation["is_blocked"] = _is_direct_blocked(conversation_id)
     messages = []
     for message in get_db().execute(
         "SELECT * FROM messages WHERE conversation_id = ? ORDER BY id", (conversation_id,)
@@ -275,13 +328,10 @@ def get_conversation(conversation_id: str, viewer_id: str) -> dict:
 
 
 def send_message(conversation_id: str, sender_id: str, content: str) -> None:
-    _ensure_member(conversation_id, sender_id)
+    _ensure_interactive(conversation_id, sender_id)
     content = content.strip()
     if not content or len(content) > 500:
         raise ValidationError("消息需为 1–500 个字符。")
-    conversation = _conversation_row(conversation_id)
-    if conversation["archived_at"]:
-        raise ValidationError("该群聊已归档，不能继续发送消息。")
     get_db().execute(
         "INSERT INTO messages (conversation_id, sender_id, message_type, content, metadata_json, created_at) VALUES (?, ?, 'text', ?, '{}', ?)",
         (conversation_id, sender_id, content, utcnow()),
@@ -290,7 +340,7 @@ def send_message(conversation_id: str, sender_id: str, content: str) -> None:
 
 
 def use_tool(conversation_id: str, user_id: str, tool: str) -> str:
-    _ensure_member(conversation_id, user_id)
+    _ensure_interactive(conversation_id, user_id)
     if tool == "dice":
         point = random.randint(1, 6)
         content = f"摇骰子结果：{point} 点｜{DICE_TOPICS[point]}"
@@ -321,8 +371,7 @@ def use_tool(conversation_id: str, user_id: str, tool: str) -> str:
 
 
 def advance_demo_progress(conversation_id: str, user_id: str) -> int:
-    _ensure_member(conversation_id, user_id)
-    row = _conversation_row(conversation_id)
+    row = _ensure_interactive(conversation_id, user_id)
     if row["type"] != "direct":
         raise ValidationError("只有一对一会话可推进关系阶段。")
     next_level = min(4, row["demo_progress_offset"] + 1)
@@ -336,6 +385,10 @@ def report_subject(reporter_id: str, subject_type: str, subject_id: str, reason:
     reason = reason.strip()
     if subject_type not in ("event", "conversation") or not 1 <= len(reason) <= 200:
         raise ValidationError("请填写 1–200 字的举报原因。")
+    if subject_type == "conversation":
+        _ensure_member(subject_id, reporter_id)
+    elif not get_db().execute("SELECT 1 FROM events WHERE id = ?", (subject_id,)).fetchone():
+        raise ValidationError("举报对象不存在。")
     get_db().execute(
         "INSERT INTO reports (id, reporter_id, subject_type, subject_id, reason, created_at) VALUES (?, ?, ?, ?, ?, ?)",
         (f"report_{uuid4().hex[:12]}", reporter_id, subject_type, subject_id, reason, utcnow()),

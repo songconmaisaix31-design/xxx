@@ -1219,6 +1219,10 @@
   box-shadow: var(--neo-shadow-sm);
 }
 
+.blocked-notice {
+  background: #ffd1c6;
+}
+
 @media (max-width: 920px) {
   .chat-page .page-shell {
     width: min(calc(100% - 1.25rem), var(--neo-page-width));

@@ -168,9 +168,9 @@ def run_verification(console: Console, suite: str, verbose: bool, fail_fast: boo
     banner(console)
     separator = "·" if console.unicode else "/"
     coverage = {
-        "all": f"19 unit/SSR checks + 4 motion checks {separator} 4 product journeys",
-        "core": "19 unit/SSR checks + 4 motion checks",
-        "e2e": "4 complete product journeys",
+        "all": f"23 unit/SSR checks + 4 motion checks {separator} 5 product journeys",
+        "core": "23 unit/SSR checks + 4 motion checks",
+        "e2e": "5 complete product journeys",
         "doctor": "runtime + syntax",
     }[suite]
     console.muted(f"\n  ISOLATED SQLITE  /  LOCAL DATA UNTOUCHED  /  {coverage}")

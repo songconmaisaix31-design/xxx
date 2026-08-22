@@ -204,7 +204,7 @@
       </section>
 
       <aside class="mission-command" id="safety-zone" aria-label="消息与任务工具">
-        {% if not conversation.is_archived %}
+        {% if not conversation.is_archived and not conversation.is_blocked and not conversation.is_disabled %}
           <form id="composer" class="message-form mission-composer" method="post" action="{{ url_for('chat.message', conversation_id=conversation.id) }}">
             <label for="content">发送消息 <span data-character-count>0 / 500</span></label>
             <div class="composer-row">
@@ -252,6 +252,16 @@
               </form>
             {% endif %}
           </details>
+        {% elif conversation.is_disabled %}
+          <div class="archive-notice blocked-notice" role="status">
+            <strong>该历史会话已停用</strong>
+            <p>账户环境已经隔离，双方不能继续发送消息或使用任务工具。</p>
+          </div>
+        {% elif conversation.is_blocked %}
+          <div class="archive-notice blocked-notice" role="status">
+            <strong>这段会话已停止联系</strong>
+            <p>双方不能再发送消息或使用任务工具，历史记录仍可查看和举报。</p>
+          </div>
         {% else %}
           <div class="archive-notice" role="status">
             <strong>该群聊已归档</strong>

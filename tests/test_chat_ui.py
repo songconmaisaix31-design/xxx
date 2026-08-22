@@ -256,6 +256,30 @@ class ChatMissionDeckTests(unittest.TestCase):
             db = get_db()
             db.execute("UPDATE conversations SET archived_at = ? WHERE id = ?", (utcnow(), conversation_id))
             db.commit()
+            archived_message_count = db.execute(
+                "SELECT COUNT(*) AS count FROM messages WHERE conversation_id = ?",
+                (conversation_id,),
+            ).fetchone()["count"]
+
+        self.assertEqual(
+            self.client.post(f"/conversations/{conversation_id}/tools/dice").status_code,
+            302,
+        )
+        self.assertEqual(
+            self.client.post(
+                f"/conversations/{conversation_id}/messages",
+                data={"content": "归档后不应写入"},
+            ).status_code,
+            302,
+        )
+        with self.app.app_context():
+            self.assertEqual(
+                get_db().execute(
+                    "SELECT COUNT(*) AS count FROM messages WHERE conversation_id = ?",
+                    (conversation_id,),
+                ).fetchone()["count"],
+                archived_message_count,
+            )
 
         html, archived_dom = self._parse(f"/conversations/{conversation_id}")
         self.assertNotIn('id="composer"', html)

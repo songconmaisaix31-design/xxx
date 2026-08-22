@@ -28,6 +28,7 @@ class AdminModerationTests(unittest.TestCase):
                 "TESTING": True,
                 "DATABASE": str(Path(self.temp_dir.name) / "test.sqlite3"),
                 "SECRET_KEY": "admin-test",
+                "DEMO_MODE": True,
             },
         )
         self.app = create_app(config)
@@ -120,6 +121,7 @@ class AdminModerationTests(unittest.TestCase):
         self.assertIn("注册账户（4）", dashboard)
         self.assertIn("demo@realtags.local", dashboard)
         self.assertIn("晨光旅人", dashboard)
+        self.assertIn("演示账户", dashboard)
         self.assertIn("已授权数据源", dashboard)
         self.assertNotIn(password_hash, dashboard)
         self.assertNotIn("mock-duolingo-token", dashboard)
@@ -235,7 +237,12 @@ class AdminModerationTests(unittest.TestCase):
         config = type(
             "LegacyAdminTestConfig",
             (Config,),
-            {"TESTING": True, "DATABASE": str(database), "SECRET_KEY": "legacy-test"},
+            {
+                "TESTING": True,
+                "DATABASE": str(database),
+                "SECRET_KEY": "legacy-test",
+                "DEMO_MODE": True,
+            },
         )
         legacy_app = create_app(config)
         with legacy_app.app_context():

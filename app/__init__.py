@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import click
 from flask import Flask
 
 from .config import Config
@@ -34,7 +35,7 @@ def create_app(config: type[Config] = Config) -> Flask:
     def inject_template_globals() -> dict:
         from .services.users import current_user
 
-        return {"current_user": current_user()}
+        return {"current_user": current_user(), "demo_mode": app.config["DEMO_MODE"]}
 
     @app.cli.command("process-events")
     def process_events_command() -> None:
@@ -43,5 +44,20 @@ def create_app(config: type[Config] = Config) -> Flask:
 
         changed = refresh_event_statuses()
         print(f"Processed events; {changed} status changes.")
+
+    @app.cli.command("create-admin")
+    @click.option("--email", prompt="管理员邮箱")
+    @click.option("--display-name", prompt="管理员显示名")
+    @click.option("--password", prompt="管理员密码", hide_input=True, confirmation_prompt=True)
+    def create_admin_command(email: str, display_name: str, password: str) -> None:
+        """Create a real administrator without enabling demo credentials."""
+        from .services.moderation import create_admin
+        from .services.users import ValidationError
+
+        try:
+            create_admin(email, password, display_name)
+        except ValidationError as error:
+            raise click.ClickException(str(error)) from error
+        click.echo(f"Created administrator: {email.strip().lower()}")
 
     return app

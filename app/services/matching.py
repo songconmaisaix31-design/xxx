@@ -100,12 +100,13 @@ def ranked_matches(viewer_id: str) -> list[dict]:
         """SELECT candidate.id
            FROM users AS candidate
            WHERE candidate.id != ?
+             AND candidate.is_demo = ?
              AND NOT EXISTS (
                SELECT 1 FROM blocks
                WHERE (blocker_id = ? AND blocked_id = candidate.id)
                   OR (blocker_id = candidate.id AND blocked_id = ?)
              )""",
-        (viewer_id, viewer_id, viewer_id),
+        (viewer_id, int(bool(viewer["is_demo"])), viewer_id, viewer_id),
     ).fetchall()
     matches = []
     for row in rows:

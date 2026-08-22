@@ -16,7 +16,12 @@ class NearbyEventsTests(unittest.TestCase):
         config = type(
             "NearbyTestConfig",
             (Config,),
-            {"TESTING": True, "DATABASE": str(Path(self.temp_dir.name) / "test.sqlite3"), "SECRET_KEY": "test"},
+            {
+                "TESTING": True,
+                "DATABASE": str(Path(self.temp_dir.name) / "test.sqlite3"),
+                "SECRET_KEY": "test",
+                "DEMO_MODE": True,
+            },
         )
         self.app = create_app(config)
         self.client = self.app.test_client()

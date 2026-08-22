@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from functools import wraps
 
-from flask import abort, flash, redirect, session, url_for
+from flask import abort, current_app, flash, redirect, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from ..constants import CITIES, GENDERS, INTERESTS, MATCH_GENDERS, MBTIS, PURPOSES, SCHEDULES, ZODIACS
@@ -33,7 +33,11 @@ def get_user(user_id: str):
 
 def current_user():
     user_id = session.get("user_id")
-    return get_user(user_id) if user_id else None
+    user = get_user(user_id) if user_id else None
+    if user and user["is_demo"] and not current_app.config["DEMO_MODE"]:
+        session.pop("user_id", None)
+        return None
+    return user
 
 
 def require_user():
@@ -60,7 +64,11 @@ def login_required(view):
 
 def authenticate(email: str, password: str):
     row = get_db().execute("SELECT * FROM users WHERE email = ?", (email.strip().lower(),)).fetchone()
-    if row is None or not check_password_hash(row["password_hash"], password):
+    if (
+        row is None
+        or (row["is_demo"] and not current_app.config["DEMO_MODE"])
+        or not check_password_hash(row["password_hash"], password)
+    ):
         raise ValidationError("邮箱或密码错误。")
     return _decode_user(row)
 
@@ -95,9 +103,9 @@ def create_user(form) -> str:
     gender = form.get("gender")
     match_gender = form.get("match_gender")
     city = form.get("city")
-    mbti = form.get("mbti", "不知道")
-    zodiac = form.get("zodiac", "不知道")
-    schedule = form.get("schedule", "正常")
+    mbti = form.get("mbti") or "不知道"
+    zodiac = form.get("zodiac") or "不知道"
+    schedule = form.get("schedule") or "正常"
     if gender not in GENDERS or match_gender not in MATCH_GENDERS or city not in CITIES:
         raise ValidationError("请完整填写性别、匹配偏好和城市。")
     if mbti not in MBTIS or zodiac not in ZODIACS or schedule not in SCHEDULES:
