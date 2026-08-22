@@ -1,0 +1,20 @@
+{
+  "recorded_at": "2026-08-22T19:49:00Z",
+  "logical_task": "GOV-001",
+  "branch": "songconmaisaix31-design/governance-data-base",
+  "sha": "69762f334ca834e983bf47fb07fc69db957b42eb",
+  "parent_sha": "eddb9dd3add3d898db1b5e6a419e835d48bda400",
+  "files": [
+    ".agents/fleet.json",
+    ".agents/plans/hackathon-prize.json"
+  ],
+  "purpose": "Align the machine ownership table with the already frozen DATA-001 task contract for app/config.py, app/constants.py, and app/db.py.",
+  "verification": {
+    "kit_tests": "9 passed",
+    "json_validation": "passed",
+    "git_diff_check": "passed",
+    "remote_sha": "69762f334ca834e983bf47fb07fc69db957b42eb"
+  },
+  "data_recovery": "DATA-001 fast-forwarded from ARCH-001 to this exact commit while preserving its disjoint app changes; gate context was reinitialized and preflight passed for 12 declared-path files.",
+  "integration_rule": "INT-001 starts from this branch so GOV-001 is base provenance rather than a DATA-001 functional change."
+}
