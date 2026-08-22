@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>兴趣社交 · 可点击原型 V1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&display=swap" rel="stylesheet">
+<style>
+/* ===================================================================
+   设计变量 —— 严格取自 PRD 第 5 章「玩具箱风格」5.9 节
+   =================================================================== */
+:root{
+  --bg:#FFFCF0; --surface:#FFFFFF; --surface2:#FFE95C;
+  --text:#17150F; --dim:#6B675A;
+  --primary:#5B4DFF; --accent:#58CC02; --hot:#FF5A36; --disabled:#EFEDE4;
+
+  --radius:16px; --radius-sm:11px; --pill:999px;
+
+  --border:2.5px solid #17150F; --line:#17150F;
+  --shadow:6px 7px 0 #17150F;
+  --card-shadow:4px 5px 0 #17150F;
+  --shadow-hover:3px 4px 0 #17150F;
+  --shadow-active:0 0 0 #17150F;
+
+  --font-display:"Archivo","AlibabaPuHuiTi-3-105-Heavy","PingFang SC",sans-serif;
+  --font-body:"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",sans-serif;
+  --display-weight:800; --display-ls:-.03em; --body-weight:500; --label-ls:.04em;
+
+  --focus:3px solid #5B4DFF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);font-weight:var(--body-weight);
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit}
+:focus-visible{outline:var(--focus);outline-offset:2px}
+.num{font-family:var(--font-display);font-weight:var(--display-weight);letter-spacing:var(--display-ls)}
+.eyebrow{font-size:10.5px;letter-spacing:var(--label-ls);text-transform:uppercase;color:var(--dim);font-weight:600}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- 通用组件（PRD 5.6） ---------- */
+.btn{
+  padding:14px 22px;border-radius:var(--pill);background:var(--primary);color:#fff;
+  font-size:14.5px;font-weight:600;border:var(--border);box-shadow:var(--shadow);
+  transition:transform .14s ease,box-shadow .14s ease;min-height:44px;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.btn:active{transform:translate(3px,4px);box-shadow:var(--shadow-active)}
+.btn[disabled]{background:var(--disabled);color:var(--dim);box-shadow:none;cursor:not-allowed;transform:none}
+.btn.ghost{background:transparent;color:var(--dim);box-shadow:none}
+.btn.ghost:hover{background:var(--surface);transform:none}
+.btn.yellow{background:var(--surface2);color:var(--text)}
+.btn.block{width:100%}
+.card{
+  background:var(--surface);border:var(--border);border-radius:var(--radius);
+  box-shadow:var(--card-shadow);padding:24px;
+}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;letter-spacing:var(--label-ls);
+  padding:5px 11px;border-radius:var(--pill);background:var(--surface2);border:var(--border);
+}
+.badge{ /* 券 / 商家：橙底黑字，PRD 5.2 硬规则 */
+  display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;letter-spacing:var(--label-ls);
+  padding:5px 11px;border-radius:var(--pill);background:var(--hot);color:var(--text);border:var(--border);
+}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:11px;letter-spacing:var(--label-ls);text-transform:uppercase;
+  color:var(--dim);font-weight:600;margin-bottom:7px}
+.field input,.field select{
+  width:100%;padding:12px 14px;border-radius:var(--radius-sm);background:var(--bg);border:var(--border);
+  color:var(--text);font-size:13.5px;min-height:44px;
+}
+.field .row2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.pick{display:flex;flex-wrap:wrap;gap:8px}
+.pick button{
+  padding:10px 15px;border-radius:var(--pill);background:var(--bg);border:var(--border);
+  font-size:12.5px;color:var(--dim);min-height:44px;transition:transform .14s ease,box-shadow .14s ease;
+}
+.pick button:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.pick button[aria-pressed="true"]{background:var(--surface2);color:var(--text);font-weight:700;box-shadow:var(--card-shadow)}
+
+/* ===================================================================
+   屏幕容器
+   =================================================================== */
+.screen{display:none;height:100vh;overflow-y:auto}
+.screen.on{display:block}
+
+/* ---------- 登录 ---------- */
+.authwrap{min-height:100vh;display:grid;place-items:center;padding:30px}
+.authbox{width:min(430px,100%)}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.brand em{
+  width:52px;height:52px;border-radius:var(--radius-sm);background:var(--surface2);border:var(--border);
+  box-shadow:var(--card-shadow);display:grid;place-items:center;font-style:normal;font-size:26px;
+}
+.brand h1{font-size:26px;font-weight:600;letter-spacing:-.02em}
+.authbox .lead{font-size:13px;color:var(--dim);line-height:1.75;margin:14px 0 24px}
+.tabsw{display:flex;gap:0;margin-bottom:22px;border:var(--border);border-radius:var(--pill);overflow:hidden;
+  box-shadow:var(--card-shadow)}
+.tabsw button{flex:1;padding:13px;font-size:13.5px;font-weight:600;background:var(--surface);color:var(--dim);min-height:44px}
+.tabsw button[aria-selected="true"]{background:var(--surface2);color:var(--text)}
+.codeline{display:flex;gap:10px}
+.codeline input{flex:1}
+.codeline button{
+  flex:none;padding:0 17px;border-radius:var(--radius-sm);background:var(--surface2);border:var(--border);
+  font-size:12.5px;font-weight:700;box-shadow:var(--card-shadow);min-height:44px;
+}
+.codeline button:active{transform:translate(3px,4px);box-shadow:var(--shadow-active)}
+.authnote{font-size:11.5px;color:var(--dim);line-height:1.7;margin-top:16px;text-align:center}
+
+/* ---------- 引导填写 ---------- */
+.onwrap{min-height:100vh;display:grid;place-items:center;padding:30px}
+.onbox{width:min(660px,100%)}
+.steps{display:flex;align-items:center;gap:9px;margin-bottom:22px}
+.stepdot{
+  flex:1;height:9px;border-radius:var(--pill);background:var(--surface);border:1.5px solid var(--line);
+}
+.stepdot.done{background:var(--accent)}
+.onhead{margin-bottom:22px}
+.onhead .eyebrow{display:block;margin-bottom:8px}
+.onhead h2{font-size:23px;font-weight:600;letter-spacing:-.02em;margin-bottom:7px}
+.onhead p{font-size:13px;color:var(--dim);line-height:1.75}
+.onfoot{display:flex;gap:11px;margin-top:24px}
+.onfoot .btn{flex:1}
+.onfoot .btn.ghost{flex:0 0 110px}
+.reqmark{color:var(--hot);font-weight:700}
+
+/* 数据源授权 */
+.srcrow{
+  display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--radius-sm);
+  background:var(--bg);border:var(--border);margin-bottom:12px;
+}
+.srcrow .ic{
+  width:46px;height:46px;border-radius:var(--radius-sm);background:var(--surface2);border:var(--border);
+  display:grid;place-items:center;font-size:23px;flex:none;
+}
+.srcrow .t{flex:1;min-width:0}
+.srcrow h4{font-size:14px;font-weight:600;margin-bottom:3px}
+.srcrow p{font-size:11.5px;color:var(--dim);line-height:1.6}
+.srcrow .act{
+  flex:none;padding:9px 15px;border-radius:var(--pill);background:var(--surface2);border:var(--border);
+  font-size:12px;font-weight:700;box-shadow:var(--card-shadow);min-height:44px;
+}
+.srcrow .act:active{transform:translate(3px,4px);box-shadow:var(--shadow-active)}
+.srcrow.linked{background:var(--surface2)}
+.srcrow.linked .ic{background:var(--surface)}
+.srcrow .ok{flex:none;font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.srcrow .ok s{text-decoration:none;width:20px;height:20px;border-radius:50%;background:var(--accent);
+  border:2px solid var(--line);display:grid;place-items:center;font-size:11px;color:var(--text)}
+.gentags{margin-top:18px;padding:16px;border-radius:var(--radius-sm);background:var(--bg);border:var(--border)}
+.gentags .eyebrow{display:block;margin-bottom:11px}
+.tagflow{display:flex;flex-wrap:wrap;gap:8px}
+.tagflow .chip{opacity:0;transform:translateY(6px);transition:opacity .3s ease,transform .3s ease}
+.tagflow .chip.in{opacity:1;transform:none}
+
+/* ===================================================================
+   应用外壳
+   =================================================================== */
+.app{display:grid;grid-template-rows:60px 1fr;height:100vh}
+.topbar{display:flex;align-items:center;gap:16px;padding:0 22px;border-bottom:2.5px solid var(--line);background:var(--surface)}
+.topbar .logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;letter-spacing:-.01em}
+.topbar .logo em{
+  width:30px;height:30px;border-radius:9px;background:var(--surface2);border:var(--border);
+  display:grid;place-items:center;font-style:normal;font-size:15px;
+}
+.topbar .sp{flex:1}
+.topbar .who{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--dim)}
+.topbar .who i{
+  width:32px;height:32px;border-radius:50%;background:var(--surface2);border:var(--border);
+  display:grid;place-items:center;font-style:normal;font-size:13px;color:var(--text);font-weight:700;
+}
+.main{display:grid;grid-template-columns:216px 1fr;overflow:hidden}
+.side{border-right:2.5px solid var(--line);background:var(--surface);padding:18px 12px;display:flex;flex-direction:column;gap:5px}
+.nav{
+  display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:var(--radius-sm);
+  font-size:14px;color:var(--dim);width:100%;text-align:left;min-height:44px;
+  transition:transform .14s ease,box-shadow .14s ease;border:2.5px solid transparent;
+}
+.nav:hover{background:var(--bg)}
+.nav em{font-style:normal;font-size:17px;width:22px;text-align:center}
+.nav[aria-current="page"]{
+  background:var(--surface2);color:var(--text);font-weight:700;border:var(--border);box-shadow:var(--card-shadow);
+}
+.nav b{margin-left:auto;font-size:10.5px;background:var(--hot);color:var(--text);border:1.5px solid var(--line);
+  padding:1px 7px;border-radius:var(--pill);font-weight:700}
+.side .tip{
+  margin-top:auto;padding:13px;border-radius:var(--radius-sm);background:var(--surface2);border:var(--border);
+  font-size:11px;line-height:1.7;font-weight:600;
+}
+.page{overflow-y:auto;padding:26px 30px 44px}
+.page[hidden]{display:none}
+.phead{margin-bottom:22px}
+.phead h1{font-size:23px;font-weight:600;letter-spacing:-.02em;margin-bottom:6px}
+.phead p{font-size:13px;color:var(--dim);line-height:1.75}
+
+/* ---------- 首页 ---------- */
+.hello{margin-bottom:24px}
+.hello h1{font-size:27px;font-weight:600;letter-spacing:-.02em;margin-bottom:8px}
+.hello p{font-size:13.5px;color:var(--dim);line-height:1.75}
+.statrow{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:26px}
+.stat{
+  padding:14px 19px;border-radius:var(--radius-sm);background:var(--surface);border:var(--border);
+  box-shadow:var(--card-shadow);display:flex;align-items:baseline;gap:9px;
+}
+.stat b{font-family:var(--font-display);font-weight:var(--display-weight);font-size:22px;letter-spacing:var(--display-ls)}
+.stat span{font-size:12px;color:var(--dim)}
+.modgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px}
+.mod{
+  text-align:left;padding:28px;border-radius:var(--radius);background:var(--surface);border:var(--border);
+  box-shadow:var(--card-shadow);transition:transform .14s ease,box-shadow .14s ease;
+  display:flex;flex-direction:column;min-height:270px;
+}
+.mod:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.mod:active{transform:translate(3px,4px);box-shadow:var(--shadow-active)}
+.mod.hi{background:var(--surface2)}
+.mod .ico{
+  width:60px;height:60px;border-radius:var(--radius-sm);background:var(--bg);border:var(--border);
+  display:grid;place-items:center;font-size:29px;margin-bottom:18px;
+}
+.mod.hi .ico{background:var(--surface)}
+.mod h2{font-size:20px;font-weight:600;letter-spacing:-.01em;margin-bottom:9px}
+.mod p{font-size:13px;color:var(--dim);line-height:1.75;margin-bottom:16px}
+.mod.hi p{color:var(--text);opacity:.72}
+.mod .go{
+  margin-top:auto;display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;
+  padding:11px 18px;border-radius:var(--pill);background:var(--primary);color:#fff;border:var(--border);
+  box-shadow:var(--card-shadow);align-self:flex-start;
+}
+.mod .meta{font-size:11px;color:var(--dim);letter-spacing:var(--label-ls);font-weight:600;margin-top:12px}
+.mod.hi .meta{color:var(--text);opacity:.65}
+
+/* ---------- 匹配 ---------- */
+.mstate{display:none}
+.mstate.on{display:block}
+.midle{max-width:620px}
+.midle .card{text-align:center}
+.bigico{
+  width:92px;height:92px;margin:4px auto 20px;border-radius:var(--radius-sm);background:var(--surface2);
+  border:var(--border);box-shadow:var(--card-shadow);display:grid;place-items:center;font-size:44px;
+}
+.midle h2{font-size:21px;font-weight:600;margin-bottom:10px}
+.midle .desc{font-size:13.5px;color:var(--dim);line-height:1.8;margin-bottom:20px}
+.rules{text-align:left;margin:0 0 22px;padding:16px;border-radius:var(--radius-sm);background:var(--bg);border:var(--border)}
+.rules li{list-style:none;font-size:12.5px;line-height:1.7;padding-left:22px;position:relative;margin-bottom:8px}
+.rules li:last-child{margin-bottom:0}
+.rules li::before{content:"◆";position:absolute;left:0;color:var(--primary);font-size:11px}
+
+/* 匹配中 */
+.calc{max-width:540px}
+.calcbox{text-align:center;padding:34px 26px}
+.spinner{
+  width:74px;height:74px;margin:0 auto 24px;border-radius:50%;
+  border:6px solid var(--surface2);border-top-color:var(--primary);
+  animation:spin .85s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.calcbox h2{font-size:19px;font-weight:600;margin-bottom:22px}
+.calcsteps{text-align:left;display:flex;flex-direction:column;gap:11px}
+.cstep{
+  display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:var(--radius-sm);
+  background:var(--bg);border:var(--border);font-size:13px;opacity:.4;transition:opacity .3s ease,background .3s ease;
+}
+.cstep.on{opacity:1;background:var(--surface2)}
+.cstep i{
+  width:24px;height:24px;flex:none;border-radius:50%;background:var(--surface);border:2px solid var(--line);
+  display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;
+}
+.cstep.on i{background:var(--accent)}
+
+/* 匹配结果 */
+.mres{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:1080px){.mres{grid-template-columns:1fr}}
+.ring{
+  width:208px;height:208px;margin:2px auto 20px;border-radius:50%;display:grid;place-items:center;text-align:center;
+  background:var(--bg);border:var(--border);box-shadow:var(--card-shadow);position:relative;
+}
+.ring::before{
+  content:"";position:absolute;inset:-2.5px;border-radius:50%;
+  background:conic-gradient(var(--accent) 0 var(--pct,87%),transparent var(--pct,87%));
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px));
+          mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px));
+}
+.ring b{font-size:64px;line-height:1;display:block}
+.ring i{font-style:normal;font-size:24px;opacity:.55}
+.ring small{display:block;font-size:10.5px;color:var(--dim);letter-spacing:var(--label-ls);
+  font-weight:600;margin-top:8px;text-transform:uppercase}
+.rescopy{text-align:center;margin-bottom:20px}
+.rescopy h2{font-size:19px;font-weight:600;margin-bottom:9px}
+.rescopy p{font-size:13px;color:var(--dim);line-height:1.75}
+.qgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin:13px 0 20px}
+.q{
+  aspect-ratio:3/4;border-radius:var(--radius-sm);background:var(--surface2);border:var(--border);
+  box-shadow:var(--card-shadow);display:grid;place-items:center;padding:8px;text-align:center;
+  font-family:var(--font-display);font-weight:var(--display-weight);font-size:27px;color:var(--dim);
+  transition:transform .26s cubic-bezier(.34,1.56,.64,1),box-shadow .14s ease;
+}
+.q:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover)}
+.q.open{font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--text);line-height:1.45}
+.brow{display:flex;gap:11px}
+.brow .btn{flex:1}
+.brow .btn.ghost{flex:0 0 128px}
+.anon{
+  display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--radius-sm);
+  background:var(--surface2);border:var(--border);margin-bottom:18px;
+}
+.anon .face{
+  width:54px;height:54px;border-radius:50%;background:var(--surface);border:var(--border);
+  display:grid;place-items:center;font-size:25px;flex:none;
+}
+.anon h3{font-size:15px;font-weight:700;margin-bottom:4px}
+.anon p{font-size:11.5px;line-height:1.6;opacity:.72}
+.lockrow{display:flex;flex-direction:column;gap:10px}
+.lock{display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:var(--radius-sm);
+  background:var(--bg);border:var(--border);font-size:12.5px}
+.lock em{font-style:normal;font-size:15px}
+.lock span{color:var(--dim)}
+.lock b{margin-left:auto;font-size:11px;font-weight:700}
+.note{
+  margin-top:18px;padding:15px;border-radius:var(--radius-sm);background:var(--surface2);border:var(--border);
+  font-size:12px;line-height:1.75;
+}
+
+/* ---------- 消息 ---------- */
+.chatwrap{
+  display:grid;grid-template-columns:264px 1fr;border:var(--border);border-radius:var(--radius);
+  overflow:hidden;background:var(--surface);box-shadow:var(--card-shadow);height:calc(100vh - 60px - 70px - 44px);
+  min-height:470px;
+}
+.convs{border-right:2.5px solid var(--line);overflow-y:auto}
+.conv{
+  display:flex;gap:11px;align-items:center;padding:14px 15px;width:100%;text-align:left;
+  border-bottom:2.5px solid var(--line);min-height:44px;
+}
+.conv:hover{background:var(--bg)}
+.conv[aria-current="true"]{background:var(--surface2)}
+.conv .face{
+  width:38px;height:38px;border-radius:50%;background:var(--bg);border:var(--border);flex:none;
+  display:grid;place-items:center;font-size:17px;
+}
+.conv .t{flex:1;min-width:0}
+.conv h4{font-size:13.5px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv p{font-size:11.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv .pct{font-size:12.5px;font-weight:800;font-family:var(--font-display);flex:none}
+.chatmain{display:flex;flex-direction:column;min-width:0;min-height:0}
+.chead{padding:13px 20px;border-bottom:2.5px solid var(--line);display:flex;align-items:center;gap:12px;flex:none}
+.chead .face{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:var(--border);
+  display:grid;place-items:center;font-size:17px;flex:none}
+.chead h3{font-size:15px;font-weight:700}
+.chead .stage{margin-left:auto;font-size:11px;font-weight:700;padding:5px 11px;border-radius:var(--pill);
+  background:var(--surface2);border:var(--border)}
+.prog{padding:13px 20px;border-bottom:2.5px solid var(--line);flex:none;background:var(--bg)}
+.prog .r{display:flex;justify-content:space-between;font-size:11.5px;color:var(--dim);margin-bottom:8px}
+.prog .r b{color:var(--text);font-weight:700}
+.bar{height:9px;border-radius:var(--pill);background:var(--surface);border:1.5px solid var(--line);overflow:hidden}
+.bar span{display:block;height:100%;background:var(--accent)}
+.stream{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:20px;display:flex;flex-direction:column;gap:13px;background:var(--bg)}
+.msg{max-width:64%;padding:12px 15px;font-size:13.5px;line-height:1.6;border-radius:var(--radius-sm);border:var(--border)}
+.msg.you{background:var(--surface);align-self:flex-start;box-shadow:var(--card-shadow)}
+.msg.me{background:var(--primary);color:#fff;align-self:flex-end;box-shadow:var(--card-shadow)}
+.syscard{
+  align-self:center;width:100%;max-width:400px;padding:17px;border-radius:var(--radius-sm);
+  background:var(--surface2);border:var(--border);box-shadow:var(--card-shadow);text-align:center;
+}
+.syscard .big{font-size:38px;display:block;margin-bottom:8px}
+.syscard p{font-size:13.5px;font-weight:700;line-height:1.55;margin-top:6px}
+.sysmeta{display:block;margin-top:9px;font-size:10.5px;line-height:1.55;color:var(--dim)}
+.sysact{margin-top:12px;padding:9px 14px;border-radius:var(--pill);background:var(--surface);border:var(--border);
+  font-size:11.5px;font-weight:700;box-shadow:2px 3px 0 var(--line)}
+.sysact.done{background:var(--accent);box-shadow:none;cursor:default}
+.composerwrap{position:relative;flex:none;background:var(--surface);border-top:2.5px solid var(--line)}
+.toolbox{
+  position:absolute;left:18px;bottom:74px;z-index:12;width:min(520px,calc(100% - 36px));padding:16px;
+  background:var(--surface);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow);
+  transform:translateY(8px) scale(.98);opacity:0;pointer-events:none;transform-origin:left bottom;
+  transition:opacity .16s ease,transform .16s ease;
+}
+.toolbox.on{transform:none;opacity:1;pointer-events:auto}
+.toolbox .hd{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.toolbox .hd .eyebrow{flex:1}
+.toolbox .hint{font-size:9.5px;font-weight:700;letter-spacing:var(--label-ls);padding:4px 9px;border-radius:var(--pill);
+  background:var(--surface2);color:var(--text);border:1.5px solid var(--line)}
+.toolgrid{display:grid;grid-template-columns:repeat(5,minmax(82px,1fr));gap:9px}
+.toolgrid button{
+  padding:12px 6px;border-radius:var(--radius-sm);background:var(--bg);border:var(--border);
+  box-shadow:var(--card-shadow);font-size:11px;font-weight:700;line-height:1.5;
+  transition:transform .14s ease,box-shadow .14s ease;min-height:44px;
+}
+.toolgrid button:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.toolgrid button:active{transform:translate(3px,4px);box-shadow:var(--shadow-active)}
+.toolgrid em{display:block;font-style:normal;font-size:25px;margin-bottom:6px}
+.toolgrid small{display:block;font-size:8.5px;color:var(--dim);font-weight:600;letter-spacing:.03em}
+.composer{padding:13px 20px;display:flex;gap:10px;align-items:center}
+.tooltoggle{width:44px;height:44px;flex:none;border-radius:50%;background:var(--surface2);border:var(--border);
+  box-shadow:var(--card-shadow);font-size:25px;font-weight:500;line-height:1;transition:transform .16s ease,box-shadow .16s ease}
+.tooltoggle[aria-expanded="true"]{background:var(--primary);color:#fff;transform:rotate(45deg);box-shadow:var(--shadow-hover)}
+.composer input{flex:1;min-width:0;padding:12px 16px;border-radius:var(--pill);background:var(--bg);border:var(--border);
+  font-size:13px;color:var(--text);min-height:44px}
+
+/* ---------- 破冰游戏 ---------- */
+.game-modal{width:min(760px,100%);padding:24px}
+.gamehead{display:flex;align-items:flex-start;gap:13px;margin-bottom:18px}
+.gamehead .gameic{width:48px;height:48px;display:grid;place-items:center;flex:none;border-radius:var(--radius-sm);
+  background:var(--surface2);border:var(--border);font-size:25px}
+.gamehead .t{flex:1}.gamehead h2{margin:0 0 4px}.gamehead p{font-size:11.5px;color:var(--dim);line-height:1.6}
+.xbtn{width:40px;height:40px;flex:none;border-radius:50%;border:var(--border);background:var(--bg);font-size:20px;font-weight:700}
+.gamechips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.gamechip{padding:6px 10px;border-radius:var(--pill);background:var(--bg);border:1.5px solid var(--line);
+  font-size:10px;font-weight:700;letter-spacing:.03em}
+.pokerstage{display:grid;grid-template-columns:220px 1fr;gap:22px;align-items:center}
+.playingcard{width:190px;aspect-ratio:5/7;margin:auto;border:var(--border);border-radius:16px;background:var(--surface);
+  box-shadow:var(--shadow);padding:15px;display:flex;flex-direction:column;justify-content:space-between;
+  transform:rotate(-2deg);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.playingcard.pop{transform:rotate(2deg) scale(1.04)}
+.playingcard.red{color:#E83F32}.playingcard .rank{font-family:var(--font-display);font-size:34px;font-weight:800;line-height:1}
+.playingcard .suit{font-size:64px;text-align:center}.playingcard .bottom{align-self:flex-end;transform:rotate(180deg)}
+.rulebox{padding:20px;border:var(--border);border-radius:var(--radius);background:var(--surface2)}
+.rulebox .eyebrow{color:var(--text);opacity:.65}.rulebox h3{font-size:22px;margin:6px 0 8px}.rulebox p{font-size:13px;line-height:1.75}
+.rulebox .mfoot{margin-top:16px}.rulebox .mfoot .btn.ghost{flex:1}
+.pokerlegend{margin-top:18px;padding-top:15px;border-top:2px dashed var(--line);font-size:11px;color:var(--dim);line-height:1.7}
+.boardwrap{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(230px,.6fr);gap:18px;align-items:start}
+.board{display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(6,1fr);aspect-ratio:1;
+  border:var(--border);border-radius:var(--radius);background:var(--line);gap:2px;overflow:hidden;position:relative}
+.boardcell{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:4px;background:var(--surface);font-size:8.5px;font-weight:700;line-height:1.25;min-width:0}
+.boardcell em{font-style:normal;font-size:17px;margin-bottom:2px}.boardcell.current{background:var(--surface2)}
+.boardcell.truth{background:#FFF0B8}.boardcell.dare{background:#FFD6CB}.boardcell.profile{background:#DCD8FF}
+.boardcell.chance{background:#DDF5C8}.boardcell.reward{background:#CDECF5}.boardcell.start{background:var(--surface2)}
+.token{position:absolute;right:3px;bottom:3px;width:20px;height:20px;border-radius:50%;background:var(--primary);color:#fff;
+  border:1.5px solid var(--line);display:grid;place-items:center;font-size:9px;z-index:3;box-shadow:1px 2px 0 var(--line)}
+.boardcenter{grid-column:2/6;grid-row:2/6;background:var(--bg);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:18px;border:2px solid var(--line)}
+.boardcenter .dice{font-size:45px;line-height:1;margin-bottom:9px}.boardcenter h3{font-size:16px;margin-bottom:6px}
+.boardcenter p{font-size:10.5px;color:var(--dim);line-height:1.55;margin-bottom:13px}
+.boardcenter .btn{padding:11px 17px;min-height:40px}
+.missionpanel{padding:18px;border:var(--border);border-radius:var(--radius);background:var(--surface2);box-shadow:var(--card-shadow)}
+.missionpanel h3{font-size:17px;margin:7px 0}.missionpanel p{font-size:12.5px;line-height:1.7}.missionpanel small{display:block;color:var(--dim);line-height:1.6;margin-top:8px}
+.turns{margin-top:13px;padding-top:13px;border-top:2px dashed var(--line);display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--dim)}
+.turns b{margin-left:auto;color:var(--text)}
+.boardlegend{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:15px;font-size:10px}
+.boardlegend span{display:flex;align-items:center;gap:6px}.boardlegend i{width:10px;height:10px;border:1px solid var(--line);border-radius:3px}
+.boardlegend .ltruth{background:#FFF0B8}.boardlegend .ldare{background:#FFD6CB}.boardlegend .lprofile{background:#DCD8FF}.boardlegend .lchance{background:#DDF5C8}
+
+/* ---------- 我的标签 ---------- */
+.tagsgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:20px;align-items:start}
+@media(max-width:1080px){.tagsgrid{grid-template-columns:1fr}}
+.tagwall{display:flex;flex-wrap:wrap;gap:9px}
+.tg{
+  display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:var(--pill);
+  background:var(--surface2);border:var(--border);font-size:12px;font-weight:700;box-shadow:var(--card-shadow);
+}
+.tg s{text-decoration:none;font-size:9px;font-weight:700;letter-spacing:.03em;padding:2px 7px;
+  border-radius:var(--pill);background:var(--accent);color:var(--text);border:1.5px solid var(--line)}
+.tg.self{background:var(--surface)}
+.tg.self s{background:var(--disabled);color:var(--dim)}
+
+/* ---------- 活动广场 ---------- */
+.filters{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+.fchip{
+  font-size:12.5px;font-weight:600;padding:11px 16px;border-radius:var(--pill);background:var(--surface);
+  border:var(--border);color:var(--dim);min-height:44px;transition:transform .14s ease,box-shadow .14s ease;
+}
+.fchip:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.fchip[aria-pressed="true"]{background:var(--surface2);color:var(--text);font-weight:700;box-shadow:var(--card-shadow)}
+.filters .sp{flex:1}
+.egrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(296px,1fr));gap:18px}
+.ecard{
+  background:var(--surface);border:var(--border);border-radius:var(--radius);box-shadow:var(--card-shadow);
+  padding:19px;display:flex;flex-direction:column;
+}
+.ecard.mine{background:var(--surface2)}
+.ehost{display:flex;align-items:center;gap:8px;font-size:10.5px;letter-spacing:var(--label-ls);
+  color:var(--dim);font-weight:700;margin-bottom:11px;text-transform:uppercase}
+.ecard.mine .ehost{color:var(--text)}
+.etop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.etop h3{font-size:16px;font-weight:700;line-height:1.42;letter-spacing:-.01em}
+.score{flex:none;text-align:center;padding:8px 11px;border-radius:var(--radius-sm);background:var(--bg);border:var(--border)}
+.ecard.mine .score{background:var(--surface)}
+.score b{font-family:var(--font-display);font-weight:var(--display-weight);font-size:19px;line-height:1;display:block}
+.score small{font-size:8.5px;color:var(--dim);letter-spacing:var(--label-ls);font-weight:700}
+.emeta{font-size:12.5px;color:var(--dim);line-height:1.9}
+.ecard.mine .emeta{color:var(--text);opacity:.75}
+.echips{display:flex;gap:7px;flex-wrap:wrap;margin:13px 0}
+.ecard.mine .chip{background:var(--surface)}
+.eseats{display:flex;align-items:center;gap:9px;font-size:11.5px;color:var(--dim);margin-top:auto;padding-top:12px}
+.ecard.mine .eseats{color:var(--text);opacity:.75}
+.avs{display:flex}
+.avs i{width:25px;height:25px;border-radius:50%;background:var(--bg);border:2px solid var(--line);
+  margin-left:-8px;display:grid;place-items:center;font-size:10px;font-style:normal;font-weight:700;color:var(--dim)}
+.avs i:first-child{margin-left:0}
+.eacts{display:flex;gap:9px;margin-top:13px}
+.joinbtn{
+  flex:1;padding:12px;border-radius:var(--pill);background:var(--primary);color:#fff;font-size:13.5px;
+  font-weight:700;border:var(--border);box-shadow:var(--card-shadow);min-height:44px;
+  transition:transform .14s ease,box-shadow .14s ease;
+}
+.joinbtn:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.joinbtn:active{transform:translate(3px,4px);box-shadow:var(--shadow-active)}
+.joinbtn.done{background:var(--disabled);color:var(--dim);box-shadow:none;transform:none}
+.joinbtn.full{background:var(--accent);color:var(--text)}
+.detbtn{
+  flex:0 0 74px;padding:12px;border-radius:var(--pill);background:var(--surface);border:var(--border);
+  font-size:12.5px;font-weight:700;min-height:44px;box-shadow:var(--card-shadow);
+}
+.detbtn:active{transform:translate(3px,4px);box-shadow:var(--shadow-active)}
+
+/* ---------- 弹窗 / toast ---------- */
+.mask{position:fixed;inset:0;background:rgba(23,21,15,.62);display:none;place-items:center;z-index:80;padding:24px}
+.mask.on{display:grid}
+.modal{
+  width:min(580px,100%);max-height:88vh;overflow-y:auto;background:var(--surface);border:var(--border);
+  border-radius:var(--radius);box-shadow:var(--shadow);padding:26px;
+}
+.modal h2{font-size:20px;font-weight:600;letter-spacing:-.01em;margin-bottom:7px}
+.modal .lead{font-size:12.5px;color:var(--dim);line-height:1.75;margin-bottom:20px}
+.mfoot{display:flex;gap:11px;margin-top:22px}
+.mfoot .btn{flex:1}
+.mfoot .btn.ghost{flex:0 0 110px}
+.rng{display:flex;align-items:center;gap:14px}
+.rng input[type=range]{flex:1;accent-color:var(--hot);min-height:44px}
+.rng b{font-family:var(--font-display);font-weight:var(--display-weight);font-size:18px;min-width:58px}
+.vis{padding:15px;border-radius:var(--radius-sm);background:var(--surface2);border:var(--border);
+  font-size:12px;line-height:1.75;margin-top:4px}
+.vis b{display:block;margin-bottom:5px}
+.toast{
+  position:fixed;left:50%;top:26px;transform:translate(-50%,-160%);z-index:95;
+  padding:14px 24px;border-radius:var(--pill);background:var(--surface2);color:var(--text);border:var(--border);
+  box-shadow:var(--shadow);font-size:13.5px;font-weight:700;
+  transition:transform .38s cubic-bezier(.34,1.4,.64,1);
+}
+.toast.on{transform:translate(-50%,0)}
+
+@media(max-width:1080px){
+  .main{grid-template-columns:74px 1fr}
+  .nav span,.side .tip{display:none}
+  .nav{justify-content:center}
+  .chatwrap{grid-template-columns:1fr}
+  .convs{display:none}
+}
+@media(max-width:720px){
+  .toolgrid{grid-template-columns:repeat(3,1fr)}
+  .pokerstage,.boardwrap{grid-template-columns:1fr}
+  .playingcard{width:155px}
+  .boardcell{font-size:0}.boardcell em{font-size:15px;margin:0}
+  .boardcenter{padding:10px}.boardcenter .dice{font-size:34px}.boardcenter h3{font-size:13px}.boardcenter p{display:none}
+}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;animation:none!important}
+  .btn:hover,.mod:hover,.q:hover,.fchip:hover,.joinbtn:hover,.toolgrid button:hover{transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= 1. 登录 / 注册 ================= -->
+<section class="screen on" id="s-auth">
+  <div class="authwrap"><div class="authbox">
+    <div class="brand"><em>◐</em><h1>还没起名</h1></div>
+    <p class="lead">用你在别的 App 里的真实数据找人。匹配时只看到一个百分比，聊下去才知道对方是谁。</p>
+    <div class="tabsw" role="tablist" aria-label="登录或注册">
+      <button role="tab" id="tabReg" aria-selected="true">注册</button>
+      <button role="tab" id="tabLogin" aria-selected="false">登录</button>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label for="phone">手机号 <span class="reqmark">*</span></label>
+        <input id="phone" type="tel" inputmode="numeric" placeholder="138 0000 0000" value="138 0000 0000">
+      </div>
+      <div class="field">
+        <label for="code">验证码 <span class="reqmark">*</span></label>
+        <div class="codeline">
+          <input id="code" inputmode="numeric" placeholder="6 位验证码" value="123456">
+          <button id="sendCode">获取验证码</button>
+        </div>
+      </div>
+      <button class="btn block" id="authGo">注册并填写资料</button>
+      <p class="authnote">发起线下约饭需要手机号验证，这是安全要求。</p>
+    </div>
+  </div></div>
+</section>
+
+<!-- ================= 2. 填写个人信息 ================= -->
+<section class="screen" id="s-onboard">
+  <div class="onwrap"><div class="onbox">
+    <div class="steps" aria-hidden="true">
+      <div class="stepdot done" id="d1"></div><div class="stepdot" id="d2"></div><div class="stepdot" id="d3"></div>
+    </div>
+
+    <!-- 步骤 1 -->
+    <div class="ostep on" id="o1">
+      <div class="onhead">
+        <span class="eyebrow">第 1 步 / 3</span>
+        <h2>先填三项基础信息</h2>
+        <p>年龄和性别只用来筛选候选池，不参与匹配度计算，也不会展示给对方。</p>
+      </div>
+      <div class="card">
+        <div class="field row2" style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+          <div><label for="birth">出生年份 <span class="reqmark">*</span></label>
+            <input id="birth" inputmode="numeric" value="1998"></div>
+          <div><label for="city">城市 <span class="reqmark">*</span></label>
+            <select id="city"><option>上海</option><option>北京</option><option>深圳</option><option>杭州</option><option>成都</option><option>海外</option></select></div>
+        </div>
+        <div class="field">
+          <label>我的性别 <span class="reqmark">*</span></label>
+          <div class="pick" id="gender" data-single="1">
+            <button aria-pressed="true">女</button><button aria-pressed="false">男</button><button aria-pressed="false">不愿透露</button>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>希望匹配 <span class="reqmark">*</span></label>
+          <div class="pick" id="want" data-single="1">
+            <button aria-pressed="false">女</button><button aria-pressed="false">男</button><button aria-pressed="true">不限</button>
+          </div>
+        </div>
+      </div>
+      <div class="onfoot"><button class="btn block" data-next="2">下一步</button></div>
+    </div>
+
+    <!-- 步骤 2 -->
+    <div class="ostep" id="o2" hidden>
+      <div class="onhead">
+        <span class="eyebrow">第 2 步 / 3</span>
+        <h2>你想找什么样的人</h2>
+        <p>交友目的是匹配里权重最高的自填项。其余几项只做微调，填不填都行。</p>
+      </div>
+      <div class="card">
+        <div class="field">
+          <label>交友目的 <span class="reqmark">*</span>（可多选）</label>
+          <div class="pick" id="purpose">
+            <button aria-pressed="true">学习搭子</button><button aria-pressed="false">运动搭子</button>
+            <button aria-pressed="false">聊天倾诉</button><button aria-pressed="false">兴趣同好</button>
+            <button aria-pressed="false">饭搭子</button><button aria-pressed="false">随便聊聊</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>兴趣爱好（可多选）</label>
+          <div class="pick" id="hobby">
+            <button aria-pressed="true">阅读</button><button aria-pressed="false">音乐</button><button aria-pressed="false">影视</button>
+            <button aria-pressed="false">游戏</button><button aria-pressed="false">健身</button><button aria-pressed="false">旅行</button>
+            <button aria-pressed="false">摄影</button><button aria-pressed="false">美食</button><button aria-pressed="false">二次元</button>
+            <button aria-pressed="false">宠物</button>
+          </div>
+        </div>
+        <div class="field row2" style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+          <div><label for="mbti">MBTI</label>
+            <select id="mbti"><option>INFP</option><option>INFJ</option><option>ENFP</option><option>INTJ</option><option>ENTJ</option><option>ISFJ</option><option>不知道</option></select></div>
+          <div><label for="zodiac">星座</label>
+            <select id="zodiac"><option>白羊</option><option>金牛</option><option>双子</option><option>巨蟹</option><option>狮子</option><option>处女</option><option>天秤</option><option>天蝎</option><option>射手</option><option>摩羯</option><option>水瓶</option><option>双鱼</option></select></div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>作息类型</label>
+          <div class="pick" id="rhythm" data-single="1">
+            <button aria-pressed="false">早鸟</button><button aria-pressed="false">正常</button><button aria-pressed="true">夜猫子</button>
+          </div>
+        </div>
+      </div>
+      <div class="onfoot">
+        <button class="btn ghost" data-next="1">上一步</button>
+        <button class="btn" data-next="3">下一步</button>
+      </div>
+    </div>
+
+    <!-- 步骤 3 -->
+    <div class="ostep" id="o3" hidden>
+      <div class="onhead">
+        <span class="eyebrow">第 3 步 / 3</span>
+        <h2>连接你在用的 App</h2>
+        <p>标签会自动生成，不用手填。这些标签只有你自己看得到，对方永远看不到。</p>
+      </div>
+      <div class="card">
+        <div class="srcrow" data-src="duo">
+          <div class="ic">🦜</div>
+          <div class="t"><h4>多邻国 Duolingo</h4><p>可获取：在学语种、连续打卡天数、学习时段、等级</p></div>
+          <button class="act">连接</button>
+        </div>
+        <div class="srcrow" data-src="keep">
+          <div class="ic">🏃</div>
+          <div class="t"><h4>Keep</h4><p>可获取：运动类型、周频次、累计运动量、运动时段</p></div>
+          <button class="act">连接</button>
+        </div>
+        <div class="srcrow" data-src="music">
+          <div class="ic">🎵</div>
+          <div class="t"><h4>音乐 App</h4><p>可获取：音乐口味标签（V2 支持）</p></div>
+          <button class="act" disabled style="background:var(--disabled);color:var(--dim);box-shadow:none">暂不支持</button>
+        </div>
+        <div class="gentags" id="genBox" hidden>
+          <span class="eyebrow">已自动生成的标签 <b class="num" id="genCount">0</b> 个</span>
+          <div class="tagflow" id="tagFlow"></div>
+        </div>
+      </div>
+      <div class="onfoot">
+        <button class="btn ghost" data-next="2">上一步</button>
+        <button class="btn" id="finishOn">完成，进入首页</button>
+      </div>
+    </div>
+  </div></div>
+</section>
+
+<!-- ================= 3. 应用主体 ================= -->
+<section class="screen" id="s-app">
+<div class="app">
+  <header class="topbar">
+    <div class="logo"><em>◐</em>还没起名</div>
+    <div class="sp"></div>
+    <div class="who"><i>我</i><span id="whoName">夜行的水獺</span></div>
+  </header>
+  <div class="main">
+    <nav class="side" aria-label="主导航">
+      <button class="nav" data-page="home" aria-current="page"><em>⌂</em><span>首页</span></button>
+      <button class="nav" data-page="match"><em>◐</em><span>匹配</span></button>
+      <button class="nav" data-page="events"><em>◈</em><span>活动广场</span></button>
+      <button class="nav" data-page="msg"><em>◍</em><span>消息</span><b id="msgDot">1</b></button>
+      <button class="nav" data-page="tags"><em>◎</em><span>我的标签</span></button>
+      <div class="tip">你的标签只有你能看到。<br>对方只会看到一个百分比。</div>
+    </nav>
+
+    <!-- 首页 -->
+    <div class="page" id="p-home">
+      <div class="hello">
+        <h1>今天想认识什么样的人？</h1>
+        <p>两条路：一对一匿名匹配，或者约一桌同频的人吃饭。</p>
+      </div>
+      <div class="statrow">
+        <div class="stat"><b>12</b><span>个真实标签</span></div>
+        <div class="stat"><b>2</b><span>个已连接的 App</span></div>
+        <div class="stat"><b>971</b><span>天日语打卡</span></div>
+      </div>
+      <div class="modgrid">
+        <button class="mod" data-page="match">
+          <div class="ico">◐</div>
+          <h2>匹配</h2>
+          <p>系统按你的真实标签算出匹配度。你只会看到一个百分比，看不到照片、年龄和标签——聊下去才慢慢解锁。</p>
+          <span class="go">开始匹配 →</span>
+          <span class="meta">1 对 1 · 全程匿名</span>
+        </button>
+        <button class="mod hi" data-page="events">
+          <div class="ico">◈</div>
+          <h2>活动广场</h2>
+          <p>3–10 人的线下兴趣饭局，不是相亲。以共同兴趣为钩子，压力被人数分散。餐厅发起的局还有折扣。</p>
+          <span class="go">去逛逛 →</span>
+          <span class="meta">多人 · 线下 · 有商家优惠</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 匹配 -->
+    <div class="page" id="p-match" hidden>
+      <!-- 状态 1：待匹配 -->
+      <div class="mstate on" id="m-idle">
+        <div class="phead"><h1>匹配</h1><p>匹配度是算出来的，但匹配在哪里，得聊出来。</p></div>
+        <div class="midle"><div class="card">
+          <div class="bigico">◐</div>
+          <h2>准备好了就开始</h2>
+          <p class="desc">系统会先按年龄和希望匹配性别筛出候选池，<br>再用你的真实标签算出匹配度。</p>
+          <ul class="rules">
+            <li>你只会看到一个匹配度百分比，看不到对方的照片、年龄、学历</li>
+            <li>匹配点位初始全是「？」，靠聊天一个一个解锁</li>
+            <li>你的标签和匹配偏好，对方永远看不到</li>
+          </ul>
+          <button class="btn block" id="startMatch">开始匹配</button>
+        </div></div>
+      </div>
+
+      <!-- 状态 2：匹配中 -->
+      <div class="mstate" id="m-calc">
+        <div class="phead"><h1>正在匹配</h1><p>算法在跑，稍等一下。</p></div>
+        <div class="calc"><div class="card calcbox">
+          <div class="spinner" role="status"><span class="sr">正在匹配</span></div>
+          <h2>正在为你寻找同频的人</h2>
+          <div class="calcsteps">
+            <div class="cstep" id="cs1"><i>1</i>按年龄、希望匹配性别筛选候选池</div>
+            <div class="cstep" id="cs2"><i>2</i>逐标签计算相似度</div>
+            <div class="cstep" id="cs3"><i>3</i>加权求和，得出匹配度</div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 状态 3：匹配结果 -->
+      <div class="mstate" id="m-res">
+        <div class="phead"><h1>匹配成功</h1><p>点开下面的「？」看看效果——正式版里它们要靠聊天解锁。</p></div>
+        <div class="mres">
+          <div class="card">
+            <div class="ring" id="ring"><div><b class="num" id="pctNum">87</b><i class="num">%</i><small>匹配度</small></div></div>
+            <div class="rescopy">
+              <h2>你们有 <span class="num" id="qCount">4</span> 个隐藏共同点</h2>
+              <p>现在你看不到 TA 的照片、年龄和标签。<br>聊下去，共同点会一个一个亮起来。</p>
+            </div>
+            <p class="eyebrow">待解锁的共同点</p>
+            <div class="qgrid" id="qgrid"></div>
+            <div class="brow">
+              <button class="btn" id="toChat">开始匿名聊天</button>
+              <button class="btn ghost" id="again">换一个</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="anon">
+              <div class="face" id="anonFace">🦉</div>
+              <div><h3 id="anonName">夜行的猫头鹰</h3><p>系统生成的匿名代号 · 真实资料未解锁</p></div>
+            </div>
+            <p class="eyebrow" style="margin-bottom:11px">解锁路径</p>
+            <div class="lockrow">
+              <div class="lock"><em>🌐</em><span>城市、年龄段</span><b>聊满 1 天</b></div>
+              <div class="lock"><em>🖼️</em><span>模糊头像、兴趣类别</span><b>聊满 3 天</b></div>
+              <div class="lock"><em>👤</em><span>清晰头像、完整标签</span><b>聊满 7 天</b></div>
+              <div class="lock"><em>💬</em><span>交换联系方式</span><b>共同点全解锁</b></div>
+            </div>
+            <div class="note">平台不会替你揭面。对方的资料由聊天进度决定何时解锁，你的标签也同样对 TA 隐藏。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 消息 -->
+    <div class="page" id="p-msg" hidden>
+      <div class="phead">
+        <h1>消息</h1>
+        <p>匿名会话。点击输入框旁的「＋」，用一场轻游戏把陌生人的聊天接起来。</p>
+      </div>
+      <div class="chatwrap">
+        <div class="convs" id="convs">
+          <button class="conv" aria-current="true" data-conv="owl" data-type="direct">
+            <div class="face">🦉</div>
+            <div class="t"><h4>夜行的猫头鹰</h4><p>那我们算是同类了</p></div>
+            <span class="pct">87%</span>
+          </button>
+          <button class="conv" data-conv="hedgehog" data-type="direct">
+            <div class="face">🦔</div>
+            <div class="t"><h4>迷路的刺猬</h4><p>你也在学日语？</p></div>
+            <span class="pct">79%</span>
+          </button>
+          <button class="conv" data-conv="dinner" data-type="group">
+            <div class="face">🍽️</div>
+            <div class="t"><h4>独立开发者晚餐局</h4><p>6 人 · 约饭活动群聊</p></div>
+            <span class="pct">6人</span>
+          </button>
+        </div>
+        <div class="chatmain">
+          <div class="chead">
+            <div class="face" id="cFace">🦉</div>
+            <h3 id="cName">夜行的猫头鹰</h3>
+            <span class="stage" id="cStage">L1 初识</span>
+          </div>
+          <div class="prog">
+            <div class="r"><span>关系进度</span><b id="heatText">互动热度 4 / 5 · 再互动 1 次可解锁</b></div>
+            <div class="bar"><span id="heatBar" style="width:38%"></span></div>
+          </div>
+          <div class="stream" id="stream">
+            <!-- 会话消息由脚本按 session 渲染 -->
+          </div>
+          <div class="composerwrap">
+            <div class="toolbox" id="toolbox" role="dialog" aria-label="破冰工具箱">
+              <div class="hd">
+                <span class="eyebrow">破冰工具箱</span>
+                <span class="hint" id="toolAudience">结果双方可见</span>
+              </div>
+              <div class="toolgrid">
+                <button data-tool="dice"><em>🎲</em>摇骰子<small>P0 · 话题</small></button>
+                <button data-tool="task"><em>🃏</em>抽任务卡<small>P0 · 定制</small></button>
+                <button data-tool="unlock"><em>🔓</em>共同点<small>P0 · 解锁</small></button>
+                <button data-tool="poker"><em>♠️</em>同频牌局<small>P1 · 真心挑战</small></button>
+                <button data-tool="monopoly"><em>🎯</em>大富翁<small>P2 · 走格</small></button>
+              </div>
+            </div>
+            <div class="composer">
+              <button class="tooltoggle" id="toolToggle" aria-expanded="false" aria-controls="toolbox" aria-label="打开破冰工具箱">＋</button>
+              <input id="chatInput" aria-label="聊天消息" placeholder="说点什么…">
+              <button class="btn" id="chatSend" style="padding:12px 20px">发送</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 我的标签 -->
+    <div class="page" id="p-tags" hidden>
+      <div class="phead"><h1>我的标签</h1><p>标签从你授权的 App 自动生成，带来源标识。只有你自己看得到。</p></div>
+      <div class="tagsgrid">
+        <div class="card">
+          <p class="eyebrow" style="margin-bottom:13px">数据源</p>
+          <div class="srcrow linked">
+            <div class="ic">🦜</div>
+            <div class="t"><h4>多邻国</h4><p>日语 · 连续 971 天 · Lv.12</p></div>
+            <span class="ok"><s>✓</s>已连接</span>
+          </div>
+          <div class="srcrow linked">
+            <div class="ic">🏃</div>
+            <div class="t"><h4>Keep</h4><p>跑步 · 每周 4 次 · 累计 320km</p></div>
+            <span class="ok"><s>✓</s>已连接</span>
+          </div>
+          <div class="srcrow">
+            <div class="ic">🎵</div>
+            <div class="t"><h4>音乐 App</h4><p>V2 支持</p></div>
+            <span class="ok" style="color:var(--dim)">未连接</span>
+          </div>
+          <div class="note">接口层已抽象，Demo 阶段用 mock 数据跑通。每个标签都带来源，这是真实性的证明。</div>
+        </div>
+        <div class="card">
+          <p class="eyebrow" style="margin-bottom:13px">自动生成的标签 · 12 个</p>
+          <div class="tagwall">
+            <span class="tg">正在学日语 <s>多邻国</s></span>
+            <span class="tg">连续打卡 971 天 <s>多邻国</s></span>
+            <span class="tg">学习坚持度 硬核 <s>多邻国</s></span>
+            <span class="tg">深夜学习型 <s>多邻国</s></span>
+            <span class="tg">跑步爱好者 <s>Keep</s></span>
+            <span class="tg">每周运动 4 次 <s>Keep</s></span>
+            <span class="tg">晨练型 <s>Keep</s></span>
+            <span class="tg">自律程度 高 <s>复合</s></span>
+            <span class="tg self">找学习搭子 <s>自填</s></span>
+            <span class="tg self">夜猫子 <s>自填</s></span>
+            <span class="tg self">INFP <s>自填</s></span>
+            <span class="tg self">上海 <s>自填</s></span>
+          </div>
+          <div class="note">
+            <b>为什么不给对方看？</b>
+            刷卡片会放大颜值和学历，而可选项质量越高、决策标准越高、满意度反而越低（选择悖论）。所以我们只给一个数字。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 活动广场 -->
+    <div class="page" id="p-events" hidden>
+      <div class="phead">
+        <h1>活动广场</h1>
+        <p>3–10 人的兴趣局，不是相亲。地点必须是真实餐厅，这是安全要求。</p>
+      </div>
+      <div class="filters">
+        <button class="fchip" aria-pressed="true" data-f="score">按匹配度</button>
+        <button class="fchip" aria-pressed="false" data-f="near">离我最近</button>
+        <button class="fchip" aria-pressed="false" data-f="week">本周</button>
+        <button class="fchip" aria-pressed="false" data-f="coupon">只看有优惠</button>
+        <div class="sp"></div>
+        <button class="btn" id="openNew" style="padding:12px 20px">＋ 发起约饭</button>
+      </div>
+      <div class="egrid" id="egrid"></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 发起约饭 -->
+<div class="mask" id="newMask" role="dialog" aria-modal="true" aria-labelledby="newTitle">
+  <div class="modal">
+    <h2 id="newTitle">发起一桌</h2>
+    <p class="lead">3–10 人的兴趣局。地点必须选真实餐厅，不支持私人住址。</p>
+    <div class="field"><label for="nTitle">活动主题 <span class="reqmark">*</span></label>
+      <input id="nTitle" value="聊聊 AI 创业，周五晚"></div>
+    <div class="field"><label for="nPoi">餐厅（真实 POI） <span class="reqmark">*</span></label>
+      <input id="nPoi" value="Anna's Bistro · 静安寺"></div>
+    <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+      <div><label for="nTime">日期时间 <span class="reqmark">*</span></label><input id="nTime" value="9月4日 周五 19:00"></div>
+      <div><label for="nBudget">人均预算 <span class="reqmark">*</span></label>
+        <select id="nBudget"><option>50 以下</option><option>50–100</option><option selected>100–200</option><option>200+</option></select></div>
+    </div>
+    <div class="field">
+      <label for="nSize">人数上限（限制 3–10 人）</label>
+      <div class="rng"><input id="nSize" type="range" min="3" max="10" value="8"><b class="num" id="nSizeV">8 人</b></div>
+    </div>
+    <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+      <div><label for="nPay">费用方式</label>
+        <select id="nPay"><option selected>AA</option><option>发起人请</option><option>各付各的</option></select></div>
+      <div><label for="nMode">报名方式</label>
+        <select id="nMode"><option selected>发起人审核</option><option>先到先得</option></select></div>
+    </div>
+    <div class="field">
+      <label>想约什么样的人 <span class="reqmark">*</span>（1–5 个标签）</label>
+      <div class="pick" id="nTags">
+        <button aria-pressed="true">对 AI 感兴趣</button><button aria-pressed="true">创业中</button>
+        <button aria-pressed="false">在学英语</button><button aria-pressed="false">在学日语</button>
+        <button aria-pressed="false">跑步爱好者</button><button aria-pressed="false">夜猫子</button>
+        <button aria-pressed="false">写代码</button><button aria-pressed="false">爱看展</button>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn ghost" id="newCancel">取消</button>
+      <button class="btn" id="newSubmit">发布到广场</button>
+    </div>
+  </div>
+</div>
+
+<!-- 同频牌局（小姐牌的无酒精、画像定制版本） -->
+<div class="mask" id="pokerMask" role="dialog" aria-modal="true" aria-labelledby="pokerTitle">
+  <div class="modal game-modal">
+    <div class="gamehead">
+      <div class="gameic">♠️</div>
+      <div class="t"><h2 id="pokerTitle">同频牌局</h2><p>小姐牌的无酒精线上版本。每个点数对应一种真心话、行动挑战或群体互动。</p></div>
+      <button class="xbtn" data-close="#pokerMask" aria-label="关闭">×</button>
+    </div>
+    <div class="gamechips"><span class="gamechip" id="pokerSession">1V1 会话</span><span class="gamechip">真心话 · 大冒险 · 群体互动</span><span class="gamechip">不劝酒版</span></div>
+    <div class="pokerstage">
+      <div class="playingcard" id="playingCard" aria-label="当前扑克牌">
+        <span class="rank" id="cardTop">?</span><span class="suit" id="cardSuit">♠</span><span class="rank bottom" id="cardBottom">?</span>
+      </div>
+      <div class="rulebox">
+        <span class="eyebrow" id="cardEyebrow">准备抽牌</span>
+        <h3 id="cardRule">一张牌，一次更深的认识</h3>
+        <p id="cardPrompt">点击“抽一张”，系统会结合当前会话人数和关系阶段给出可执行的真心话或大冒险。</p>
+        <div class="mfoot">
+          <button class="btn ghost" id="pokerRules">查看 13 张规则</button>
+          <button class="btn" id="drawPoker">抽一张</button>
+        </div>
+      </div>
+    </div>
+    <div class="pokerlegend" id="pokerLegend" hidden>A 真心话 · 2 陪答官 · 3 三秒快答 · 4 反向采访 · 5 夸夸牌 · 6 二选一 · 7 故事接龙 · 8 免答牌 · 9 找共同点 · 10 大冒险 · J 指定回答 · Q 全员回答 · K 定规则</div>
+  </div>
+</div>
+
+<!-- 画像大富翁 -->
+<div class="mask" id="boardMask" role="dialog" aria-modal="true" aria-labelledby="boardTitle">
+  <div class="modal game-modal">
+    <div class="gamehead">
+      <div class="gameic">🎯</div>
+      <div class="t"><h2 id="boardTitle">同频大富翁</h2><p>格子不是买地，而是由当前玩家画像、共同标签和关系阶段生成的聊天任务。</p></div>
+      <button class="xbtn" data-close="#boardMask" aria-label="关闭">×</button>
+    </div>
+    <div class="gamechips" id="profileChips"></div>
+    <div class="boardwrap">
+      <div class="board" id="board" aria-label="20 格画像定制大富翁棋盘">
+        <div class="boardcenter">
+          <div class="dice" id="boardDice">🎲</div>
+          <h3 id="turnName">你的回合</h3>
+          <p>掷骰子后自动前进，落地任务会同步发进聊天。</p>
+          <button class="btn" id="rollBoard">掷骰子</button>
+        </div>
+      </div>
+      <aside class="missionpanel">
+        <span class="eyebrow" id="missionType">等待掷骰子</span>
+        <h3 id="missionTitle">从起点认识彼此</h3>
+        <p id="missionText">每次落地都会生成一条与当前会话画像有关的真心话、行动挑战或合作任务。</p>
+        <small id="missionMeta">建议一局 6–8 个回合，不以输赢为目标。</small>
+        <div class="turns"><span>本局进度</span><b id="turnCount">0 / 8 回合</b></div>
+        <div class="boardlegend">
+          <span><i class="ltruth"></i>真心话</span><span><i class="ldare"></i>大冒险</span>
+          <span><i class="lprofile"></i>画像任务</span><span><i class="lchance"></i>机会 / 奖励</span>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<!-- 活动详情 -->
+<div class="mask" id="detMask" role="dialog" aria-modal="true" aria-labelledby="detTitle">
+  <div class="modal" id="detBody"></div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+
+/* ---------------- toast ---------------- */
+let tTimer;
+function toast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(tTimer); tTimer=setTimeout(()=>t.classList.remove('on'),2200);
+}
+
+/* ---------------- 屏幕切换 ---------------- */
+function screen(id){
+  $$('.screen').forEach(s=>s.classList.remove('on'));
+  $('#'+id).classList.add('on');
+  window.scrollTo(0,0);
+}
+
+/* ---------------- 1. 登录注册 ---------------- */
+let isReg=true;
+$('#tabReg').addEventListener('click',()=>{
+  isReg=true; $('#tabReg').setAttribute('aria-selected','true'); $('#tabLogin').setAttribute('aria-selected','false');
+  $('#authGo').textContent='注册并填写资料';
+});
+$('#tabLogin').addEventListener('click',()=>{
+  isReg=false; $('#tabLogin').setAttribute('aria-selected','true'); $('#tabReg').setAttribute('aria-selected','false');
+  $('#authGo').textContent='登录';
+});
+let cd;
+$('#sendCode').addEventListener('click',e=>{
+  let n=60; const b=e.currentTarget; b.disabled=true;
+  b.textContent=n+'s 后重发';
+  clearInterval(cd);
+  cd=setInterval(()=>{ n--; b.textContent=n+'s 后重发'; if(n<=0){clearInterval(cd);b.disabled=false;b.textContent='获取验证码'} },1000);
+  toast('验证码已发送（演示环境固定 123456）');
+});
+$('#authGo').addEventListener('click',()=>{
+  if(!$('#phone').value.trim()||!$('#code').value.trim()){toast('手机号和验证码都要填');return}
+  if(isReg){screen('s-onboard');} else {screen('s-app'); page('home'); toast('欢迎回来');}
+});
+
+/* ---------------- 2. 填写资料 ---------------- */
+/* 多选 / 单选 chip */
+$$('.pick').forEach(g=>{
+  const single=g.dataset.single==='1';
+  g.addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    if(single){ [...g.children].forEach(x=>x.setAttribute('aria-pressed','false')); b.setAttribute('aria-pressed','true'); return; }
+    const on=b.getAttribute('aria-pressed')==='true';
+    if(g.id==='nTags' && !on && g.querySelectorAll('[aria-pressed="true"]').length>=5){toast('最多选 5 个标签');return}
+    b.setAttribute('aria-pressed',String(!on));
+  });
+});
+function ostep(n){
+  ['o1','o2','o3'].forEach((id,i)=>$('#'+id).hidden=(i!==n-1));
+  ['d1','d2','d3'].forEach((id,i)=>$('#'+id).classList.toggle('done',i<n));
+  window.scrollTo(0,0);
+}
+$$('[data-next]').forEach(b=>b.addEventListener('click',()=>{
+  const to=+b.dataset.next;
+  if(to===2){
+    if(!$('#birth').value.trim()){toast('出生年份要填');return}
+  }
+  if(to===3){
+    if(!$('#purpose').querySelector('[aria-pressed="true"]')){toast('至少选一个交友目的');return}
+  }
+  ostep(to);
+}));
+
+/* 第三方授权 → 生成标签 */
+const SRC_TAGS={
+  duo:['正在学日语','连续打卡 971 天','学习坚持度 硬核','深夜学习型','Lv.12'],
+  keep:['跑步爱好者','每周运动 4 次','晨练型','累计 320km','自律程度 高']
+};
+let genTags=[];
+$$('.srcrow[data-src] .act').forEach(btn=>{
+  if(btn.disabled)return;
+  btn.addEventListener('click',()=>{
+    const row=btn.closest('.srcrow'), key=row.dataset.src;
+    row.classList.add('linked');
+    btn.outerHTML='<span class="ok"><s>✓</s>已连接</span>';
+    row.querySelector('p').textContent='已生成 '+SRC_TAGS[key].length+' 个标签';
+    genTags=genTags.concat(SRC_TAGS[key]);
+    $('#genBox').hidden=false;
+    $('#genCount').textContent=genTags.length;
+    const flow=$('#tagFlow');
+    SRC_TAGS[key].forEach((t,i)=>{
+      const el=document.createElement('span');
+      el.className='chip'; el.textContent=t;
+      flow.appendChild(el);
+      setTimeout(()=>el.classList.add('in'),90*i+40);
+    });
+    toast('已连接，生成 '+SRC_TAGS[key].length+' 个真实标签');
+  });
+});
+$('#finishOn').addEventListener('click',()=>{
+  if(genTags.length===0){
+    if(!confirm('你还没有连接任何 App，标签会很少，匹配质量会差。确定跳过吗？'))return;
+  }
+  screen('s-app'); page('home'); toast('资料完成，开始探索');
+});
+
+/* ---------------- 3. 页面切换 ---------------- */
+const PAGES=['home','match','msg','tags','events'];
+function page(k){
+  PAGES.forEach(p=>$('#p-'+p).hidden=(p!==k));
+  $$('.nav').forEach(n=>n.removeAttribute('aria-current'));
+  const n=$(`.nav[data-page="${k}"]`); if(n)n.setAttribute('aria-current','page');
+  const pg=$('#p-'+k); if(pg)pg.scrollTop=0;
+  if(k==='msg')$('#msgDot').style.display='none';
+}
+$$('[data-page]').forEach(b=>b.addEventListener('click',()=>page(b.dataset.page)));
+
+/* ---------------- 匹配流程 ---------------- */
+const CANDS=[
+  {name:'夜行的猫头鹰',face:'🦉',pct:87,pts:['都在学日语','都是夜猫子','每周跑步 4 次','都在创业']},
+  {name:'迷路的刺猬',  face:'🦔',pct:79,pts:['都在学日语','都爱看展','学习坚持度都是硬核']},
+  {name:'早起的水豚',  face:'🦫',pct:92,pts:['都是晨练型','都在跑步','自律程度都很高','都想找学习搭子']},
+  {name:'走神的柯基',  face:'🐕',pct:68,pts:['都在上海','都喜欢美食','都是 INFP']}
+];
+let ci=0;
+function mstate(id){ $$('.mstate').forEach(s=>s.classList.remove('on')); $('#'+id).classList.add('on'); }
+
+function runMatch(){
+  mstate('m-calc');
+  ['cs1','cs2','cs3'].forEach(id=>$('#'+id).classList.remove('on'));
+  const t=[];
+  t.push(setTimeout(()=>$('#cs1').classList.add('on'),260));
+  t.push(setTimeout(()=>$('#cs2').classList.add('on'),1000));
+  t.push(setTimeout(()=>$('#cs3').classList.add('on'),1740));
+  t.push(setTimeout(showResult,2500));
+}
+function showResult(){
+  const c=CANDS[ci%CANDS.length]; ci++;
+  $('#pctNum').textContent=c.pct;
+  $('#ring').style.setProperty('--pct',c.pct+'%');
+  $('#anonName').textContent=c.name;
+  $('#anonFace').textContent=c.face;
+  $('#qCount').textContent=c.pts.length;
+  const g=$('#qgrid'); g.innerHTML='';
+  g.style.gridTemplateColumns=`repeat(${c.pts.length},1fr)`;
+  c.pts.forEach(p=>{
+    const b=document.createElement('button');
+    b.className='q'; b.textContent='?'; b.dataset.reveal=p;
+    b.setAttribute('aria-label','未解锁的共同点，点击预览');
+    b.addEventListener('click',()=>{
+      const open=b.classList.toggle('open');
+      b.textContent=open?b.dataset.reveal:'?';
+    });
+    g.appendChild(b);
+  });
+  mstate('m-res');
+}
+$('#startMatch').addEventListener('click',runMatch);
+$('#again').addEventListener('click',runMatch);
+$('#toChat').addEventListener('click',()=>{
+  const c=CANDS[(ci-1+CANDS.length)%CANDS.length];
+  $('#cFace').textContent=c.face; $('#cName').textContent=c.name;
+  page('msg'); toast('已建立匿名会话');
+});
+
+/* ---------------- 消息：破冰工具箱与游戏 ---------------- */
+const CHAT_SESSIONS={
+  owl:{
+    id:'owl',type:'direct',name:'夜行的猫头鹰',face:'🦉',pct:87,heat:4,revealed:0,
+    profiles:['日语学习 971 天','每周跑步 4 次','AI 创业','夜猫子'],
+    commonPoints:['你们都在坚持学习日语','你们每周都至少跑步 3 次','你们都在关注 AI 创业'],
+    members:['你','夜行的猫头鹰'],
+    messages:[
+      {id:1,kind:'you',text:'刚看到我们匹配度 87%，好高啊'},
+      {id:2,kind:'me',text:'是啊，但我完全猜不到你是谁哈哈'},
+      {id:3,kind:'system',icon:'🎲',eyebrow:'骰子话题 · 掷出 4 点',text:'说一件你坚持了超过一年的小事',
+       meta:'结合共同画像「长期学习」生成 · 双方可见',actionLabel:'完成话题 · +2 热度'},
+      {id:4,kind:'you',text:'我先来——每天背单词，971 天了'},
+      {id:5,kind:'me',text:'巧了，我也在背，不过是日语'}
+    ]
+  },
+  hedgehog:{
+    id:'hedgehog',type:'direct',name:'迷路的刺猬',face:'🦔',pct:79,heat:3,revealed:0,
+    profiles:['日语入门','周末看展','独立电影','城市散步'],
+    commonPoints:['你们都在学习日语','你们都喜欢周末看展','你们都偏爱步行探索城市'],
+    members:['你','迷路的刺猬'],
+    messages:[
+      {id:11,kind:'you',text:'你也在学日语？'},
+      {id:12,kind:'me',text:'刚开始不久，现在还只会自我介绍'}
+    ]
+  },
+  dinner:{
+    id:'dinner',type:'group',name:'独立开发者晚餐局',face:'🍽️',pct:null,heat:6,revealed:0,
+    profiles:['独立开发','AI 产品','夜间创作','线下约饭'],
+    commonPoints:['群内有 4 人正在做独立产品','群内有 5 人习惯在夜间创作','群内有 3 人持续学习一门新语言'],
+    members:['你','代码诗人','夜跑水豚','拿铁不加糖','像素狐狸','周五出逃'],
+    messages:[
+      {id:21,kind:'system',icon:'🍽️',eyebrow:'活动群聊已建立',text:'独立开发者晚餐局 · 6 人已成团',
+       meta:'破冰游戏结果会同步给群内所有成员'},
+      {id:22,kind:'you',text:'大家最想在饭桌上聊哪个方向？'},
+      {id:23,kind:'me',text:'我想聊聊 AI 产品从想法到上线的坑'}
+    ]
+  }
+};
+let activeChatId='owl',chatMessageSeq=100;
+let activePokerResult=null;
+let boardState={sessionId:null,pos:0,turn:0,phase:'roll',pendingMessageId:null,lastMission:null};
+
+const DICE_TOPICS=[
+  s=>'用一句话安利你坚持「'+s.profiles[0]+'」的原因',
+  s=>'如果明天多出三个小时，你最想拿来做什么？',
+  s=>'围绕「'+s.profiles[1]+'」，分享一次最狼狈但好笑的经历',
+  s=>'说一件你坚持超过一年的小事',
+  s=>'最近有什么东西让你产生了“想认真学一下”的冲动？',
+  s=>s.type==='group'?'每个人用一个关键词描述理想饭搭子':'如果这周一起吃饭，你最想安利哪家店？'
+];
+const TASK_LIBRARY=[
+  {cat:'学习',tags:['学习','日语'],prompt:s=>'说出你在「'+s.profiles[0]+'」上走过的最大弯路'},
+  {cat:'运动',tags:['跑步','运动'],prompt:s=>'用三个词描述你最舒服的一次运动体验'},
+  {cat:'生活',tags:['生活','散步','约饭'],prompt:s=>'分享一个只有熟人才知道的生活小习惯'},
+  {cat:'脑洞',tags:['AI','产品','开发'],prompt:s=>'如果把「'+s.profiles[2]+'」做成一部电影，它会叫什么？'},
+  {cat:'价值观',tags:['坚持','创作'],prompt:s=>'什么事情会让你觉得“今天没有白过”？'},
+  {cat:'学习',tags:['学习','语言'],prompt:s=>'互相教对方一句你最近学会的话或知识'},
+  {cat:'生活',tags:['夜猫子','夜间'],prompt:s=>'描述一次你在深夜突然充满能量的时刻'},
+  {cat:'脑洞',tags:['城市','看展'],prompt:s=>'如果一起策划一场只属于你们的展览，主题是什么？'}
+];
+const POKER_RULES={
+  A:{name:'真心牌',prompt:(s,t)=>'真心话：关于「'+t+'」，你最怕别人误解你的是什么？'},
+  2:{name:'陪答牌',prompt:(s,t)=>s.type==='group'?'指定一位成员，和你一起回答：为什么会开始「'+t+'」？':'双方都回答：为什么会开始「'+t+'」？'},
+  3:{name:'三秒快答',prompt:()=> '三秒内说出：最近最想学的三件事。不能重复。'},
+  4:{name:'反向采访',prompt:(s,t)=>'把麦克风交给对方：允许 TA 围绕「'+t+'」连续问你两个问题。'},
+  5:{name:'夸夸牌',prompt:s=>s.type==='group'?'根据刚才的发言，夸一位成员一个具体优点。':'根据刚才的聊天，夸对方一个具体优点。'},
+  6:{name:'二选一',prompt:(s,t)=>'关于「'+t+'」二选一：稳定积累还是短期冲刺？选完必须说理由。'},
+  7:{name:'故事接龙',prompt:s=>s.type==='group'?'每人补一句，共同完成“我们误入了一家只接待同频者的餐厅……”':'一人一句，接龙完成“我们误入了一家只接待同频者的餐厅……”'},
+  8:{name:'换题牌',prompt:()=> '你可以免答当前问题，并把它改成一个更想知道的问题。'},
+  9:{name:'同频牌',prompt:(s,t)=>'围绕「'+t+'」各说一个细节，看看能不能找到新的共同点。'},
+  10:{name:'行动牌',prompt:(s,t)=>s.type==='group'?'用 10 秒语音或一句话模仿你做「'+t+'」时的状态。':'只用三个表情描述你做「'+t+'」时的状态，让对方猜。'},
+  J:{name:'点名牌',prompt:s=>s.type==='group'?'指定一位成员回答：最近做过最不像自己的一件事。':'请对方回答：最近做过最不像自己的一件事。'},
+  Q:{name:'全员牌',prompt:s=>s.type==='group'?'全员回答：如果今天的饭局只有一个主题，你选什么？':'双方回答：如果今天的聊天只有一个主题，你选什么？'},
+  K:{name:'规则牌',prompt:()=> '定一条持续三轮的聊天规则，例如“回答前先猜对方会怎么说”。'}
+};
+const BOARD_TYPES=['start','profile','truth','dare','chance','profile','truth','reward','dare','profile',
+  'chance','truth','dare','profile','reward','truth','chance','dare','profile','truth'];
+const BOARD_LABELS={
+  start:['🚩','起点'],profile:['🧬','画像任务'],truth:['💬','真心话'],dare:['⚡','行动挑战'],
+  chance:['🍀','机会'],reward:['✨','线索奖励']
+};
+
+function currentChat(){return CHAT_SESSIONS[activeChatId]}
+function chatGoal(s){return (s.type==='group'?8:5)+s.revealed*4}
+function pickOne(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function closeToolbox(){
+  $('#toolbox').classList.remove('on');
+  $('#toolToggle').setAttribute('aria-expanded','false');
+}
+function updateChatProgress(){
+  const s=currentChat(),goal=chatGoal(s),ready=s.heat>=goal;
+  $('#heatText').textContent=ready
+    ?'互动热度 '+s.heat+' / '+goal+' · 已达到共同点解锁条件'
+    :'互动热度 '+s.heat+' / '+goal+' · 再互动 '+Math.ceil(goal-s.heat)+' 次可解锁';
+  $('#heatBar').style.width=Math.min(100,Math.round(s.heat/goal*100))+'%';
+}
+function renderChat(){
+  const s=currentChat(),stream=$('#stream');
+  $('#cFace').textContent=s.face;
+  $('#cName').textContent=s.name;
+  $('#cStage').textContent=s.type==='group'?'6 人 · 热身中':'L1 初识';
+  $('#toolAudience').textContent=s.type==='group'?'结果全群可见':'结果双方可见';
+  $$('.conv').forEach(c=>c.setAttribute('aria-current',String(c.dataset.conv===s.id)));
+  stream.innerHTML='';
+  s.messages.forEach(m=>{
+    if(m.kind==='you'||m.kind==='me'){
+      const bubble=document.createElement('div');
+      bubble.className='msg '+m.kind;
+      bubble.textContent=m.text;
+      stream.appendChild(bubble);
+      return;
+    }
+    const card=document.createElement('div');
+    card.className='syscard';
+    const icon=document.createElement('span');icon.className='big';icon.textContent=m.icon||'✦';
+    const eye=document.createElement('span');eye.className='eyebrow';eye.textContent=m.eyebrow||'系统消息';
+    const body=document.createElement('p');body.textContent=m.text;
+    card.append(icon,eye,body);
+    if(m.meta){const meta=document.createElement('span');meta.className='sysmeta';meta.textContent=m.meta;card.appendChild(meta)}
+    if(m.actionLabel){
+      const act=document.createElement('button');
+      act.className='sysact'+(m.done?' done':'');
+      act.textContent=m.done?'✓ 已完成':m.actionLabel;
+      act.disabled=!!m.done;
+      act.dataset.msgAction=String(m.id);
+      card.appendChild(act);
+    }
+    stream.appendChild(card);
+  });
+  updateChatProgress();
+  requestAnimationFrame(()=>{stream.scrollTop=stream.scrollHeight});
+}
+function addSystemMessage(data){
+  const msg=Object.assign({id:++chatMessageSeq,kind:'system'},data);
+  currentChat().messages.push(msg);
+  renderChat();
+  return msg;
+}
+function revealCommonPoint(source){
+  const s=currentChat();
+  if(s.revealed>=s.commonPoints.length){
+    addSystemMessage({icon:'✅',eyebrow:'共同点已全部解锁',text:'继续用游戏把共同点聊深，而不是继续收集标签。',
+      meta:'所有共同点均来自双方授权的数据或群聊聚合信息'});
+    return false;
+  }
+  const point=s.commonPoints[s.revealed++];
+  addSystemMessage({icon:'✨',eyebrow:'匹配点解锁 · '+source,text:point,
+    meta:s.type==='group'?'只展示群体聚合结果，不公开对应成员':'新的共同点已加入你们的关系档案'});
+  return true;
+}
+function completeChatTask(id){
+  const s=currentChat(),msg=s.messages.find(m=>m.id===Number(id));
+  if(!msg||msg.done)return false;
+  msg.done=true;s.heat+=2;
+  const shouldReveal=s.heat>=chatGoal(s);
+  if(shouldReveal)revealCommonPoint('完成破冰任务');
+  else renderChat();
+  toast(shouldReveal?'任务完成，解锁了一个共同点':'任务完成，互动热度 +2');
+  return true;
+}
+function matchingTask(s){
+  const joined=s.profiles.join(' ');
+  const matched=TASK_LIBRARY.filter(t=>t.tags.some(tag=>joined.includes(tag)));
+  return pickOne(matched.length?matched:TASK_LIBRARY);
+}
+function useChatTool(tool){
+  const s=currentChat();
+  closeToolbox();
+  if(tool==='dice'){
+    const n=Math.floor(Math.random()*6)+1;s.heat+=1;
+    addSystemMessage({icon:'🎲',eyebrow:'画像骰子 · 掷出 '+n+' 点',text:DICE_TOPICS[n-1](s),
+      meta:'结合当前会话画像生成 · 使用工具热度 +1',actionLabel:'完成话题 · +2 热度'});
+    return;
+  }
+  if(tool==='task'){
+    const task=matchingTask(s);s.heat+=1;
+    addSystemMessage({icon:'🃏',eyebrow:task.cat+'任务卡 · '+(s.type==='group'?'全群任务':'双方任务'),text:task.prompt(s),
+      meta:'画像弱关联抽取 · 近 10 次话题去重 · 使用工具热度 +1',actionLabel:'完成任务 · +2 热度'});
+    return;
+  }
+  if(tool==='unlock'){
+    if(s.heat>=chatGoal(s))revealCommonPoint('主动解锁');
+    else addSystemMessage({icon:'🔒',eyebrow:'共同点还在锁定',text:'再完成 '+Math.ceil(chatGoal(s)-s.heat)+' 次有效互动即可解锁',
+      meta:'摇骰子、抽任务卡或完成游戏挑战都能推进'});
+    return;
+  }
+  if(tool==='poker'){
+    preparePoker();openMask('#pokerMask');return;
+  }
+  if(tool==='monopoly'){
+    prepareBoard();openMask('#boardMask');
+  }
+}
+
+function preparePoker(){
+  const s=currentChat();
+  activePokerResult=null;
+  $('#pokerSession').textContent=s.type==='group'?s.members.length+' 人群聊':'1V1 会话';
+  $('#playingCard').classList.remove('red','pop');
+  $('#cardTop').textContent='?';$('#cardBottom').textContent='?';$('#cardSuit').textContent='♠';
+  $('#cardEyebrow').textContent='已读取当前会话画像';
+  $('#cardRule').textContent='一张牌，一次更深的认识';
+  $('#cardPrompt').textContent='将从「'+s.profiles.join(' · ')+'」中选择弱关联画像，生成一条安全、可拒绝的挑战。';
+  $('#drawPoker').textContent='抽一张';
+}
+function drawOrSendPoker(){
+  const s=currentChat();
+  if(!activePokerResult){
+    const ranks=Object.keys(POKER_RULES),rank=pickOne(ranks),suit=pickOne(['♠','♥','♣','♦']);
+    const rule=POKER_RULES[rank],tag=pickOne(s.profiles);
+    activePokerResult={rank,suit,name:rule.name,prompt:rule.prompt(s,tag),tag};
+    $('#cardTop').textContent=rank;$('#cardBottom').textContent=rank;$('#cardSuit').textContent=suit;
+    $('#playingCard').classList.toggle('red',suit==='♥'||suit==='♦');
+    $('#playingCard').classList.add('pop');setTimeout(()=>$('#playingCard').classList.remove('pop'),320);
+    $('#cardEyebrow').textContent=rank+suit+' · '+rule.name;
+    $('#cardRule').textContent=rule.name;
+    $('#cardPrompt').textContent=activePokerResult.prompt;
+    $('#drawPoker').textContent='发到聊天';
+    return;
+  }
+  s.heat+=1;
+  addSystemMessage({icon:activePokerResult.suit,eyebrow:'同频牌局 · '+activePokerResult.rank+activePokerResult.suit+' · '+activePokerResult.name,
+    text:activePokerResult.prompt,meta:'关联画像「'+activePokerResult.tag+'」· 所有参与者均可选择换题 · 使用工具热度 +1',
+    actionLabel:'完成挑战 · +2 热度'});
+  closeMask('#pokerMask');
+  toast('牌面已同步到当前会话');
+  activePokerResult=null;
+}
+
+function boardCoordinate(index){
+  if(index<=5)return [1,index+1];
+  if(index<=10)return [index-4,6];
+  if(index<=15)return [6,16-index];
+  return [21-index,1];
+}
+function boardPlayers(s){
+  return s.type==='group'?s.members.slice(0,4):s.members;
+}
+function resetBoard(){
+  boardState={sessionId:activeChatId,pos:0,turn:0,phase:'roll',pendingMessageId:null,lastMission:null};
+}
+function boardMission(type,pos,s){
+  const tag=s.profiles[pos%s.profiles.length],point=s.commonPoints[pos%s.commonPoints.length];
+  if(type==='profile')return {icon:'🧬',label:'画像任务',title:'共同画像挑战',
+    text:s.type==='group'?'围绕「'+tag+'」，每个人说一个“入坑契机”，找出最意外的那位。':'围绕「'+tag+'」，双方各说一个“入坑契机”，猜谁开始得更早。',
+    meta:'由当前会话画像定制'};
+  if(type==='truth')return {icon:'💬',label:'真心话',title:'说一个真实答案',
+    text:'关于「'+tag+'」，你有过哪次想放弃、最后却坚持下来的经历？',meta:'关系阶段 L1：避免隐私和强价值判断'};
+  if(type==='dare')return {icon:'⚡',label:'行动挑战',title:'做一个轻量挑战',
+    text:s.type==='group'?'用三个表情演出你做「'+tag+'」时的状态，让群友来猜。':'只用三个表情演出你做「'+tag+'」时的状态，让对方来猜。',
+    meta:'可以换题，不设惩罚'};
+  if(type==='chance')return {icon:'🍀',label:'机会',title:'获得反向采访权',
+    text:s.type==='group'?'指定一位成员，围绕「'+tag+'」问一个你真正好奇的问题。':'围绕「'+tag+'」问对方一个你真正好奇的问题。',
+    meta:'对方可以使用换题牌'};
+  if(type==='reward')return {icon:'✨',label:'线索奖励',title:'共同点线索 +1',
+    text:'完成这格即可推进线索：「'+point.replace('你们','双方').replace('群内','这桌')+'」。',meta:'完成后按隐私规则揭示'};
+  return {icon:'🚩',label:'回到起点',title:'交换一个新印象',
+    text:s.type==='group'?'每个人用一个词更新对这桌人的印象。':'双方各用一个词更新对彼此的印象。',
+    meta:'不评价外貌，只描述相处感受'};
+}
+function buildBoard(){
+  const board=$('#board');
+  $$('.boardcell').forEach(cell=>cell.remove());
+  BOARD_TYPES.forEach((type,index)=>{
+    const cell=document.createElement('div'),coord=boardCoordinate(index),label=BOARD_LABELS[type];
+    cell.className='boardcell '+type+(index===boardState.pos?' current':'');
+    cell.style.gridRow=coord[0];cell.style.gridColumn=coord[1];
+    cell.innerHTML='<em>'+label[0]+'</em><span>'+(index===0?'起点':label[1])+'</span>';
+    if(index===boardState.pos){
+      const token=document.createElement('span');token.className='token';token.textContent='我';cell.appendChild(token);
+    }
+    board.appendChild(cell);
+  });
+}
+function prepareBoard(){
+  const s=currentChat();
+  if(boardState.sessionId!==activeChatId)resetBoard();
+  const pending=s.messages.find(m=>m.id===boardState.pendingMessageId);
+  if(boardState.phase==='complete'&&pending&&pending.done){
+    boardState.phase=boardState.turn>=8?'finished':'roll';boardState.pendingMessageId=null;
+  }
+  const chips=$('#profileChips');chips.innerHTML='';
+  s.profiles.forEach(tag=>{const chip=document.createElement('span');chip.className='gamechip';chip.textContent=tag;chips.appendChild(chip)});
+  buildBoard();
+  const players=boardPlayers(s),player=players[boardState.turn%players.length];
+  $('#turnName').textContent=boardState.phase==='complete'?'等待 '+player+' 完成任务':player+' 的回合';
+  $('#turnCount').textContent=boardState.turn+' / 8 回合';
+  if(boardState.lastMission){
+    $('#missionType').textContent=boardState.lastMission.label;
+    $('#missionTitle').textContent=boardState.lastMission.title;
+    $('#missionText').textContent=boardState.lastMission.text;
+    $('#missionMeta').textContent=boardState.lastMission.meta;
+  }else{
+    $('#missionType').textContent='等待掷骰子';$('#missionTitle').textContent='从起点认识彼此';
+    $('#missionText').textContent='每次落地都会生成一条与当前会话画像有关的真心话、行动挑战或合作任务。';
+    $('#missionMeta').textContent='建议一局 6–8 个回合，不以输赢为目标。';
+  }
+  $('#rollBoard').textContent=boardState.phase==='complete'?'完成任务 · 交棒':boardState.phase==='finished'?'再来一局':'掷骰子';
+}
+function playBoardTurn(){
+  const s=currentChat();
+  if(boardState.phase==='finished'){resetBoard();prepareBoard();return}
+  if(boardState.phase==='complete'){
+    completeChatTask(boardState.pendingMessageId);
+    boardState.pendingMessageId=null;
+    boardState.phase=boardState.turn>=8?'finished':'roll';
+    $('#missionMeta').textContent='✓ 本格已完成，任务状态已同步到聊天。';
+    const players=boardPlayers(s);
+    $('#turnName').textContent=boardState.phase==='finished'?'本局完成':players[boardState.turn%players.length]+' 的回合';
+    $('#rollBoard').textContent=boardState.phase==='finished'?'再来一局':'下一位掷骰子';
+    return;
+  }
+  const roll=Math.floor(Math.random()*6)+1,players=boardPlayers(s),player=players[boardState.turn%players.length];
+  boardState.pos=(boardState.pos+roll)%BOARD_TYPES.length;
+  boardState.turn+=1;
+  const type=BOARD_TYPES[boardState.pos],mission=boardMission(type,boardState.pos,s);
+  boardState.lastMission=mission;boardState.phase='complete';
+  $('#boardDice').textContent='🎲 '+roll;
+  buildBoard();
+  $('#missionType').textContent=mission.label+' · 前进 '+roll+' 格';
+  $('#missionTitle').textContent=mission.title;
+  $('#missionText').textContent=mission.text;
+  $('#missionMeta').textContent=mission.meta+' · 当前玩家：'+player;
+  $('#turnName').textContent=player+' 完成后交棒';
+  $('#turnCount').textContent=boardState.turn+' / 8 回合';
+  $('#rollBoard').textContent='完成任务 · 交棒';
+  s.heat+=1;
+  const msg=addSystemMessage({icon:mission.icon,eyebrow:'同频大富翁 · '+mission.label+' · 掷出 '+roll+' 点',
+    text:mission.text,meta:mission.meta+' · 当前玩家：'+player+' · 使用工具热度 +1',actionLabel:'完成这格 · +2 热度'});
+  boardState.pendingMessageId=msg.id;
+}
+
+$('#toolToggle').addEventListener('click',e=>{
+  e.stopPropagation();
+  const on=!$('#toolbox').classList.contains('on');
+  $('#toolbox').classList.toggle('on',on);
+  $('#toolToggle').setAttribute('aria-expanded',String(on));
+});
+$$('[data-tool]').forEach(b=>b.addEventListener('click',()=>useChatTool(b.dataset.tool)));
+$('#stream').addEventListener('click',e=>{
+  const b=e.target.closest('[data-msg-action]');if(!b)return;
+  if(completeChatTask(b.dataset.msgAction)&&boardState.pendingMessageId===Number(b.dataset.msgAction)){
+    boardState.pendingMessageId=null;
+    boardState.phase=boardState.turn>=8?'finished':'roll';
+  }
+});
+$('#chatSend').addEventListener('click',()=>{
+  const input=$('#chatInput'),text=input.value.trim();if(!text){toast('先写点什么');return}
+  currentChat().messages.push({id:++chatMessageSeq,kind:'me',text});currentChat().heat+=1;input.value='';renderChat();
+});
+$('#chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('#chatSend').click()});
+$$('.conv').forEach(c=>c.addEventListener('click',()=>{
+  activeChatId=c.dataset.conv;closeToolbox();renderChat();
+}));
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.composerwrap'))closeToolbox();
+  const todo=e.target.closest('[data-todo]');
+  if(todo)toast('「'+todo.dataset.todo+'」链路由其他同学接入');
+  const closer=e.target.closest('[data-close]');
+  if(closer)closeMask(closer.dataset.close);
+});
+$('#drawPoker').addEventListener('click',drawOrSendPoker);
+$('#pokerRules').addEventListener('click',()=>{
+  const legend=$('#pokerLegend');legend.hidden=!legend.hidden;
+  $('#pokerRules').textContent=legend.hidden?'查看 13 张规则':'收起牌面规则';
+});
+$('#rollBoard').addEventListener('click',playBoardTurn);
+renderChat();
+
+/* ---------------- 活动广场 ---------------- */
+const EVENTS=[
+  {id:1,host:'user',title:'聊聊 AI 创业，周五晚',score:82,time:'9月4日 周五 19:00',
+   poi:"Anna's Bistro · 静安寺",budget:'人均 100–200 · AA',tags:['对 AI 感兴趣','创业中'],
+   joined:4,max:8,min:3,mode:'发起人审核',coupon:null,common:3},
+  {id:2,host:'merchant',title:'独立开发者晚餐局',score:76,time:'9月3日 周四 19:30',
+   poi:'拾光咖啡 · 愚园路',budget:'人均 50–100',tags:['写代码','夜猫子'],
+   joined:5,max:6,min:6,mode:'先到先得',coupon:'到店 8 折',common:2},
+  {id:3,host:'user',title:'早八跑完去吃早饭',score:91,time:'9月6日 周日 08:30',
+   poi:'老弄堂粢饭 · 徐汇滨江',budget:'人均 50 以下 · 各付各的',tags:['跑步爱好者','早鸟'],
+   joined:2,max:5,min:3,mode:'先到先得',coupon:null,common:4},
+  {id:4,host:'merchant',title:'日语角 · 只说日语的一顿饭',score:88,time:'9月5日 周六 18:00',
+   poi:'居酒屋 灯 · 长乐路',budget:'人均 100–200',tags:['在学日语','学习坚持度 硬核'],
+   joined:5,max:8,min:4,mode:'发起人审核',coupon:'赠小食',common:3}
+];
+const state={};  // id -> 'none' | 'pending' | 'joined' | 'full'
+
+function seatText(e){
+  const st=state[e.id]||'none';
+  const j=e.joined+(st==='pending'||st==='joined'||st==='full'?1:0);
+  if(j>=e.min) return `${j}/${e.max} 人 · 已成团`;
+  return `${j}/${e.max} 人 · 还差 ${e.min-j} 人成团`;
+}
+function joinLabel(e){
+  const st=state[e.id]||'none';
+  if(st==='pending')return '已报名 · 待审核';
+  if(st==='joined') return '已报名 · 等待成团';
+  if(st==='full')   return '已成团 · 群聊已建';
+  return '报名这一桌';
+}
+function renderEvents(){
+  const g=$('#egrid'); g.innerHTML='';
+  EVENTS.forEach(e=>{
+    const st=state[e.id]||'none';
+    const el=document.createElement('div');
+    el.className='ecard'+(e.mine?' mine':'');
+    el.innerHTML=`
+      <div class="ehost">
+        <span>${e.mine?'我发起的局':(e.host==='merchant'?'商家发起':'用户发起')}</span>
+        ${e.coupon?`<span style="color:var(--text)">· ${e.coupon}</span>`:''}
+      </div>
+      <div class="etop">
+        <h3>${e.title}</h3>
+        <div class="score"><b>${e.mine?'—':e.score}</b><small>${e.mine?'我发起':'匹配'}</small></div>
+      </div>
+      <p class="emeta">${e.time}<br>${e.poi}<br>${e.budget}</p>
+      <div class="echips">
+        ${e.tags.map(t=>`<span class="chip">${t}</span>`).join('')}
+        ${e.coupon?`<span class="badge">${e.coupon}</span>`:''}
+      </div>
+      <div class="eseats">
+        <div class="avs">${Array.from({length:Math.min(e.joined,5)},()=>'<i>?</i>').join('')}${st!=='none'?'<i>我</i>':''}</div>
+        <span>${seatText(e)}</span>
+      </div>
+      <div class="eacts">
+        <button class="joinbtn ${st==='none'?'':(st==='full'?'full':'done')}">${joinLabel(e)}</button>
+        <button class="detbtn">详情</button>
+      </div>`;
+    el.querySelector('.joinbtn').addEventListener('click',()=>doJoin(e));
+    el.querySelector('.detbtn').addEventListener('click',()=>showDetail(e));
+    g.appendChild(el);
+  });
+}
+function doJoin(e){
+  const st=state[e.id]||'none';
+  if(st!=='none'){ state[e.id]='none'; renderEvents(); toast('已取消报名'); return; }
+  const willFull=(e.joined+1)>=e.min;
+  if(willFull){
+    state[e.id]='full'; renderEvents();
+    toast('成团了！已建群'+(e.coupon?'并发放'+e.coupon+'券':''));
+    addGroupConv(e);
+  }else if(e.mode==='发起人审核'){
+    state[e.id]='pending'; renderEvents();
+    toast('已提交，等发起人审核（对方只看得到匹配度）');
+  }else{
+    state[e.id]='joined'; renderEvents();
+    toast('报名成功，成团后会建群');
+  }
+}
+function addGroupConv(e){
+  if($(`.conv[data-conv="ev${e.id}"]`))return;
+  const b=document.createElement('button');
+  b.className='conv'; b.dataset.conv='ev'+e.id;
+  b.innerHTML=`<div class="face">🍜</div>
+    <div class="t"><h4>${e.title} · 群</h4><p>成团啦，${e.time.split(' ').slice(0,2).join(' ')} 见</p></div>
+    <span class="pct">群</span>`;
+  b.addEventListener('click',()=>{
+    $$('.conv').forEach(x=>x.removeAttribute('aria-current'));
+    b.setAttribute('aria-current','true');
+    $('#cFace').textContent='🍜'; $('#cName').textContent=e.title+' · 群';
+  });
+  $('#convs').appendChild(b);
+  $('#msgDot').style.display=''; $('#msgDot').textContent='1';
+}
+function showDetail(e){
+  const st=state[e.id]||'none';
+  $('#detBody').innerHTML=`
+    <h2 id="detTitle">${e.title}</h2>
+    <p class="lead">${e.mine?'我发起的局':(e.host==='merchant'?'商家发起 · 引流局':'用户发起')} · ${e.mode}</p>
+    <div class="field"><label>时间地点</label>
+      <p style="font-size:13.5px;line-height:1.85">${e.time}<br>${e.poi}<br>${e.budget}</p></div>
+    <div class="field"><label>想约的人的特征</label>
+      <div class="echips">${e.tags.map(t=>`<span class="chip">${t}</span>`).join('')}</div></div>
+    ${e.coupon?`<div class="field"><label>商家让利</label>
+      <p style="font-size:13.5px">${e.coupon}，成团后发券，仅本场本店有效，活动取消即失效。</p></div>`:''}
+    <div class="field"><label>人数</label>
+      <p style="font-size:13.5px">${seatText(e)} · 上限 ${e.max} 人 · 成团下限 ${e.min} 人</p></div>
+    <div class="vis">
+      <b>报名前你能看到什么</b>
+      活动信息、发起人身份（用户 / 商家）、当前报名人数、与你的匹配度，以及群里有 ${e.common} 个人和你有共同标签。
+      看不到任何成员的照片、昵称和个人资料——成团后群聊里也只是匿名代号加 1–2 个兴趣标签。
+    </div>
+    <div class="mfoot">
+      <button class="btn ghost" id="detClose">关闭</button>
+      <button class="btn" id="detJoin">${joinLabel(e)}</button>
+    </div>`;
+  openMask('#detMask');
+  $('#detClose').addEventListener('click',()=>closeMask('#detMask'));
+  $('#detJoin').addEventListener('click',()=>{doJoin(e);closeMask('#detMask')});
+}
+renderEvents();
+
+/* 筛选（仅切换选中态，排序逻辑 Demo 不做） */
+$$('.fchip').forEach(f=>f.addEventListener('click',()=>{
+  $$('.fchip').forEach(x=>x.setAttribute('aria-pressed','false'));
+  f.setAttribute('aria-pressed','true');
+  toast('已切换到「'+f.textContent+'」');
+}));
+
+/* ---------------- 弹窗 ---------------- */
+let lastFocus=null;
+function openMask(sel){ lastFocus=document.activeElement; $(sel).classList.add('on');
+  const f=$(sel).querySelector('input,select,button'); if(f)f.focus(); }
+function closeMask(sel){ $(sel).classList.remove('on'); if(lastFocus)lastFocus.focus(); }
+$('#openNew').addEventListener('click',()=>openMask('#newMask'));
+$('#newCancel').addEventListener('click',()=>closeMask('#newMask'));
+$$('.mask').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on')}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$$('.mask').forEach(m=>m.classList.remove('on'))});
+$('#nSize').addEventListener('input',e=>$('#nSizeV').textContent=e.target.value+' 人');
+$('#newSubmit').addEventListener('click',()=>{
+  const title=$('#nTitle').value.trim(), poi=$('#nPoi').value.trim(), time=$('#nTime').value.trim();
+  const tags=$$('#nTags [aria-pressed="true"]').map(b=>b.textContent);
+  if(!title||!poi||!time){toast('主题、餐厅、时间都要填');return}
+  if(tags.length===0){toast('至少选一个想约的人的特征');return}
+  const max=+$('#nSize').value;
+  EVENTS.unshift({id:Date.now(),host:'user',mine:true,title,score:'—',time,poi,
+    budget:'人均 '+$('#nBudget').value+' · '+$('#nPay').value,tags,
+    joined:0,max,min:3,mode:$('#nMode').value,coupon:null,common:0});
+  renderEvents(); closeMask('#newMask'); page('events'); toast('已发布到广场，等人报名');
+});
+</script>
+</body>
+</html>
