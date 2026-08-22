@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}饭局广场{% endblock %}
+{% block body_class %}nearby-events-page{% endblock %}
+{% block content %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/nearby-events.css') }}">
+  {% set budget_labels = {'under_50':'50 以下','50-100':'50–100','100-200':'100–200','200_plus':'200+'} %}
+  <section class="page-heading event-heading" aria-labelledby="events-title">
+    <div><p class="eyebrow">3–10 PEOPLE / VERIFIED RESTAURANTS</p><h1 id="events-title">饭局广场</h1><p>浏览阶段只显示饭局信息、聚合人数与匹配度；成员身份始终保持匿名。</p></div>
+    <a class="button button-large" href="{{ url_for('events.create') }}">发起饭局</a>
+  </section>
+
+  <section class="nearby-panel" aria-labelledby="nearby-title" data-nearby-active="{{ 'true' if nearby.active else 'false' }}">
+    <div class="nearby-copy">
+      <p class="eyebrow">REQUEST-SCOPED LOCATION</p>
+      <h2 id="nearby-title">看看当前位置附近的饭局</h2>
+      <p>只有主动点击后浏览器才会请求定位。经纬度仅用于本次服务端筛选，不写入账户或数据库；卡片距离均为直线估算。</p>
+    </div>
+    <div class="nearby-actions">
+      <button class="button nearby-button" type="button" data-location-button data-form-id="events-filter" aria-describedby="location-status">
+        {{ '更新当前位置' if nearby.active else '使用当前位置' }}
+      </button>
+      {% if nearby.active %}<a class="text-link" href="{{ location_reset_url }}">关闭附近筛选</a>{% endif %}
+    </div>
+    <p class="nearby-status" id="location-status" role="status" aria-live="polite">
+      {% if nearby.active %}
+        正在显示 {{ nearby.radius_km|int if nearby.radius_km.is_integer() else nearby.radius_km }} km 内活动，共 {{ events|length }} 场；距离为估算值。
+      {% else %}
+        尚未使用定位。你仍可按城市筛选，或直接浏览全部活动。
+      {% endif %}
+    </p>
+    <noscript><p class="nearby-fallback">浏览器脚本关闭时无法获取当前位置，城市筛选与全部活动仍可正常使用。</p></noscript>
+  </section>
+
+  <form id="events-filter" class="filter-bar events-filter" method="get" action="{{ url_for('events.index') }}" aria-label="筛选饭局">
+    <input id="filter-lat" type="hidden" name="lat" value="{{ nearby.lat_param if nearby.active else '' }}">
+    <input id="filter-lng" type="hidden" name="lng" value="{{ nearby.lng_param if nearby.active else '' }}">
+    <div class="filter-heading"><span>FILTER</span><strong>筛选饭局</strong></div>
+    <label for="filter-city">城市<select id="filter-city" name="city"><option value="">全部城市</option>{% for city in cities %}<option value="{{ city }}" {% if filters.get('city') == city %}selected{% endif %}>{{ city }}</option>{% endfor %}</select></label>
+    <label for="filter-tag">目标标签<select id="filter-tag" name="tag"><option value="">全部标签</option>{% for tag_id, label in tags.items() %}<option value="{{ tag_id }}" {% if filters.get('tag') == tag_id %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label for="filter-budget">人均预算<select id="filter-budget" name="budget"><option value="">全部预算</option>{% for value, label in [('under_50','50 以下'),('50-100','50–100'),('100-200','100–200'),('200_plus','200+') ] %}<option value="{{ value }}" {% if filters.get('budget') == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label for="filter-radius">附近半径<select id="filter-radius" name="radius" aria-describedby="radius-help">{% for radius in radius_options %}<option value="{{ radius }}" {% if nearby.radius_km == radius %}selected{% endif %}>{{ radius }} km</option>{% endfor %}</select><small id="radius-help">定位后生效</small></label>
+    <label for="filter-sort">排序方式<select id="filter-sort" name="sort"><option value="match" {% if filters.get('sort', 'match') == 'match' or not nearby.active and filters.get('sort') == 'distance' %}selected{% endif %}>匹配度</option><option value="time" {% if filters.get('sort') == 'time' %}selected{% endif %}>时间最近</option><option value="distance" {% if nearby.active and filters.get('sort') == 'distance' %}selected{% endif %} {% if not nearby.active %}disabled{% endif %}>离我最近{% if not nearby.active %}（需定位）{% endif %}</option></select></label>
+    <label class="filter-check"><input type="checkbox" name="benefit" value="yes" {% if filters.get('benefit') == 'yes' %}checked{% endif %}><span>仅看商家权益</span></label>
+    <div class="filter-actions"><button type="submit">应用筛选</button><a href="{{ url_for('events.index') }}">清除</a></div>
+  </form>
+
+  <section class="event-list" aria-label="饭局列表">
+    {% for event in events %}
+      <article class="event-row">
+        <div class="event-order"><span>{{ '%02d'|format(loop.index) }}</span><small>{{ 'MERCHANT' if event.is_merchant else 'COMMUNITY' }}</small></div>
+        <div class="event-main">
+          <div class="event-status-line"><span class="status-pill {{ 'status-signal' if event.is_merchant else 'status-neutral' }}">{{ '商家饭局' if event.is_merchant else '用户发起' }}</span><span>{{ event.status_label }}</span></div>
+          <h2>{{ event.title }}</h2>
+          <p class="event-place"><strong>{{ event.start_at_display }}</strong><span>{{ event.poi_name }}</span></p>
+          <dl class="event-meta"><div><dt>预算</dt><dd>{{ budget_labels[event.budget_level] }}</dd></div><div><dt>人数</dt><dd>{{ event.approved_count }}/{{ event.max_size }} 人</dd></div><div><dt>构成</dt><dd>男 {{ event.gender_counts.male }} / 女 {{ event.gender_counts.female }} / 未透露 {{ event.gender_counts.undisclosed }}</dd></div></dl>
+          <div class="event-tags"><span>目标</span>{% for label in event.required_tag_labels %}<em>{{ label }}</em>{% endfor %}{% if event.merchant_benefit %}<strong>{{ event.merchant_benefit.label }}</strong>{% endif %}{% if event.distance_km is defined and event.distance_km is not none %}<em class="distance-chip">估算 {{ '不足 0.1 km' if event.distance_km < 0.1 else event.distance_km ~ ' km' }}</em>{% endif %}</div>
+        </div>
+        <div class="event-action"><div class="event-score" aria-label="与你的匹配度 {{ event.display_score }}%"><strong>{{ event.display_score }}</strong><span>%</span><small>与你的匹配度</small></div><a class="button secondary" href="{{ url_for('events.detail', event_id=event.id) }}" aria-label="查看饭局：{{ event.title }}">查看饭局</a></div>
+      </article>
+    {% else %}
+      <div class="empty-state"><span>NO EVENTS FOUND</span><h2>没有符合筛选条件的饭局</h2><p>{% if nearby.active %}试试扩大附近半径、关闭定位，或清除其他筛选条件。{% else %}清除筛选看看全部活动，或发起一场符合你节奏的兴趣饭局。{% endif %}</p><div class="action-row"><a class="button" href="{{ url_for('events.create') }}">发起饭局</a><a class="text-link" href="{{ url_for('events.index') }}">清除筛选</a></div></div>
+    {% endfor %}
+  </section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/nearby-events.js') }}"></script>{% endblock %}

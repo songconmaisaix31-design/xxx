@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#12110e">
+  <title>管理员登录 · 真实标签</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/brand-mark.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-foundation.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-console.css') }}">
+</head>
+<body class="auth-page admin-auth-page">
+  <main id="main-content" class="page-shell">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}<div class="flash flash-{{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">{{ message }}</div>{% endfor %}
+    {% endwith %}
+    <section class="auth-layout" aria-labelledby="admin-login-title">
+      <div class="auth-story admin-auth-story">
+        <p class="eyebrow">TRUST &amp; SAFETY</p>
+        <h1>真实标签<br>审核后台</h1>
+        <p>管理员账户与普通用户账户完全隔离。所有审核决定都会写入审计日志。</p>
+        <dl class="admin-auth-promises"><div><dt>01</dt><dd>活动发布前审核</dd></div><div><dt>02</dt><dd>举报分级处理</dd></div><div><dt>03</dt><dd>操作全程留痕</dd></div></dl>
+      </div>
+      <div class="auth-form-panel">
+        <div class="form-heading"><p class="eyebrow">ADMIN ACCESS</p><h2 id="admin-login-title">管理员登录</h2></div>
+        <form method="post" action="{{ url_for('admin.login') }}">
+          <label for="admin-email">管理员邮箱<input id="admin-email" required type="email" name="email" autocomplete="username"></label>
+          <label for="admin-password">密码<input id="admin-password" required type="password" name="password" autocomplete="current-password"></label>
+          <button class="button button-block" type="submit">进入审核后台</button>
+        </form>
+        <p class="form-switch"><a class="text-link" href="{{ url_for('main.home') }}">返回用户端</a></p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+{% block title %}会话{% endblock %}
+{% block body_class %}chat-page{% endblock %}
+{% block content %}
+  {% set is_direct = conversation.type == 'direct' %}
+  {% set conversation_title = conversation.counterpart.anonymous_alias if is_direct else conversation.event.title if conversation.event else '已归档饭局群聊' %}
+  {% set system_kinds = ('match_started', 'dice', 'task_card', 'match_point', 'group_unlock_task', 'demo_progress') %}
+
+  <div class="mission-shell" data-conversation-type="{{ conversation.type }}" data-archived="{{ 'true' if conversation.is_archived else 'false' }}">
+    <header class="mission-header" aria-labelledby="conversation-title">
+      <a class="mission-header-action mission-back" href="{{ url_for('chat.index') }}" aria-label="返回会话列表">
+        <span aria-hidden="true">BACK</span>
+        <strong>返回</strong>
+      </a>
+
+      <div class="mission-identity">
+        <span class="mission-identity-code" aria-hidden="true">{{ 'D1' if is_direct else 'GR' }}</span>
+        <div>
+          <p>{{ '匿名一对一航线' if is_direct else '临时饭局群聊' }}</p>
+          <h1 id="conversation-title">{{ conversation_title }}</h1>
+        </div>
+        <span class="mission-level">{{ conversation.progress.label }}</span>
+      </div>
+
+      <div class="mission-status" aria-label="会话当前状态">
+        {% if is_direct %}
+          <span>互动热度</span>
+          <strong>{{ conversation.progress.heat }}</strong>
+        {% else %}
+          <span>匿名成员</span>
+          <strong>{{ conversation.members|length }}</strong>
+        {% endif %}
+      </div>
+
+      <a class="mission-header-action" href="#safety-zone">
+        <span aria-hidden="true">SAFE</span>
+        <strong>安全</strong>
+      </a>
+    </header>
+
+    {% if is_direct %}
+      <section class="relation-deck" data-relation-level="{{ conversation.progress.level }}" aria-labelledby="relation-title">
+        <div class="relation-copy">
+          <p class="mission-kicker">RELATIONSHIP ROUTE</p>
+          <h2 id="relation-title">{{ conversation.progress.label }}</h2>
+          <p>{{ conversation.progress.next_requirement }}</p>
+        </div>
+        <div class="relation-route">
+          <progress max="4" value="{{ conversation.progress.level }}" aria-label="关系解锁进度：当前 L{{ conversation.progress.level }}">{{ conversation.progress.level }} / 4</progress>
+          <ol aria-hidden="true">
+            <li class="{% if conversation.progress.level >= 0 %}is-reached{% endif %}"><span>L0</span><strong>匿名</strong></li>
+            <li class="{% if conversation.progress.level >= 1 %}is-reached{% endif %}"><span>L1</span><strong>初识</strong></li>
+            <li class="{% if conversation.progress.level >= 2 %}is-reached{% endif %}"><span>L2</span><strong>了解</strong></li>
+            <li class="{% if conversation.progress.level >= 3 %}is-reached{% endif %}"><span>L3</span><strong>熟悉</strong></li>
+            <li class="{% if conversation.progress.level >= 4 %}is-reached{% endif %}"><span>L4</span><strong>默契</strong></li>
+          </ol>
+        </div>
+        <div class="relation-visible">
+          <span>当前可见</span>
+          <p>匿名代号{% if conversation.counterpart.city %} · {{ conversation.counterpart.city }} · {{ conversation.counterpart.age_range }}{% endif %}{% if conversation.counterpart.interest_category %} · {{ conversation.counterpart.interest_category }}{% endif %}</p>
+        </div>
+      </section>
+
+      {% if conversation.counterpart.tags %}
+        <section class="relation-unlocks" aria-labelledby="unlocked-tags-title">
+          <div><span>L3 VERIFIED</span><h2 id="unlocked-tags-title">L3 已解锁标签</h2></div>
+          <ul>
+            {% for tag in conversation.counterpart.tags %}<li>{{ tag.name }} <small>{{ tag.source }}</small></li>{% endfor %}
+          </ul>
+        </section>
+      {% endif %}
+
+      {% if conversation.counterpart.contact_exchange_available %}
+        <section class="contact-unlock" role="status">
+          <span>L4 COMPLETE</span>
+          <p><strong>全部匹配点已解锁。</strong>现在可由双方自愿交换联系方式。</p>
+        </section>
+      {% endif %}
+    {% else %}
+      <section class="group-route" aria-labelledby="group-route-title">
+        <div>
+          <p class="mission-kicker">TEMPORARY TABLE / PRIVATE BY DESIGN</p>
+          <h2 id="group-route-title">只展示匿名成员</h2>
+          <p>{{ conversation.progress.next_requirement }}</p>
+        </div>
+        <ul aria-label="匿名成员">
+          {% for member in conversation.members %}
+            <li><strong>{{ member.alias }}</strong><span>{{ member.interest_tags|join('、') }}</span></li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+
+    {% if not conversation.is_archived %}<a class="chat-jump" href="#composer">跳到消息输入</a>{% endif %}
+
+    <div class="mission-workspace">
+      <section class="mission-log" role="log" aria-label="会话消息" aria-live="polite" aria-relevant="additions text">
+        <header class="mission-log-header">
+          <div><span>MISSION LOG</span><h2>对话记录</h2></div>
+          <p>{{ conversation.messages|length }} 条 · 服务端记录</p>
+        </header>
+
+        <div class="mission-messages">
+          {% for message in conversation.messages %}
+            {% if message.message_type == 'system_card' %}
+              {% set raw_kind = message.metadata.kind|default('', true) %}
+              {% set system_kind = raw_kind if raw_kind in system_kinds else 'notice' %}
+
+              {% if system_kind == 'match_started' %}
+                <article class="system-event system-match" data-system-kind="match_started">
+                  <span class="system-index" aria-hidden="true">READY</span>
+                  <div class="system-ticket">
+                    <header><span>CONNECTION PROTOCOL</span><strong>已验证</strong></header>
+                    <h3>匹配成功</h3>
+                    <p>{{ message.content }}</p>
+                    <time datetime="{{ message.created_at }}">{{ message.created_at[:10] }} {{ message.created_at[11:16] }}</time>
+                  </div>
+                </article>
+
+              {% elif system_kind == 'dice' %}
+                <article class="system-event system-dice" data-system-kind="dice">
+                  <span class="system-index" aria-hidden="true">D6</span>
+                  <div class="dice-ticket">
+                    <header><strong>摇骰子结果</strong><time datetime="{{ message.created_at }}">{{ message.created_at[11:16] }}</time></header>
+                    <div class="dice-result">
+                      <b aria-label="骰子点数 {{ message.metadata.point|default('未知', true) }}">{{ message.metadata.point|default('—', true) }}</b>
+                      <p><span>随机话题</span>{{ message.content }}</p>
+                    </div>
+                  </div>
+                </article>
+
+              {% elif system_kind == 'task_card' %}
+                <article class="system-event system-task" data-system-kind="task_card">
+                  <span class="system-index" aria-hidden="true">TASK</span>
+                  <div class="task-ticket">
+                    <header><span>任务卡 · {{ message.metadata.category|default('共同任务', true) }}</span><time datetime="{{ message.created_at }}">{{ message.created_at[11:16] }}</time></header>
+                    <h3>一起完成一个小任务</h3>
+                    <p>{{ message.content }}</p>
+                    <footer><span>当前状态</span><strong>进行中</strong></footer>
+                  </div>
+                </article>
+
+              {% elif system_kind == 'match_point' %}
+                <article class="system-event system-unlock" data-system-kind="match_point">
+                  <span class="system-index" aria-hidden="true">L+{{ message.metadata.index|default(0) + 1 }}</span>
+                  <div class="unlock-ticket">
+                    <header><strong>匹配点解锁 · {{ message.metadata.index|default(0) + 1 }}/{{ conversation.progress.total_point_count|default('—') }}</strong><time datetime="{{ message.created_at }}">{{ message.created_at[11:16] }}</time></header>
+                    <h3>新线索已解锁</h3>
+                    <p>{{ message.content }}</p>
+                    <span class="unlock-state">VERIFIED</span>
+                  </div>
+                </article>
+
+              {% elif system_kind == 'group_unlock_task' %}
+                <article class="system-event system-group-task" data-system-kind="group_unlock_task">
+                  <span class="system-index" aria-hidden="true">ALL</span>
+                  <div>
+                    <header><span>GROUP MISSION</span><time datetime="{{ message.created_at }}">{{ message.created_at[11:16] }}</time></header>
+                    <h3>全桌解锁任务</h3>
+                    <p>{{ message.content }}</p>
+                    <small>每位成员都可以参与</small>
+                  </div>
+                </article>
+
+              {% elif system_kind == 'demo_progress' %}
+                <article class="system-event system-demo" data-system-kind="demo_progress">
+                  <span class="system-index" aria-hidden="true">LAB</span>
+                  <div>
+                    <header><strong>演示关系推进</strong><time datetime="{{ message.created_at }}">{{ message.created_at[11:16] }}</time></header>
+                    <p>{{ message.content }}</p>
+                    <small>非生产数据，仅供演示</small>
+                  </div>
+                </article>
+
+              {% else %}
+                <article class="system-event system-notice" data-system-kind="notice">
+                  <span class="system-index" aria-hidden="true">INFO</span>
+                  <div>
+                    <header><strong>会话通知</strong><time datetime="{{ message.created_at }}">{{ message.created_at[11:16] }}</time></header>
+                    <p>{{ message.content }}</p>
+                  </div>
+                </article>
+              {% endif %}
+
+            {% else %}
+              {% set is_mine = message.sender_id == current_user.id %}
+              {% set is_continuation = loop.index0 > 0 and loop.previtem.message_type == 'text' and loop.previtem.sender_id == message.sender_id %}
+              <article class="chat-message {{ 'mine' if is_mine else 'theirs' }}{% if is_continuation %} is-continuation{% endif %}" data-message-group="{{ 'continuation' if is_continuation else 'start' }}">
+                {% if not is_continuation %}
+                  <span class="message-author">{{ '我' if is_mine else conversation.counterpart.anonymous_alias if is_direct else '匿名成员' }}</span>
+                {% endif %}
+                <div class="message-bubble"><p>{{ message.content }}</p><time datetime="{{ message.created_at }}">{{ message.created_at[11:16] }}</time></div>
+              </article>
+            {% endif %}
+          {% else %}
+            <div class="stream-empty">
+              <span>LOG 000</span>
+              <h3>从一句轻松的话开始</h3>
+              <p>你也可以先打开任务工具，随机生成一个共同话题。</p>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <aside class="mission-command" id="safety-zone" aria-label="消息与任务工具">
+        {% if not conversation.is_archived %}
+          <form id="composer" class="message-form mission-composer" method="post" action="{{ url_for('chat.message', conversation_id=conversation.id) }}">
+            <label for="content">发送消息 <span data-character-count>0 / 500</span></label>
+            <div class="composer-row">
+              <textarea id="content" required maxlength="500" name="content" rows="2" placeholder="输入消息…"></textarea>
+              <button class="button" type="submit">发送</button>
+            </div>
+          </form>
+
+          <details class="mission-drawer" open data-tool-drawer>
+            <summary><span><small>MISSION DECK</small><strong>任务工具</strong></span><span class="drawer-state" data-drawer-label>收起</span></summary>
+            <div class="tool-grid">
+              <form class="tool-card tool-dice" method="post" action="{{ url_for('chat.tool', conversation_id=conversation.id, tool='dice') }}" data-tool="dice" data-tool-state="ready">
+                <button type="submit">
+                  <span class="tool-number">01 / D6</span>
+                  <strong class="tool-dice-value">D6</strong>
+                  <small>摇骰子 · 随机开启话题</small>
+                  <span class="tool-state">随时可用</span>
+                </button>
+              </form>
+
+              <form class="tool-card tool-task" method="post" action="{{ url_for('chat.tool', conversation_id=conversation.id, tool='task_card') }}" data-tool="task_card" data-tool-state="random">
+                <button type="submit">
+                  <span class="tool-title-pair"><span class="tool-number">02 / CARD</span><strong>抽任务卡</strong></span>
+                  <small>触发一项共同任务</small>
+                  <span class="tool-state">随机抽取</span>
+                </button>
+              </form>
+
+              {% set unlock_complete = is_direct and conversation.counterpart.contact_exchange_available %}
+              <form class="tool-card tool-unlock{% if unlock_complete %} is-complete{% endif %}" method="post" action="{{ url_for('chat.tool', conversation_id=conversation.id, tool='unlock') }}" data-tool="unlock" data-tool-state="{{ 'complete' if unlock_complete else 'ready' }}">
+                <button type="submit"{% if unlock_complete %} disabled aria-disabled="true"{% endif %}>
+                  <span class="tool-number">03 / POINT</span>
+                  <span class="tool-unlock-copy"><strong>{{ '群组解锁' if not is_direct else '解锁匹配点' }}</strong><small>{{ '让全桌自然开口' if not is_direct else '发现一条真实线索' }}</small></span>
+                  <span class="tool-state">{{ '全部完成' if unlock_complete else '可解锁' }}</span>
+                </button>
+              </form>
+            </div>
+
+            {% if demo_mode and is_direct %}
+              <form class="demo-progress-tool" method="post" action="{{ url_for('chat.demo_advance', conversation_id=conversation.id) }}">
+                <span>LAB / 当前 {{ conversation.progress.label }}</span>
+                <button type="submit"{% if conversation.progress.level >= 4 %} disabled aria-disabled="true"{% endif %}>演示：推进关系阶段</button>
+              </form>
+            {% endif %}
+          </details>
+        {% else %}
+          <div class="archive-notice" role="status">
+            <strong>该群聊已归档</strong>
+            <p>活动结束 7 天后停止发送新消息，历史记录仍可查看。</p>
+          </div>
+        {% endif %}
+
+        <div class="safety-launchers" aria-label="安全操作">
+          <div><span>SAFETY</span><strong>安全与举报</strong><p>遇到不适内容时，随时提交服务端记录。</p></div>
+          <button class="safety-launch report-launch" type="button" data-dialog-open="report-dialog">举报会话</button>
+          {% if is_direct %}<button class="safety-launch block-launch" type="button" data-dialog-open="block-dialog">拉黑对方</button>{% endif %}
+        </div>
+
+        <details class="danger-zone safety-fallback" id="safety-fallback">
+          <summary>安全与举报</summary>
+          <div>
+            <p>遇到骚扰、不当内容或线下风险时，请提交原因。操作会由服务端记录。</p>
+            <div class="safety-actions">
+              <form method="post" action="{{ url_for('chat.report', conversation_id=conversation.id) }}">
+                <label for="conversation-report-reason">举报原因
+                  <input id="conversation-report-reason" required maxlength="200" name="reason" placeholder="请简要描述问题">
+                </label>
+                <button class="button danger" type="submit">举报会话</button>
+              </form>
+              {% if is_direct %}
+                <form method="post" action="{{ url_for('chat.block', conversation_id=conversation.id) }}">
+                  <button class="button danger-outline" type="submit">拉黑对方</button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        </details>
+      </aside>
+    </div>
+  </div>
+
+  <dialog class="safety-dialog report-dialog" id="report-dialog" aria-labelledby="report-dialog-title">
+    <form method="post" action="{{ url_for('chat.report', conversation_id=conversation.id) }}">
+      <div class="dialog-heading"><span>REPORT / SERVER RECORD</span><h2 id="report-dialog-title">举报这段会话</h2><p>请说明具体问题。审核人员会根据会话记录跟进，不会通知对方你的身份。</p></div>
+      <label for="dialog-report-reason">举报原因
+        <textarea id="dialog-report-reason" required maxlength="200" name="reason" rows="4" placeholder="请填写 1–200 字，例如发生了什么、哪条内容令你不适"></textarea>
+      </label>
+      <div class="dialog-actions"><button class="button secondary" type="button" data-dialog-close>取消</button><button class="button danger" type="submit">提交举报</button></div>
+    </form>
+  </dialog>
+
+  {% if is_direct %}
+    <dialog class="safety-dialog block-dialog" id="block-dialog" aria-labelledby="block-dialog-title">
+      <form method="post" action="{{ url_for('chat.block', conversation_id=conversation.id) }}">
+        <div class="dialog-heading"><span>BLOCK / DIRECT ONLY</span><h2 id="block-dialog-title">确认拉黑 {{ conversation.counterpart.anonymous_alias }}</h2><p>提交后，你们将无法再建立新的一对一会话。该操作与举报不同，不会自动生成举报记录。</p></div>
+        <label class="block-confirm"><input type="checkbox" name="confirm" value="yes" required><span>我已了解拉黑后的影响</span></label>
+        <div class="dialog-actions"><button class="button secondary" type="button" data-dialog-close>返回会话</button><button class="button danger-outline" type="submit">确认拉黑</button></div>
+      </form>
+    </dialog>
+  {% endif %}
+{% endblock %}

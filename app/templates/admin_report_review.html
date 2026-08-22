@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#12110e">
+  <title>举报处理 · 真实标签</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/brand-mark.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-foundation.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-console.css') }}">
+</head>
+<body class="admin-page admin-review-page admin-report-review-page">
+  <main id="main-content" class="page-shell">
+    <section class="page-heading" aria-labelledby="report-title">
+      <div><p class="eyebrow">REPORT REVIEW / {{ report.id }}</p><h1 id="report-title">举报处理</h1><p>当前状态：{{ report.status }}</p></div>
+      <a class="button secondary" href="{{ url_for('admin.dashboard') }}">返回工作台</a>
+    </section>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}<div class="flash flash-{{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">{{ message }}</div>{% endfor %}
+    {% endwith %}
+    <section class="detail-grid">
+      <article class="detail-panel">
+        <div class="panel-heading"><span>01</span><h2>举报信息</h2></div>
+        <dl class="detail-list">
+          <div><dt>对象</dt><dd>{{ report.subject_type }} · {{ report.subject_label }}<small>{{ report.subject_id }}</small></dd></div>
+          <div><dt>举报人</dt><dd>{{ report.reporter_alias }}<small>{{ report.reporter_email }}</small></dd></div>
+          <div><dt>提交时间</dt><dd>{{ report.created_at }}</dd></div>
+          <div><dt>原因</dt><dd>{{ report.reason }}</dd></div>
+        </dl>
+      </article>
+      <aside class="detail-panel">
+        <div class="panel-heading"><span>02</span><h2>处理决定</h2></div>
+        {% if report.status == 'pending' %}
+          <form method="post" action="{{ url_for('admin.report_decision', report_id=report.id) }}">
+            <label for="handling-note">处理备注<textarea id="handling-note" maxlength="500" name="note" placeholder="可填写核查结果或后续动作"></textarea></label>
+            <div class="action-row">
+              <button class="button" type="submit" name="decision" value="resolved">标记已处理</button>
+              <button class="button danger-outline" type="submit" name="decision" value="dismissed">驳回举报</button>
+            </div>
+          </form>
+        {% else %}
+          <p><strong>该举报已完成处理。</strong></p>
+          <p>处理人：{{ report.handled_by_name or '—' }} · {{ report.handled_at or '—' }}</p>
+          {% if report.handling_note %}<p>备注：{{ report.handling_note }}</p>{% endif %}
+        {% endif %}
+      </aside>
+    </section>
+  </main>
+</body>
+</html>

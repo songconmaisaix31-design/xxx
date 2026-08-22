@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}正在匿名匹配{% endblock %}
+{% block body_class %}match-search-page{% endblock %}
+{% block content %}
+  <section class="match-search-shell" data-match-search data-match-state="searching" aria-labelledby="match-search-title" aria-busy="true">
+    <header class="match-flow-heading match-search-heading">
+      <div>
+        <p class="eyebrow">PRIVATE CALCULATION IN PROGRESS</p>
+        <h1 id="match-search-title">正在寻找<span>同频的人。</span></h1>
+        <p>计算发生在服务端；这个页面只负责把过程讲清楚，不读取或决定匹配结果。</p>
+      </div>
+      <span class="match-state-chip is-running"><b>02</b> 匹配中</span>
+    </header>
+
+    <div class="match-search-board">
+      <div class="match-search-pulse" aria-hidden="true">
+        <span class="match-pulse-frame"><img src="{{ url_for('static', filename='img/brand-mark.png') }}" alt="" width="108" height="108"></span>
+        <span class="match-pulse-label">SIGNAL SEARCH</span>
+      </div>
+
+      <div class="match-search-progress">
+        <div class="match-progress-label"><span>匿名匹配进度</span><strong data-match-progress-label>0%</strong></div>
+        <div class="match-progress-track" role="progressbar" aria-label="匿名匹配进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-match-progress>
+          <span></span>
+        </div>
+        <ol class="match-calculation-steps" aria-label="匹配计算步骤">
+          <li data-match-step="filter">
+            <span class="match-step-number">01</span>
+            <div><strong>筛选候选池</strong><p>按年龄范围与双方匹配偏好完成硬性过滤。</p></div>
+            <span class="match-step-status">等待</span>
+          </li>
+          <li data-match-step="similarity">
+            <span class="match-step-number">02</span>
+            <div><strong>计算标签相似度</strong><p>比较真实行为、交友目的、兴趣与活跃时间。</p></div>
+            <span class="match-step-status">等待</span>
+          </li>
+          <li data-match-step="ranking">
+            <span class="match-step-number">03</span>
+            <div><strong>生成匿名结果</strong><p>服务端加权排序，并把展示分平滑到体验区间。</p></div>
+            <span class="match-step-status">等待</span>
+          </li>
+        </ol>
+        <p class="match-live-status" role="status" aria-live="polite" aria-atomic="true" data-match-live>正在安全地准备匹配流程。</p>
+      </div>
+    </div>
+
+    <div class="match-search-actions">
+      <form method="post" action="{{ url_for('matches.search_complete') }}" data-match-complete>
+        <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
+        <button class="text-link match-skip-button" type="submit">跳过等待，直接查看结果</button>
+        <noscript><p>浏览器未启用 JavaScript，你仍然可以使用上面的按钮完成匹配。</p></noscript>
+      </form>
+      <form method="post" action="{{ url_for('matches.search_cancel') }}" data-match-cancel>
+        <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
+        <button class="button secondary" type="submit">取消本次匹配</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}
+{% block scripts %}<script defer src="{{ url_for('static', filename='js/match-flow.js') }}"></script>{% endblock %}

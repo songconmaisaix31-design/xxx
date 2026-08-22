@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}开始匿名匹配{% endblock %}
+{% block body_class %}match-ready-page{% endblock %}
+{% block content %}
+  <section class="match-ready" data-match-state="idle" aria-labelledby="matches-title">
+    <header class="match-flow-heading">
+      <div>
+        <p class="eyebrow">ONE PERSON / ONE SIGNAL</p>
+        <h1 id="matches-title">准备好了，<span>再开始匹配。</span></h1>
+        <p>先确认匿名边界，再由服务端完成筛选与计算。结果一次只出现一位，不提供候选人列表。</p>
+      </div>
+      <span class="match-state-chip"><b>01</b> 待匹配</span>
+    </header>
+
+    <div class="match-ready-layout">
+      <article class="match-ready-card">
+        <div class="match-ready-mark" aria-hidden="true">
+          <img src="{{ url_for('static', filename='img/brand-mark.png') }}" alt="" width="88" height="88">
+        </div>
+        <p class="eyebrow">READY WHEN YOU ARE</p>
+        <h2>开始寻找一位同频的人</h2>
+        <p class="match-ready-copy">匹配会经过三个服务端步骤。你的原始记录、标签详情和匹配权重都不会发送给候选人。</p>
+        {% if candidate_count %}
+          <form class="match-start-form" method="post" action="{{ url_for('matches.search_start') }}">
+            <button class="button button-large" type="submit">开始匿名匹配</button>
+          </form>
+          <p class="match-start-note">点击后进入短暂的计算过程；匹配中可以随时取消。</p>
+        {% else %}
+          <div class="empty-state match-empty" role="status">
+            <span>NO ELIGIBLE MATCHES</span>
+            <h3>当前候选池还是空的</h3>
+            <p>我们不会为了制造结果而跳过你的年龄与匹配偏好。你可以先补充真实标签，稍后再试。</p>
+            <a class="button" href="{{ url_for('auth.connections') }}">补充数据连接</a>
+          </div>
+        {% endif %}
+      </article>
+
+      <aside class="match-rules-panel" aria-labelledby="match-rules-title">
+        <div class="protocol-topline"><span>SERVER MATCH FLOW</span><span>01—03</span></div>
+        <h2 id="match-rules-title">系统会做什么</h2>
+        <ol class="match-rule-list">
+          <li><span>01</span><div><strong>筛选候选池</strong><p>检查年龄范围与双方匹配偏好，不占匹配权重。</p></div></li>
+          <li><span>02</span><div><strong>计算相似度</strong><p>比较真实行为标签与自填兴趣，只在服务端处理。</p></div></li>
+          <li><span>03</span><div><strong>生成匿名结果</strong><p>只展示平滑后的百分比、匿名代号和共同点数量。</p></div></li>
+        </ol>
+        <div class="match-never-show">
+          <strong>匹配阶段不会展示</strong>
+          <p>照片、真实姓名、年龄、学历、职业、完整标签、原始数据与算法权重。</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+{% endblock %}

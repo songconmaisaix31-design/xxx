@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}首页{% endblock %}
+{% block body_class %}home-page{% endblock %}
+{% block content %}
+  <section class="home-hero" aria-labelledby="home-title">
+    <div class="hero-copy">
+      <p class="eyebrow">真实行为数据 / 匿名匹配 / 兴趣饭局</p>
+      <h1 id="home-title">先聊同频，<span>再决定要不要认识。</span></h1>
+      <p class="hero-lede">连接多邻国和 Keep 的行为数据，由服务端计算同频程度。匹配阶段只展示必要信号，身份信息随双方互动逐步解锁。</p>
+      <div class="action-row">
+        {% if user %}
+          <a class="button" href="{{ url_for('matches.index') }}">开始一次匿名匹配</a>
+          <a class="button secondary" href="{{ url_for('events.index') }}">逛兴趣饭局</a>
+        {% else %}
+          <form class="inline-form" method="post" action="{{ url_for('auth.demo_login') }}"><button class="button" type="submit">进入预置演示账号</button></form>
+          <a class="button secondary" href="{{ url_for('auth.register') }}">注册新账号</a>
+        {% endif %}
+      </div>
+      <ul class="trust-line" aria-label="产品安全原则">
+        <li>不展示照片</li>
+        <li>不公开原始数据</li>
+        <li>不允许私宅饭局</li>
+      </ul>
+    </div>
+    <aside class="protocol-panel" aria-label="匿名匹配展示协议">
+      <div class="protocol-topline"><span>DISCLOSURE PROTOCOL</span><span>01—04</span></div>
+      <div class="signal-score"><strong>86%</strong><span>示意匹配信号<br>不等于身份画像</span></div>
+      <ol class="protocol-steps">
+        <li><span>01</span><div><strong>匿名相遇</strong><small>只看匹配度与隐藏共同点</small></div></li>
+        <li><span>02</span><div><strong>自然对话</strong><small>通过互动积累关系热度</small></div></li>
+        <li><span>03</span><div><strong>逐级解锁</strong><small>双方共同推进可见范围</small></div></li>
+        <li><span>04</span><div><strong>主动选择</strong><small>是否交换联系方式由你决定</small></div></li>
+      </ol>
+      <p class="protocol-foot">你的数据属于你。匹配对象永远拿不到第三方原始记录。</p>
+    </aside>
+  </section>
+  {% if user %}
+    <section class="home-launchpad" aria-labelledby="launchpad-title">
+      <div class="home-launchpad-heading">
+        <div>
+          <p class="eyebrow">TODAY / TWO WAYS TO MEET</p>
+          <h2 id="launchpad-title">今天想怎么认识同频的人？</h2>
+          <p>一对一先看同频程度，或者去公开餐厅加入一桌共同兴趣的人。</p>
+        </div>
+        <dl class="home-signal-stats" aria-label="我的匹配准备状态">
+          <div><dt>真实标签</dt><dd>{{ stats.tag_count }}</dd></div>
+          <div><dt>已连接数据源</dt><dd>{{ stats.connection_count }}</dd></div>
+        </dl>
+      </div>
+      <div class="home-path-grid">
+        <article class="home-path home-path-match">
+          <span class="home-path-index">01 / ONE TO ONE</span>
+          <h3>匿名匹配</h3>
+          <p>先经过硬性筛选与标签计算，再只给你一个匹配度和一位匿名对象。</p>
+          <ul aria-label="匿名匹配流程">
+            <li>准备说明</li><li>三阶段计算</li><li>单个匿名结果</li>
+          </ul>
+          <a class="button" href="{{ url_for('matches.index') }}">进入匹配流程</a>
+        </article>
+        <article class="home-path home-path-events">
+          <span class="home-path-index">02 / SMALL GROUP</span>
+          <h3>兴趣饭局</h3>
+          <p>3–10 人在公开餐厅见面，用共同兴趣降低一对一社交压力。</p>
+          <ul aria-label="兴趣饭局特点">
+            <li>多人轻社交</li><li>匹配度排序</li><li>成团后建群</li>
+          </ul>
+          <a class="button secondary" href="{{ url_for('events.index') }}">去饭局广场</a>
+        </article>
+      </div>
+    </section>
+  {% endif %}
+  <section class="principles-section trust-ledger" aria-labelledby="principles-title">
+    <div class="section-intro trust-ledger-heading">
+      <p class="eyebrow">不是资料卡社交</p>
+      <h2 id="principles-title">把信任放在认识之前。</h2>
+      <p class="trust-ledger-lede">先确认信号从哪里来、什么不会公开，再决定要不要从线上走到同一张餐桌。</p>
+      <div class="trust-ledger-status" aria-label="信任协议状态">
+        <span>TRUST PROTOCOL</span>
+        <strong>01—03</strong>
+      </div>
+    </div>
+    <div class="principle-list trust-flow" role="list" aria-label="认识前的三层信任协议">
+      <article data-principle="verified" role="listitem">
+        <div class="trust-node"><span class="principle-index">01</span><span>本人可见</span></div>
+        <div class="principle-copy">
+          <p class="principle-kicker">VERIFIED SOURCE</p>
+          <h3>真实标签</h3>
+          <p>第三方数据仅对本人可见，并携带来源与认证状态。</p>
+          <ul class="principle-proof" aria-label="真实标签保障"><li>来源可追溯</li><li>原始记录不外发</li></ul>
+        </div>
+      </article>
+      <article data-principle="anonymous" role="listitem">
+        <div class="trust-node"><span class="principle-index">02</span><span>最小披露</span></div>
+        <div class="principle-copy">
+          <p class="principle-kicker">ANONYMOUS BY DEFAULT</p>
+          <h3>匿名聊天</h3>
+          <p>照片、年龄、职业和匹配权重不会在匹配阶段暴露。</p>
+          <ul class="principle-proof" aria-label="匿名聊天保障"><li>先看同频信号</li><li>互动后逐级解锁</li></ul>
+        </div>
+      </article>
+      <article data-principle="offline" role="listitem">
+        <div class="trust-node"><span class="principle-index">03</span><span>公开场所</span></div>
+        <div class="principle-copy">
+          <p class="principle-kicker">SAFE OFFLINE TABLE</p>
+          <h3>兴趣饭局</h3>
+          <p>3–10 人的公开餐厅饭局，以同频兴趣降低线下社交压力。</p>
+          <ul class="principle-proof" aria-label="兴趣饭局保障"><li>仅限公开餐厅</li><li>成团后匿名建群</li></ul>
+        </div>
+      </article>
+    </div>
+  </section>
+{% endblock %}

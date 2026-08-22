@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#12110e">
+  <title>活动审核 · 真实标签</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/brand-mark.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-foundation.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-console.css') }}">
+</head>
+<body class="admin-page admin-review-page admin-event-review-page">
+  <main id="main-content" class="page-shell">
+    <section class="page-heading" aria-labelledby="review-title">
+      <div><p class="eyebrow">EVENT REVIEW / {{ event.id }}</p><h1 id="review-title">{{ event.title }}</h1><p>当前状态：{{ event.status }}</p></div>
+      <a class="button secondary" href="{{ url_for('admin.dashboard') }}">返回工作台</a>
+    </section>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}<div class="flash flash-{{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">{{ message }}</div>{% endfor %}
+    {% endwith %}
+    <section class="detail-grid">
+      <article class="detail-panel">
+        <div class="panel-heading"><span>01</span><h2>活动内容</h2></div>
+        <p>{{ event.description or '未填写活动介绍' }}</p>
+        <dl class="detail-list">
+          <div><dt>发起人</dt><dd>{{ event.host_alias or '未知' }}<small>{{ event.host_email or '—' }}</small></dd></div>
+          <div><dt>时间</dt><dd>{{ event.start_at }}</dd></div>
+          <div><dt>地点</dt><dd>{{ event.poi_name }}<small>{{ event.poi_address }}</small></dd></div>
+          <div><dt>人数</dt><dd>{{ event.min_size }}–{{ event.max_size }} 人</dd></div>
+          <div><dt>预算 / 费用</dt><dd>{{ event.budget_level }} · {{ event.pay_type }}</dd></div>
+          <div><dt>报名方式</dt><dd>{{ event.signup_mode }}</dd></div>
+        </dl>
+      </article>
+      <aside class="detail-panel">
+        <div class="panel-heading"><span>02</span><h2>审核决定</h2></div>
+        {% if event.status == 'pending_review' %}
+          <form method="post" action="{{ url_for('admin.event_decision', event_id=event.id) }}">
+            <input type="hidden" name="decision" value="approve">
+            <button class="button button-block" type="submit">通过并开放报名</button>
+          </form>
+          <form method="post" action="{{ url_for('admin.event_decision', event_id=event.id) }}">
+            <input type="hidden" name="decision" value="reject">
+            <label for="rejection-reason">拒绝原因<textarea id="rejection-reason" required maxlength="500" name="rejection_reason"></textarea></label>
+            <button class="button danger button-block" type="submit">拒绝活动</button>
+          </form>
+        {% else %}
+          <p><strong>该活动已完成审核。</strong></p>
+          {% if event.rejection_reason %}<p>拒绝原因：{{ event.rejection_reason }}</p>{% endif %}
+          {% if event.reviewed_by_name %}<p>处理人：{{ event.reviewed_by_name }} · {{ event.reviewed_at }}</p>{% endif %}
+        {% endif %}
+      </aside>
+    </section>
+  </main>
+</body>
+</html>

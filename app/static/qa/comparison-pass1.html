@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design QA · Pass 1</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 100%; min-height: 100%; margin: 0; }
+    body { background: #12110e; color: #fff; font-family: Arial, "Microsoft YaHei UI", sans-serif; padding: 22px; }
+    header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+    h1 { margin: 0; font-size: 22px; }
+    p { margin: 0; color: #cfc9b8; font-size: 12px; }
+    main { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    figure { min-width: 0; margin: 0; border: 4px solid #fff; background: #fff8e7; box-shadow: 8px 8px 0 #5b48ff; }
+    figcaption { display: flex; justify-content: space-between; border-bottom: 4px solid #12110e; background: #ffe45c; color: #12110e; font-weight: 900; padding: 8px 10px; }
+    img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; object-position: top center; }
+  </style>
+</head>
+<body>
+  <header><h1>REFERENCE ↔ IMPLEMENTATION</h1><p>Full-view style comparison · desktop</p></header>
+  <main>
+    <figure><figcaption><span>SOURCE VISUAL TRUTH</span><span>3402 × 2268</span></figcaption><img src="source-reference.png" alt="Reference design"></figure>
+    <figure><figcaption><span>FLASK SSR IMPLEMENTATION</span><span>1440 × 960</span></figcaption><img src="implementation-home-desktop-pass1.png" alt="Rendered implementation"></figure>
+  </main>
+</body>
+</html>

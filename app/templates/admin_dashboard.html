@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#12110e">
+  <title>审核工作台 · 真实标签</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/brand-mark.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-foundation.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-console.css') }}">
+</head>
+<body class="admin-page admin-dashboard-page">
+  <main id="main-content" class="page-shell">
+    <section class="page-heading" aria-labelledby="dashboard-title">
+      <div><p class="eyebrow">TRUST &amp; SAFETY / ADMIN</p><h1 id="dashboard-title">审核工作台</h1><p>{{ admin.display_name }} · {{ admin.email }}</p></div>
+      <form method="post" action="{{ url_for('admin.logout') }}"><button class="button secondary" type="submit">退出后台</button></form>
+    </section>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}<div class="flash flash-{{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">{{ message }}</div>{% endfor %}
+    {% endwith %}
+
+    <section class="content-section admin-queue admin-event-queue" aria-labelledby="event-queue-title">
+      <div class="section-heading-line"><div><p class="eyebrow">EVENT QUEUE</p><h2 id="event-queue-title">待审核活动（{{ pending_events|length }}）</h2></div></div>
+      <div class="event-list">
+        {% for event in pending_events %}
+          <article class="event-row">
+            <div class="event-main"><p class="event-status-line"><span class="status-pill status-signal">待审核</span><span>{{ event.created_at }}</span></p><h3>{{ event.title }}</h3><p>{{ event.host_alias or '未知发起人' }} · {{ event.poi_name }} · {{ event.start_at }}</p></div>
+            <div class="event-action"><a class="button secondary" href="{{ url_for('admin.event_review', event_id=event.id) }}">审核活动</a></div>
+          </article>
+        {% else %}
+          <div class="empty-state compact-empty"><span>QUEUE CLEAR</span><p>暂无待审核活动。</p></div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="content-section admin-queue admin-report-queue" aria-labelledby="report-queue-title">
+      <div class="section-heading-line"><div><p class="eyebrow">REPORT QUEUE</p><h2 id="report-queue-title">待处理举报（{{ pending_reports|length }}）</h2></div></div>
+      <div class="applicant-list">
+        {% for report in pending_reports %}
+          <article class="applicant-row">
+            <div><strong>{{ report.subject_type }} · {{ report.subject_label }}</strong><p>举报人：{{ report.reporter_alias }}（{{ report.reporter_email }}）</p><p>{{ report.reason }}</p></div>
+            <a class="button secondary" href="{{ url_for('admin.report_review', report_id=report.id) }}">处理举报</a>
+          </article>
+        {% else %}
+          <div class="empty-state compact-empty"><span>QUEUE CLEAR</span><p>暂无待处理举报。</p></div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="content-section admin-audit" aria-labelledby="audit-title">
+      <div class="section-heading-line"><div><p class="eyebrow">AUDIT TRAIL</p><h2 id="audit-title">最近操作</h2></div></div>
+      <div class="detail-panel admin-audit-list">
+        {% for log in audit_logs %}<p><strong>{{ log.admin_name }}</strong><span>{{ log.action }} · {{ log.target_type }} / {{ log.target_id }}</span><small>{{ log.old_status or '—' }} → {{ log.new_status }} · {{ log.created_at }}</small></p>{% else %}<p>暂无审核操作。</p>{% endfor %}
+      </div>
+    </section>
+  </main>
+</body>
+</html>

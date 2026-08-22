@@ -1,0 +1,1459 @@
+/* Mission Deck — conversation-only extension of the existing neo-editorial system. */
+
+.chat-page .page-shell {
+  width: min(calc(100% - 2rem), var(--neo-page-width));
+  padding: 1rem 0 4rem;
+}
+
+.chat-page .flash-stack {
+  margin-bottom: 1rem;
+}
+
+.mission-shell {
+  --mission-rule: var(--neo-border-thin) solid var(--neo-ink);
+  color: var(--neo-ink);
+}
+
+.mission-header {
+  min-height: 5.4rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: var(--neo-border-heavy) solid var(--neo-ink);
+  padding: 0.8rem 0 1rem;
+}
+
+.mission-header-action {
+  min-width: 4.8rem;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  border: var(--neo-border) solid var(--neo-ink);
+  border-radius: var(--neo-radius-control);
+  background: var(--neo-paper);
+  box-shadow: var(--neo-shadow-xs);
+  line-height: 1.1;
+  padding: 0.45rem 0.65rem;
+  text-decoration: none;
+}
+
+.mission-header-action span,
+.mission-kicker,
+.mission-identity > div > p,
+.mission-status span,
+.relation-visible > span,
+.relation-unlocks > div > span,
+.contact-unlock > span,
+.mission-log-header span,
+.system-event header span,
+.system-event small,
+.dialog-heading > span {
+  font-family: var(--neo-font-mono);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+}
+
+.mission-header-action strong {
+  margin-top: 0.2rem;
+  font-size: 0.73rem;
+}
+
+.mission-header-action:hover {
+  background: var(--neo-yellow);
+}
+
+.mission-identity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.mission-identity-code {
+  min-width: 3rem;
+  min-height: 3rem;
+  display: grid;
+  place-items: center;
+  border: var(--neo-border) solid var(--neo-ink);
+  border-radius: var(--neo-radius-control);
+  background: var(--neo-purple);
+  box-shadow: var(--neo-shadow-xs);
+  color: #fff;
+  font-family: var(--neo-font-mono);
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.mission-identity > div {
+  min-width: 0;
+}
+
+.mission-identity > div > p {
+  color: var(--neo-muted);
+}
+
+.mission-identity h1 {
+  max-width: 34rem;
+  margin-top: 0.16rem;
+  font-size: clamp(1.6rem, 3.4vw, 2.8rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mission-level {
+  flex: none;
+  border: var(--neo-border-thin) solid var(--neo-ink);
+  border-radius: var(--neo-radius-pill);
+  background: var(--neo-yellow);
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.3rem 0.68rem;
+}
+
+.mission-status {
+  min-height: 3rem;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: baseline;
+  gap: 0.45rem;
+  border-left: var(--neo-border) solid var(--neo-ink);
+  padding: 0.45rem 1rem;
+}
+
+.mission-status span {
+  color: var(--neo-muted);
+}
+
+.mission-status strong {
+  font-family: var(--neo-font-display);
+  font-size: 1.35rem;
+  font-weight: 950;
+}
+
+.relation-deck {
+  display: grid;
+  grid-template-columns: minmax(13rem, 0.42fr) minmax(22rem, 1fr) minmax(12rem, 0.38fr);
+  align-items: center;
+  gap: clamp(1.25rem, 4vw, 3.5rem);
+  border-bottom: var(--neo-border) solid var(--neo-ink);
+  padding: clamp(1.2rem, 3vw, 2rem) 0;
+}
+
+.relation-copy h2 {
+  margin: 0.28rem 0 0.42rem;
+  font-size: clamp(1.35rem, 2.4vw, 2.1rem);
+}
+
+.relation-copy > p:last-child,
+.group-route > div > p:last-child {
+  max-width: 31rem;
+  color: var(--neo-muted);
+  font-size: 0.78rem;
+}
+
+.relation-route progress {
+  width: 100%;
+  height: 0.75rem;
+  display: block;
+  overflow: hidden;
+  border: var(--neo-border-thin) solid var(--neo-ink);
+  border-radius: var(--neo-radius-pill);
+  accent-color: var(--neo-yellow);
+  background: var(--neo-paper-deep);
+}
+
+.relation-route progress::-webkit-progress-bar {
+  background: var(--neo-paper-deep);
+}
+
+.relation-route progress::-webkit-progress-value {
+  background: var(--neo-yellow);
+}
+
+.relation-route progress::-moz-progress-bar {
+  background: var(--neo-yellow);
+}
+
+.relation-route ol {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+  list-style: none;
+}
+
+.relation-route li {
+  display: grid;
+  color: var(--neo-muted);
+  font-size: 0.65rem;
+  line-height: 1.15;
+}
+
+.relation-route li strong {
+  margin-top: 0.16rem;
+  font-size: 0.68rem;
+  font-weight: 720;
+}
+
+.relation-route li.is-reached {
+  color: var(--neo-ink);
+}
+
+.relation-route li.is-reached span {
+  font-weight: 950;
+}
+
+.relation-visible {
+  border-left: var(--neo-border-heavy) solid var(--neo-purple);
+  padding-left: 0.85rem;
+}
+
+.relation-visible > span {
+  color: var(--neo-purple-dark);
+}
+
+.relation-visible p {
+  margin-top: 0.28rem;
+  font-size: 0.78rem;
+  font-weight: 760;
+}
+
+.relation-unlocks,
+.contact-unlock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: var(--neo-border-thin) solid var(--neo-ink);
+  padding: 0.9rem 0;
+}
+
+.relation-unlocks h2 {
+  margin-top: 0.14rem;
+  font-size: 1rem;
+}
+
+.relation-unlocks ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  list-style: none;
+}
+
+.relation-unlocks li {
+  border: var(--neo-border-thin) solid var(--neo-ink);
+  border-radius: var(--neo-radius-pill);
+  background: #e8ffd6;
+  font-size: 0.72rem;
+  font-weight: 850;
+  padding: 0.3rem 0.58rem;
+}
+
+.relation-unlocks li small {
+  color: var(--neo-green-dark);
+  font-size: 0.58rem;
+}
+
+.contact-unlock {
+  justify-content: flex-start;
+  background: var(--neo-green);
+  padding-inline: 0.8rem;
+}
+
+.contact-unlock > span {
+  flex: none;
+  border: var(--neo-border-thin) solid var(--neo-ink);
+  background: var(--neo-paper);
+  padding: 0.25rem 0.5rem;
+}
+
+.contact-unlock p {
+  font-size: 0.8rem;
+}
+
+.group-route {
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.42fr) minmax(0, 1fr);
+  gap: clamp(1.25rem, 5vw, 4rem);
+  border-bottom: var(--neo-border) solid var(--neo-ink);
+  padding: clamp(1.2rem, 3vw, 2rem) 0;
+}
+
+.group-route h2 {
+  margin: 0.3rem 0 0.45rem;
+  font-size: clamp(1.4rem, 2.6vw, 2.1rem);
+}
+
+.group-route ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  list-style: none;
+}
+
+.group-route li {
+  min-width: 0;
+  border-left: var(--neo-border) solid var(--neo-green);
+  background: var(--neo-paper);
+  padding: 0.55rem 0.7rem;
+}
+
+.group-route li strong,
+.group-route li span {
+  display: block;
+}
+
+.group-route li strong {
+  font-size: 0.8rem;
+}
+
+.group-route li span {
+  margin-top: 0.18rem;
+  color: var(--neo-muted);
+  font-size: 0.66rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-page .chat-jump {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.35rem;
+  color: var(--neo-purple-dark);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.mission-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.38fr);
+  align-items: start;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.mission-log {
+  min-width: 0;
+  border-top: var(--neo-border-heavy) solid var(--neo-ink);
+  background: rgba(255, 254, 250, 0.72);
+}
+
+.mission-log-header {
+  min-height: 4.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: var(--neo-border-thin) solid var(--neo-ink);
+  padding: 0.75rem 0.4rem;
+}
+
+.mission-log-header h2 {
+  margin-top: 0.12rem;
+  font-size: 1.25rem;
+}
+
+.mission-log-header p {
+  color: var(--neo-muted);
+  font-family: var(--neo-font-mono);
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+
+.mission-messages {
+  min-height: 36rem;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0.45rem 2rem;
+}
+
+.chat-message {
+  width: min(72%, 38rem);
+  align-self: flex-start;
+  margin-top: 1.05rem;
+}
+
+.chat-message.mine {
+  align-self: flex-end;
+}
+
+.chat-message.is-continuation {
+  margin-top: 0.28rem;
+}
+
+.message-author {
+  display: block;
+  margin: 0 0 0.26rem 0.2rem;
+  color: var(--neo-muted);
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.chat-message.mine .message-author {
+  margin-right: 0.2rem;
+  text-align: right;
+}
+
+.message-bubble {
+  border: var(--neo-border-thin) solid var(--neo-ink);
+  border-radius: 0.8rem;
+  background: var(--neo-paper);
+  padding: 0.72rem 0.85rem 0.48rem;
+}
+
+.chat-message.mine .message-bubble {
+  background: var(--neo-purple);
+  color: #fff;
+}
+
+.message-bubble p {
+  font-size: 0.9rem;
+  line-height: 1.58;
+}
+
+.message-bubble time,
+.system-event time {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--neo-muted);
+  font-family: var(--neo-font-mono);
+  font-size: 0.58rem;
+  text-align: right;
+}
+
+.chat-message.mine time {
+  color: #e9e5ff;
+}
+
+.system-event {
+  width: min(78%, 44rem);
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.7rem;
+  margin: 1.35rem 0 0.25rem;
+}
+
+.system-index {
+  min-height: 3.2rem;
+  display: grid;
+  place-items: center;
+  border: var(--neo-border) solid var(--neo-ink);
+  border-radius: var(--neo-radius-control);
+  background: var(--neo-yellow);
+  box-shadow: var(--neo-shadow-xs);
+  font-family: var(--neo-font-mono);
+  font-size: 0.66rem;
+  font-weight: 950;
+  text-align: center;
+}
+
+.system-event > div {
+  min-width: 0;
+  border: var(--neo-border-thin) solid var(--neo-ink);
+  border-radius: var(--neo-radius-control);
+  background: var(--neo-paper);
+  box-shadow: var(--neo-shadow-xs);
+  padding: 0.85rem 1rem;
+}
+
+.system-event header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.system-event h3 {
+  margin: 0.5rem 0 0.28rem;
+  font-size: 1.2rem;
+}
+
+.system-event p {
+  font-size: 0.78rem;
+}
+
+.system-match .system-ticket {
+  border-left: var(--neo-border-heavy) solid var(--neo-yellow);
+}
+
+.system-match header strong {
+  border: var(--neo-border-thin) solid var(--neo-ink);
+  border-radius: var(--neo-radius-pill);
+  background: var(--neo-green);
+  font-size: 0.62rem;
+  padding: 0.2rem 0.5rem;
+}
+
+.system-dice .system-index,
+.tool-dice button {
+  background: var(--neo-yellow);
+}
+
+.system-dice > div {
+  background: var(--neo-yellow-soft);
+}
+
+.dice-result {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 0.55rem;
+}
+
+.dice-result b {
+  border-right: var(--neo-border-thin) solid var(--neo-ink);
+  font-family: var(--neo-font-display);
+  font-size: 3.2rem;
+  font-weight: 950;
+  letter-spacing: -0.08em;
+  line-height: 0.9;
+}
+
+.dice-result p span {
+  display: block;
+  margin-bottom: 0.16rem;
+  font-size: 0.68rem;
+  font-weight: 950;
+}
+
+.system-task .system-index,
+.tool-task button {
+  background: var(--neo-purple);
+  color: #fff;
+}
+
+.system-task > div {
+  background: var(--neo-purple);
+  color: #fff;
+}
+
+.system-task h3,
+.system-task time {
+  color: #fff;
+}
+
+.system-task time,
+.system-task small {
+  color: #e8e4ff;
+}
+
+.system-task footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  border-top: var(--neo-border-thin) dashed #fff;
+  padding-top: 0.55rem;
+  font-size: 0.67rem;
+}
+
+.system-task footer strong {
+  border-radius: var(--neo-radius-pill);
+  background: var(--neo-paper);
+  color: var(--neo-purple-dark);
+  padding: 0.22rem 0.55rem;
+}
+
+.system-unlock .system-index,
+.tool-unlock button {
+  background: var(--neo-green);
+}
+
+.system-unlock > div {
+  border-color: var(--neo-green-dark);
+  background: #efffe3;
+}
+
+.unlock-ticket {
+  position: relative;
+}
+
+.unlock-state {
+  display: inline-flex;
+  margin-top: 0.65rem;
+  border: var(--neo-border-thin) solid var(--neo-green-dark);
+  border-radius: var(--neo-radius-pill);
+  color: var(--neo-green-dark);
+  font-family: var(--neo-font-mono);
+  font-size: 0.62rem;
+  font-weight: 950;
+  padding: 0.2rem 0.48rem;
+}
+
+.system-group-task .system-index {
+  background: var(--neo-coral);
+}
+
+.system-group-task > div {
+  border-left: var(--neo-border-heavy) solid var(--neo-coral);
+}
+
+.system-group-task small {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--neo-coral-dark);
+}
+
+.system-demo {
+  width: min(68%, 38rem);
+}
+
+.system-demo .system-index {
+  background: var(--neo-paper);
+  color: var(--neo-purple-dark);
+}
+
+.system-demo > div {
+  border-color: var(--neo-purple);
+  border-style: dashed;
+  background: #eeeaff;
+}
+
+.system-demo small {
+  display: block;
+  margin-top: 0.45rem;
+  color: var(--neo-purple-dark);
+}
+
+.system-notice {
+  width: min(66%, 36rem);
+  grid-template-columns: 3.3rem minmax(0, 1fr);
+}
+
+.system-notice .system-index {
+  min-height: 2.8rem;
+  background: var(--neo-paper-deep);
+}
+
+.system-notice > div {
+  border-left: var(--neo-border-heavy) solid var(--neo-muted);
+  box-shadow: none;
+}
+
+.stream-empty {
+  min-height: 28rem;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  border-bottom: var(--neo-border-thin) solid var(--neo-line);
+  text-align: center;
+}
+
+.stream-empty > span {
+  color: var(--neo-purple-dark);
+  font-family: var(--neo-font-mono);
+  font-size: 0.68rem;
+  font-weight: 950;
+}
+
+.stream-empty h3 {
+  margin-top: 0.5rem;
+  font-size: 1.4rem;
+}
+
+.stream-empty p {
+  max-width: 25rem;
+  margin-top: 0.4rem;
+  color: var(--neo-muted);
+  font-size: 0.8rem;
+}
+
+.mission-command {
+  position: sticky;
+  top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.chat-page .mission-composer {
+  width: 100%;
+  max-width: none;
+  position: static;
+  margin: 0;
+  border: var(--neo-border) solid var(--neo-ink);
+  border-radius: var(--neo-radius-card);
+  background: var(--neo-paper);
+  box-shadow: var(--neo-shadow-sm);
+  padding: 0.8rem;
+}
+
+.chat-page .mission-composer > label {
+  min-height: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0 0.2rem 0.35rem;
+  font-size: 0.72rem;
+}
+
+.chat-page .mission-composer > label span {
+  color: var(--neo-muted);
+  font-family: var(--neo-font-mono);
+  font-size: 0.62rem;
+}
+
+.chat-page .mission-composer .composer-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+}
+
+.chat-page .mission-composer textarea {
+  min-height: 52px;
+  max-height: 11rem;
+  resize: vertical;
+  background: var(--neo-paper);
+}
+
+.chat-page .mission-composer button {
+  min-width: 4.7rem;
+  min-height: 52px;
+  border-radius: var(--neo-radius-control);
+  background: var(--neo-purple);
+  color: #fff;
+}
+
+.mission-drawer {
+  overflow: hidden;
+  border: var(--neo-border) solid var(--neo-ink);
+  border-radius: var(--neo-radius-card);
+  background: var(--neo-paper);
+  box-shadow: var(--neo-shadow-sm);
+}
+
+.mission-drawer > summary {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+  list-style: none;
+  padding: 0.65rem 0.85rem;
+}
+
+.mission-drawer > summary::-webkit-details-marker {
+  display: none;
+}
+
+.mission-drawer > summary > span:first-child {
+  display: grid;
+}
+
+.mission-drawer > summary small {
+  color: var(--neo-purple-dark);
+  font-family: var(--neo-font-mono);
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.mission-drawer > summary strong {
+  margin-top: 0.08rem;
+  font-size: 0.95rem;
+}
+
+.drawer-state {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  border: var(--neo-border-thin) solid var(--neo-ink);
+  border-radius: var(--neo-radius-pill);
+  background: var(--neo-yellow);
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 0.25rem 0.58rem;
+}
+
+.mission-drawer[open] > summary {
+  border-bottom: var(--neo-border-thin) solid var(--neo-ink);
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  padding: 0.75rem;
+}
+
+.tool-card,
+.tool-card button {
+  width: 100%;
+}
+
+.tool-card button {
+  min-height: 10.4rem;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  align-items: start;
+  justify-items: start;
+  gap: 0.25rem;
+  border: var(--neo-border-thin) solid var(--neo-ink);
+  border-radius: var(--neo-radius-control);
+  box-shadow: var(--neo-shadow-xs);
+  color: var(--neo-ink);
+  padding: 0.65rem;
+  text-align: left;
+}
+
+.tool-task button,
+.tool-unlock button {
+  grid-template-rows: auto 1fr auto;
+}
+
+.tool-card button:hover {
+  box-shadow: var(--neo-shadow-sm);
+}
+
+.tool-card button:active {
+  box-shadow: none;
+}
+
+.tool-number {
+  font-family: var(--neo-font-mono);
+  font-size: 0.58rem;
+  font-weight: 950;
+}
+
+.tool-card button > strong {
+  margin-top: 0.28rem;
+  font-size: 0.92rem;
+  line-height: 1.12;
+}
+
+.tool-dice-value {
+  font-family: var(--neo-font-display);
+  font-size: 1.65rem !important;
+  letter-spacing: -0.06em;
+}
+
+.tool-title-pair,
+.tool-unlock-copy {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.tool-title-pair strong,
+.tool-unlock-copy strong {
+  font-size: 0.92rem;
+  line-height: 1.12;
+}
+
+.tool-unlock-copy small {
+  color: #235f08;
+  font-size: 0.66rem;
+  line-height: 1.35;
+}
+
+.tool-card button > small {
+  font-size: 0.66rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.tool-state {
+  align-self: end;
+  border: var(--neo-border-thin) solid currentColor;
+  border-radius: var(--neo-radius-pill);
+  background: var(--neo-paper);
+  color: var(--neo-ink);
+  font-size: 0.58rem;
+  font-weight: 900;
+  padding: 0.18rem 0.42rem;
+}
+
+.tool-task button > small {
+  color: #e8e4ff;
+}
+
+.tool-task .tool-state {
+  color: var(--neo-purple-dark);
+}
+
+.tool-card.is-complete button {
+  background: #e4e0d3;
+  color: var(--neo-muted);
+  box-shadow: none;
+}
+
+.demo-progress-tool {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  border-top: var(--neo-border-thin) dashed var(--neo-purple);
+  background: #eeeaff;
+  padding: 0.6rem 0.75rem;
+}
+
+.demo-progress-tool > span {
+  color: var(--neo-purple-dark);
+  font-family: var(--neo-font-mono);
+  font-size: 0.6rem;
+  font-weight: 900;
+}
+
+.demo-progress-tool button {
+  min-height: 44px;
+  border-color: var(--neo-purple);
+  border-radius: var(--neo-radius-control);
+  background: var(--neo-paper);
+  color: var(--neo-purple-dark);
+  font-size: 0.66rem;
+  padding: 0.45rem 0.65rem;
+}
+
+.safety-launchers {
+  display: none;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.55rem;
+  border: var(--neo-border) solid var(--neo-ink);
+  border-radius: var(--neo-radius-card);
+  background: #ffd1c6;
+  box-shadow: var(--neo-shadow-sm);
+  padding: 0.65rem;
+}
+
+.mission-shell[data-chat-enhanced="true"] .safety-launchers {
+  display: grid;
+}
+
+.mission-shell[data-chat-enhanced="true"] .safety-fallback {
+  display: none;
+}
+
+.safety-launchers > div > span,
+.safety-launchers > div > strong,
+.safety-launchers > div > p {
+  display: block;
+}
+
+.safety-launchers > div > span {
+  font-family: var(--neo-font-mono);
+  font-size: 0.58rem;
+  font-weight: 950;
+}
+
+.safety-launchers > div > strong {
+  margin-top: 0.08rem;
+  font-size: 0.82rem;
+}
+
+.safety-launchers > div > p {
+  margin-top: 0.08rem;
+  color: #704338;
+  font-size: 0.62rem;
+}
+
+.safety-launch {
+  min-height: 44px;
+  border-radius: var(--neo-radius-control);
+  background: var(--neo-paper);
+  font-size: 0.66rem;
+  padding: 0.45rem 0.58rem;
+}
+
+.block-launch {
+  background: var(--neo-coral);
+}
+
+.chat-page .safety-fallback {
+  margin-top: 0;
+  border: var(--neo-border) solid var(--neo-ink);
+  border-radius: var(--neo-radius-card);
+  background: #ffd1c6;
+  box-shadow: var(--neo-shadow-sm);
+}
+
+.chat-page .safety-fallback summary {
+  min-height: 52px;
+  color: var(--neo-ink);
+}
+
+.chat-page .safety-fallback > div {
+  border-color: var(--neo-ink);
+}
+
+.chat-page .safety-fallback .safety-actions,
+.chat-page .safety-fallback .safety-actions form {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.safety-dialog {
+  width: min(calc(100% - 2rem), 35rem);
+  max-height: min(88vh, 44rem);
+  overflow: auto;
+  border: var(--neo-border-heavy) solid var(--neo-ink);
+  border-radius: var(--neo-radius-panel);
+  background: var(--neo-paper);
+  box-shadow: var(--neo-shadow-lg);
+  color: var(--neo-ink);
+  padding: 0;
+}
+
+.safety-dialog::backdrop {
+  background: rgba(18, 17, 14, 0.68);
+}
+
+.safety-dialog form {
+  display: grid;
+  gap: 1.2rem;
+  padding: clamp(1.25rem, 5vw, 2.3rem);
+}
+
+.report-dialog {
+  border-top-color: var(--neo-yellow);
+}
+
+.block-dialog {
+  border-top-color: var(--neo-coral);
+  background: #fff1ec;
+}
+
+.dialog-heading {
+  border-bottom: var(--neo-border-thin) solid var(--neo-ink);
+  padding-bottom: 1rem;
+}
+
+.dialog-heading > span {
+  color: var(--neo-purple-dark);
+}
+
+.block-dialog .dialog-heading > span {
+  color: var(--neo-coral-dark);
+}
+
+.dialog-heading h2 {
+  margin: 0.45rem 0 0.55rem;
+  font-size: clamp(1.65rem, 5vw, 2.3rem);
+}
+
+.dialog-heading p {
+  color: var(--neo-muted);
+  font-size: 0.8rem;
+}
+
+.safety-dialog textarea {
+  min-height: 8rem;
+}
+
+.block-confirm {
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.7rem;
+  border: var(--neo-border-thin) solid var(--neo-ink);
+  border-radius: var(--neo-radius-control);
+  background: var(--neo-paper);
+  padding: 0.65rem 0.8rem;
+}
+
+.block-confirm input {
+  width: 1.35rem;
+  min-height: 1.35rem;
+  margin: 0;
+}
+
+.dialog-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.dialog-actions button {
+  min-height: 48px;
+  border-radius: var(--neo-radius-control);
+}
+
+.archive-notice {
+  margin: 0;
+  border: var(--neo-border) solid var(--neo-ink);
+  border-radius: var(--neo-radius-card);
+  background: var(--neo-yellow-soft);
+  box-shadow: var(--neo-shadow-sm);
+}
+
+@media (max-width: 920px) {
+  .chat-page .page-shell {
+    width: min(calc(100% - 1.25rem), var(--neo-page-width));
+  }
+
+  .mission-header {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.65rem;
+  }
+
+  .mission-status {
+    display: none;
+  }
+
+  .relation-deck {
+    grid-template-columns: minmax(12rem, 0.44fr) minmax(0, 1fr);
+  }
+
+  .relation-visible {
+    grid-column: 1 / -1;
+    border-left-width: var(--neo-border);
+  }
+
+  .mission-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mission-command {
+    position: sticky;
+    top: auto;
+    bottom: 0;
+    z-index: 60;
+    background: var(--neo-cream);
+    padding: 0.35rem 0 0.65rem;
+  }
+
+  .mission-log {
+    border-bottom: var(--neo-border-heavy) solid var(--neo-ink);
+  }
+}
+
+@media (max-width: 899px) {
+  .chat-page .page-shell {
+    padding-bottom: calc(var(--mobile-dock-height) + env(safe-area-inset-bottom) + 2.25rem);
+  }
+
+  .mission-command {
+    bottom: calc(var(--mobile-dock-height) + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 680px) {
+  .chat-page .page-shell {
+    width: min(calc(100% - 1rem), var(--neo-page-width));
+    padding-top: 0.35rem;
+  }
+
+  .mission-header {
+    min-height: 4.2rem;
+    gap: 0.45rem;
+    padding: 0.45rem 0 0.6rem;
+  }
+
+  .mission-header-action {
+    min-width: 44px;
+    width: 44px;
+    min-height: 44px;
+    padding: 0.25rem;
+  }
+
+  .mission-header-action span {
+    font-size: 0.52rem;
+  }
+
+  .mission-header-action strong {
+    font-size: 0.62rem;
+  }
+
+  .mission-identity {
+    gap: 0.5rem;
+  }
+
+  .mission-identity-code {
+    min-width: 2.55rem;
+    min-height: 2.55rem;
+    font-size: 0.66rem;
+  }
+
+  .mission-identity > div > p {
+    font-size: 0.52rem;
+  }
+
+  .mission-identity h1 {
+    font-size: clamp(1.18rem, 6vw, 1.55rem);
+  }
+
+  .mission-level {
+    position: absolute;
+    top: 4.05rem;
+    left: 3.55rem;
+    z-index: 2;
+    font-size: 0.58rem;
+    padding: 0.18rem 0.45rem;
+  }
+
+  .relation-deck {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.65rem;
+    padding: 1rem 0 0.75rem;
+  }
+
+  .relation-copy {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0.7rem;
+    padding-left: 3.55rem;
+  }
+
+  .relation-copy .mission-kicker,
+  .relation-copy > p:last-child {
+    display: none;
+  }
+
+  .relation-copy h2 {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .relation-route progress {
+    height: 0.65rem;
+  }
+
+  .relation-route ol {
+    margin-top: 0.42rem;
+  }
+
+  .relation-route li strong {
+    font-size: 0.58rem;
+  }
+
+  .relation-route li span {
+    font-size: 0.58rem;
+  }
+
+  .relation-visible {
+    display: flex;
+    align-items: baseline;
+    gap: 0.55rem;
+    border-left-width: var(--neo-border);
+    padding-left: 0.6rem;
+  }
+
+  .relation-visible p {
+    margin: 0;
+    font-size: 0.68rem;
+  }
+
+  .relation-unlocks,
+  .contact-unlock {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .relation-unlocks ul {
+    justify-content: flex-start;
+  }
+
+  .group-route {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.8rem;
+    padding: 1rem 0;
+  }
+
+  .group-route ul {
+    display: flex;
+    gap: 0.45rem;
+    overflow-x: auto;
+    padding: 0 0.15rem 0.35rem;
+    scroll-snap-type: x proximity;
+  }
+
+  .group-route li {
+    min-width: 8.7rem;
+    scroll-snap-align: start;
+  }
+
+  .mission-log-header {
+    min-height: 3.7rem;
+    padding-inline: 0.2rem;
+  }
+
+  .mission-log-header h2 {
+    font-size: 1.05rem;
+  }
+
+  .mission-messages {
+    min-height: 28rem;
+    padding: 0.65rem 0.1rem 1.2rem;
+  }
+
+  .chat-message {
+    width: min(88%, 34rem);
+    margin-top: 0.85rem;
+  }
+
+  .message-bubble {
+    padding: 0.65rem 0.72rem 0.42rem;
+  }
+
+  .message-bubble p {
+    font-size: 0.84rem;
+  }
+
+  .system-event,
+  .system-demo,
+  .system-notice {
+    width: min(94%, 38rem);
+    grid-template-columns: 3.1rem minmax(0, 1fr);
+    gap: 0.45rem;
+    margin-top: 1.1rem;
+  }
+
+  .system-index {
+    min-height: 2.8rem;
+    font-size: 0.56rem;
+  }
+
+  .system-event > div {
+    padding: 0.72rem 0.78rem;
+  }
+
+  .system-event h3 {
+    font-size: 1.05rem;
+  }
+
+  .system-event p {
+    font-size: 0.72rem;
+  }
+
+  .system-event time {
+    max-width: 10rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dice-result {
+    grid-template-columns: 3rem minmax(0, 1fr);
+    gap: 0.65rem;
+  }
+
+  .dice-result b {
+    font-size: 2.6rem;
+  }
+
+  .mission-command {
+    gap: 0.5rem;
+    margin-inline: -0.2rem;
+  }
+
+  .chat-page .mission-composer,
+  .mission-drawer,
+  .safety-launchers,
+  .chat-page .safety-fallback,
+  .archive-notice {
+    border-radius: 0.9rem;
+    box-shadow: var(--neo-shadow-xs);
+  }
+
+  .chat-page .mission-composer {
+    padding: 0.55rem;
+  }
+
+  .chat-page .mission-composer > label {
+    padding-bottom: 0.25rem;
+  }
+
+  .chat-page .mission-composer textarea,
+  .chat-page .mission-composer button {
+    min-height: 48px;
+  }
+
+  .mission-drawer > summary {
+    min-height: 48px;
+    padding: 0.48rem 0.65rem;
+  }
+
+  .tool-grid {
+    gap: 0.4rem;
+    padding: 0.55rem;
+  }
+
+  .tool-card button {
+    min-height: 8.8rem;
+    padding: 0.5rem;
+  }
+
+  .tool-card button > strong,
+  .tool-title-pair strong,
+  .tool-unlock-copy strong {
+    font-size: 0.78rem;
+  }
+
+  .tool-card button > small {
+    font-size: 0.58rem;
+  }
+
+  .tool-number,
+  .tool-state {
+    font-size: 0.52rem;
+  }
+
+  .demo-progress-tool {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .safety-launchers {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .safety-launchers > div {
+    grid-column: 1 / -1;
+  }
+
+  .safety-launch {
+    width: 100%;
+  }
+
+  .dialog-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 360px) {
+  .mission-identity-code {
+    display: none;
+  }
+
+  .mission-level,
+  .relation-copy {
+    left: 0;
+    padding-left: 0;
+  }
+
+  .tool-grid {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(8.4rem, 44vw);
+    grid-template-columns: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .tool-card {
+    scroll-snap-align: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-page *,
+  .chat-page *::before,
+  .chat-page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

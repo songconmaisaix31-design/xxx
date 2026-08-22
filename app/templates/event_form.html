@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}发起饭局{% endblock %}
+{% block body_class %}form-page{% endblock %}
+{% block content %}
+  <section class="form-page-heading" aria-labelledby="event-form-title"><div><p class="eyebrow">CREATE A SAFE TABLE</p><h1 id="event-form-title">发起兴趣饭局</h1></div><aside class="privacy-note"><strong>地点安全规则</strong><p>仅可选择已验证的真实餐厅 POI，不支持私人地址或封闭娱乐场所。</p></aside></section>
+  <form class="structured-form" method="post" action="{{ url_for('events.create') }}">
+    <section class="form-section" aria-labelledby="event-basic-title">
+      <div class="form-section-heading"><span>01</span><div><h2 id="event-basic-title">主题与地点</h2><p>让参与者一眼知道聊什么、在哪里见面。</p></div></div>
+      <div class="form-grid two"><label for="event-title">活动主题 *<input id="event-title" required maxlength="60" name="title" placeholder="如：聊聊 AI 创业，周五晚"></label><label for="event-poi">餐厅 / 地点 *<select id="event-poi" required name="poi_id">{% for poi_id, poi in pois.items() %}<option value="{{ poi_id }}">{{ poi.name }}｜{{ poi.address }}</option>{% endfor %}</select><small>地点来自后端餐厅白名单，不能填写私人地址。</small></label></div>
+      <label for="event-description">活动介绍（最多 200 字）<textarea id="event-description" maxlength="200" name="description" placeholder="介绍你希望大家聊什么、如何集合等。"></textarea></label>
+    </section>
+    <section class="form-section" aria-labelledby="event-time-title">
+      <div class="form-section-heading"><span>02</span><div><h2 id="event-time-title">时间与人数</h2><p>人数限定 3–10 人，成团下限不能高于人数上限。</p></div></div>
+      <div class="form-grid two"><label for="event-start">开始时间 *<input id="event-start" required name="start_at" type="datetime-local" step="1800" value="{{ default_start }}"></label><label for="event-deadline">报名截止<input id="event-deadline" name="signup_deadline" type="datetime-local" step="1800"><small>留空时默认为开始前 2 小时。</small></label><label for="event-max-size">人数上限 *<input id="event-max-size" required name="max_size" type="number" min="3" max="10" value="6" inputmode="numeric"></label><label for="event-min-size">成团下限 *<input id="event-min-size" required name="min_size" type="number" min="3" max="10" value="3" inputmode="numeric"></label></div>
+    </section>
+    <section class="form-section" aria-labelledby="event-rule-title">
+      <div class="form-section-heading"><span>03</span><div><h2 id="event-rule-title">费用与报名规则</h2><p>这些信息会完整展示在饭局详情中。</p></div></div>
+      <div class="form-grid two"><label for="event-budget">人均预算 *<select id="event-budget" required name="budget_level"><option value="under_50">50 以下</option><option value="50-100" selected>50–100</option><option value="100-200">100–200</option><option value="200_plus">200+</option></select></label><label for="event-pay">费用方式 *<select id="event-pay" required name="pay_type"><option value="AA">AA</option><option value="host_pays">发起人请</option><option value="separate">各付各的</option></select></label><label for="event-gender-policy">性别构成偏好<select id="event-gender-policy" name="gender_policy"><option value="any">不限</option><option value="balanced" selected>尽量均衡</option><option value="same_gender">仅同性别</option></select></label><label for="event-signup-mode">报名方式 *<select id="event-signup-mode" required name="signup_mode"><option value="first_come">先到先得</option><option value="review">发起人审核</option></select></label></div>
+    </section>
+    <section class="form-section" aria-labelledby="event-tags-title">
+      <div class="form-section-heading"><span>04</span><div><h2 id="event-tags-title">想约的人的特征</h2><p>请选择 1–5 项，服务端会在提交时进行最终校验。</p></div></div>
+      <fieldset class="choice-fieldset"><legend>目标标签 *（选择 1–5 项）</legend><div class="choice-grid">{% for tag_id, label in tags.items() %}<label class="choice-tile" for="event-tag-{{ loop.index }}"><input id="event-tag-{{ loop.index }}" type="checkbox" name="required_tags" value="{{ tag_id }}"><span>{{ label }}</span></label>{% endfor %}</div></fieldset>
+    </section>
+    <div class="form-submit"><p>发布后，浏览者仍只会看到聚合信息与自己的匹配度，不会看到参与者身份。</p><button class="button button-large" type="submit">发布饭局</button></div>
+  </form>
+{% endblock %}

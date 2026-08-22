@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}数据连接{% endblock %}
+{% block content %}
+  <section class="page-heading" aria-labelledby="connections-title">
+    <div><p class="eyebrow">STEP 02 / VERIFIED SIGNALS</p><h1 id="connections-title">连接真实行为数据</h1><p>你决定连接哪些数据源。当前演示使用 Mock OAuth，后端已保留真实授权、刷新令牌和错误码的接入边界。</p></div>
+    <a class="text-link back-link" href="{{ url_for('auth.profile') }}">返回我的标签</a>
+  </section>
+  <section class="source-grid" aria-label="可连接的数据源">
+    {% for source, label in {'duolingo':'多邻国 Duolingo', 'keep':'Keep'}|items %}
+      {% set connection = connections.get(source) %}
+      <article class="source-card source-{{ source }}">
+        <div class="source-card-top"><span class="source-code">{{ 'DUO' if source == 'duolingo' else 'KEEP' }}</span><span class="status-pill {{ 'status-success' if connection and connection.status == 'connected' else 'status-neutral' }}">{{ '已连接' if connection and connection.status == 'connected' else '未连接' }}</span></div>
+        <div><p class="eyebrow">{{ source }}</p><h2>{{ label }}</h2><p>{{ '将语言学习习惯转化为已认证标签。' if source == 'duolingo' else '将运动频率与偏好转化为已认证标签。' }}</p></div>
+        <dl class="source-meta"><div><dt>数据用途</dt><dd>仅用于服务端匹配</dd></div><div><dt>最近同步</dt><dd>{{ connection.refreshed_at if connection else '尚未同步' }}</dd></div></dl>
+        <form method="post" action="{{ url_for('auth.authorize_source', source=source) }}">
+          <input type="hidden" name="authorization_code" value="demo-authorized">
+          <button class="button button-block {{ 'secondary' if connection else '' }}" type="submit">{{ '重新同步数据' if connection else '授权并同步' }}</button>
+        </form>
+      </article>
+    {% endfor %}
+  </section>
+  <aside class="inline-note"><strong>你的原始记录不会进入页面。</strong><span>页面只接收后端生成的标签、来源与认证状态，访问令牌不会保存在浏览器中。</span></aside>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}我的标签{% endblock %}
+{% block body_class %}profile-page{% endblock %}
+{% block content %}
+  <section class="profile-hero" aria-labelledby="profile-title">
+    <div class="profile-identity">
+      <p class="eyebrow">PRIVATE PROFILE / 仅自己可见</p>
+      <h1 id="profile-title">{{ user.anonymous_alias }}</h1>
+      <p>这些行为标签不会直接展示给匹配对象；来源和认证状态只用于建立可信的同频信号。</p>
+    </div>
+    <div class="profile-passport" aria-label="我的基础资料">
+      <div class="profile-passport-head"><span>匿名资料护照</span><strong>{{ tags|length }} 个信号</strong></div>
+      <dl class="profile-facts">
+        <div><dt>城市</dt><dd>{{ user.city }}</dd></div>
+        <div><dt>作息</dt><dd>{{ user.schedule }}</dd></div>
+        <div><dt>类型</dt><dd>{{ user.mbti }}</dd></div>
+        <div><dt>目的</dt><dd>{{ user.purposes|join('、') }}</dd></div>
+      </dl>
+      <p class="profile-verification"><span aria-hidden="true"></span>手机号验证：{{ '已完成（演示）' if user.phone_verified else '未完成' }}</p>
+    </div>
+    <a class="button profile-connections-action" href="{{ url_for('auth.connections') }}">管理数据连接</a>
+  </section>
+
+  <section class="content-section signal-ledger" aria-labelledby="tag-title">
+    <div class="section-heading-line signal-ledger-heading">
+      <div><p class="eyebrow">VERIFIED BEHAVIOR SIGNALS</p><h2 id="tag-title">我的真实标签</h2><p>按来源折叠整理；需要时再展开详情，不再让每个标签占据一整张大卡。</p></div>
+      <span class="privacy-lock">SELF ONLY · 不会公开</span>
+    </div>
+    {% if tags %}
+      <div class="signal-source-stack">
+        {% for source_group in tags|groupby('source') %}
+          {% set verified_count = source_group.list|selectattr('verified')|list|length %}
+          <details class="signal-source" data-source="{{ source_group.grouper }}"{% if loop.first %} open{% endif %}>
+            <summary>
+              <span class="signal-source-code">{{ source_group.grouper }}</span>
+              <span class="signal-source-title">
+                <strong>{% if source_group.grouper == 'duolingo' %}多邻国学习信号{% elif source_group.grouper == 'keep' %}Keep 运动信号{% else %}综合行为信号{% endif %}</strong>
+                <small>{{ source_group.list|length }} 项 · {{ verified_count }} 项已认证</small>
+              </span>
+              <span class="signal-source-state">{{ '已连接' if source_group.grouper in connections else '系统生成' }}</span>
+              <span class="signal-source-toggle" aria-hidden="true">展开</span>
+            </summary>
+            <div class="signal-list">
+              {% for tag in source_group.list %}
+                <article class="signal-row tag-card" data-source="{{ tag.source }}" data-visibility="{{ tag.visibility }}">
+                  <div class="signal-row-title">
+                    <span class="tag-category">{{ tag.category }}</span>
+                    <h3>{{ tag.name }}</h3>
+                  </div>
+                  <div class="signal-row-value">
+                    {% if tag.value is mapping %}
+                      <dl class="tag-data">
+                        {% for key, value in tag.value.items() %}
+                          <div>
+                            <dt>{% if key == 'items' %}内容{% elif key == 'days' %}天数{% elif key == 'hours' %}活跃时段{% elif key == 'times' %}每周次数{% elif key == 'km' %}累计公里{% elif key == 'level' %}等级{% elif key == 'xp' %}经验值{% else %}{{ key }}{% endif %}</dt>
+                            <dd>{% if value is iterable and value is not string and value is not mapping %}{{ value|join(' · ') }}{% else %}{{ value }}{% endif %}</dd>
+                          </div>
+                        {% endfor %}
+                      </dl>
+                    {% elif tag.value is iterable and tag.value is not string %}
+                      <p class="tag-value">{{ tag.value|join(' · ') }}</p>
+                    {% else %}
+                      <p class="tag-value">{{ tag.value }}</p>
+                    {% endif %}
+                  </div>
+                  <span class="signal-row-status status-dot {{ 'is-verified' if tag.verified else '' }}">{{ '已认证' if tag.verified else '自填' }}</span>
+                  <span class="visually-hidden">可见范围：{{ '仅自己可见' if tag.visibility == 'self_only' else tag.visibility }}</span>
+                </article>
+              {% endfor %}
+            </div>
+          </details>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state"><span>NO SIGNALS YET</span><h3>还没有行为标签</h3><p>连接一个数据源后，已验证标签会出现在这里。</p><a class="button" href="{{ url_for('auth.connections') }}">连接数据源</a></div>
+    {% endif %}
+  </section>
+{% endblock %}

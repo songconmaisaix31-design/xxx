@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="真实行为数据驱动的匿名匹配与兴趣饭局">
+  <meta name="theme-color" content="#fff8e7">
+  <title>{% block title %}真实标签{% endblock %} · 真实标签</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/brand-mark.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-foundation.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/brutalist-mobile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/match-flow.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/trust-profile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/chat-mission-deck.css') }}">
+  <script defer src="{{ url_for('static', filename='js/motion.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/chat-mission-deck.js') }}"></script>
+</head>
+<body class="{% block body_class %}{% endblock %}" data-page="{{ request.blueprint or 'main' }}" data-endpoint="{{ request.endpoint or '' }}" data-auth="{{ 'signed-in' if current_user else 'guest' }}" data-motion-status="booting">
+  <a class="skip-link" href="#main-content">跳到主要内容</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="{{ url_for('main.home') }}" aria-label="真实标签首页">
+        <img class="brand-mark" src="{{ url_for('static', filename='img/brand-mark.png') }}" alt="" width="38" height="38">
+        <span class="brand-text"><span class="brand-name">真实标签</span><span class="brand-note">REAL TAGS / PRIVATE BY DESIGN</span></span>
+      </a>
+      <nav aria-label="主导航">
+        {% if current_user %}
+          <a class="nav-link{% if request.endpoint in ('auth.profile', 'auth.connections') %} is-active{% endif %}" href="{{ url_for('auth.profile') }}"{% if request.endpoint in ('auth.profile', 'auth.connections') %} aria-current="page"{% endif %}>我的标签</a>
+          <a class="nav-link{% if request.blueprint == 'matches' %} is-active{% endif %}" href="{{ url_for('matches.index') }}"{% if request.blueprint == 'matches' %} aria-current="page"{% endif %}>匿名匹配</a>
+          <a class="nav-link{% if request.blueprint == 'chat' %} is-active{% endif %}" href="{{ url_for('chat.index') }}"{% if request.blueprint == 'chat' %} aria-current="page"{% endif %}>会话</a>
+          <a class="nav-link{% if request.blueprint == 'events' %} is-active{% endif %}" href="{{ url_for('events.index') }}"{% if request.blueprint == 'events' %} aria-current="page"{% endif %}>饭局广场</a>
+          <form class="inline-form" method="post" action="{{ url_for('auth.logout') }}"><button class="nav-logout" type="submit">退出</button></form>
+        {% else %}
+          <a class="nav-link{% if request.endpoint == 'auth.login' %} is-active{% endif %}" href="{{ url_for('auth.login') }}"{% if request.endpoint == 'auth.login' %} aria-current="page"{% endif %}>登录</a>
+          <a class="button button-small" href="{{ url_for('auth.register') }}">创建匿名账号</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content" class="page-shell" tabindex="-1">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <section class="flash-stack" aria-live="polite" aria-atomic="true">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">
+              <span class="flash-label">{{ '需要处理' if category == 'error' else '操作完成' if category == 'success' else '提示' }}</span>
+              <p>{{ message }}</p>
+            </div>
+          {% endfor %}
+        </section>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  {% if current_user %}
+    <nav class="mobile-dock" aria-label="移动端主导航">
+      <a class="mobile-dock-link{% if request.endpoint in ('auth.profile', 'auth.connections') %} is-active{% endif %}" href="{{ url_for('auth.profile') }}"{% if request.endpoint in ('auth.profile', 'auth.connections') %} aria-current="page"{% endif %}><span class="dock-key">01</span><span class="dock-label">标签</span></a>
+      <a class="mobile-dock-link{% if request.blueprint == 'matches' %} is-active{% endif %}" href="{{ url_for('matches.index') }}"{% if request.blueprint == 'matches' %} aria-current="page"{% endif %}><span class="dock-key">02</span><span class="dock-label">匹配</span></a>
+      <a class="mobile-dock-link{% if request.blueprint == 'chat' %} is-active{% endif %}" href="{{ url_for('chat.index') }}"{% if request.blueprint == 'chat' %} aria-current="page"{% endif %}><span class="dock-key">03</span><span class="dock-label">会话</span></a>
+      <a class="mobile-dock-link{% if request.blueprint == 'events' %} is-active{% endif %}" href="{{ url_for('events.index') }}"{% if request.blueprint == 'events' %} aria-current="page"{% endif %}><span class="dock-key">04</span><span class="dock-label">饭局</span></a>
+    </nav>
+  {% endif %}
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>真实标签</strong><span>先验证同频，再交换身份。</span></p>
+      <p class="footer-note">服务端渲染 · 数据最小披露 · 主动选择解锁</p>
+    </div>
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

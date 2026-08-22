@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design QA · Focus Pass 2</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 100%; min-height: 100%; margin: 0; }
+    body { background: #12110e; color: #fff; font-family: Arial, "Microsoft YaHei UI", sans-serif; padding: 20px; }
+    header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+    h1 { margin: 0; font-size: 21px; }
+    p { margin: 0; color: #cfc9b8; font-size: 12px; }
+    main { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    figure { min-width: 0; margin: 0; overflow: hidden; border: 4px solid #fff; box-shadow: 8px 8px 0 #5b48ff; background: #fff8e7; }
+    figcaption { border-bottom: 4px solid #12110e; background: #51d000; color: #12110e; font-weight: 900; padding: 8px 10px; }
+    img { display: block; width: 100%; height: 720px; object-fit: cover; object-position: center top; }
+  </style>
+</head>
+<body>
+  <header><h1>FOCUSED SURFACE COMPARISON</h1><p>Typography · outlines · hard shadows · semantic color</p></header>
+  <main>
+    <figure><figcaption>SOURCE / CENTER BOARD CROP</figcaption><img src="source-reference.png" alt="Reference central crop"></figure>
+    <figure><figcaption>IMPLEMENTATION / HERO CROP</figcaption><img src="implementation-home-desktop-pass2.png" alt="Implementation hero crop"></figure>
+  </main>
+</body>
+</html>

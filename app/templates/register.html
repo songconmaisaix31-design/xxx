@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}注册{% endblock %}
+{% block body_class %}form-page{% endblock %}
+{% block content %}
+  <section class="form-page-heading" aria-labelledby="register-title">
+    <div><p class="eyebrow">CREATE YOUR PRIVATE PROFILE</p><h1 id="register-title">创建匿名账号</h1></div>
+    <aside class="privacy-note"><strong>默认最小披露</strong><p>基础资料只用于服务端匹配，不会出现在匿名匹配页。</p></aside>
+  </section>
+  <form class="structured-form" method="post" action="{{ url_for('auth.register') }}">
+    <section class="form-section" aria-labelledby="account-section-title">
+      <div class="form-section-heading"><span>01</span><div><h2 id="account-section-title">账号与匿名身份</h2><p>带 * 的字段为完成注册的必要信息。</p></div></div>
+      <div class="form-grid two">
+        <label for="register-email">邮箱地址 *<input id="register-email" required type="email" name="email" autocomplete="email" inputmode="email" placeholder="name@example.com"></label>
+        <label for="register-password">登录密码 *<input id="register-password" required minlength="8" type="password" name="password" autocomplete="new-password" placeholder="至少 8 位"></label>
+        <label for="register-alias">匿名代号 *<input id="register-alias" required maxlength="20" name="anonymous_alias" placeholder="如：晨光旅人"><small>之后在匹配和会话中使用，2–20 字。</small></label>
+        <label for="register-city">所在城市 *<select id="register-city" required name="city"><option value="" selected disabled>请选择城市</option>{% for city in cities %}<option value="{{ city }}">{{ city }}</option>{% endfor %}</select></label>
+      </div>
+    </section>
+
+    <section class="form-section" aria-labelledby="match-section-title">
+      <div class="form-section-heading"><span>02</span><div><h2 id="match-section-title">匹配必要信息</h2><p>这些字段只参与服务端筛选与计算，不会组成公开资料卡。</p></div></div>
+      <div class="form-grid two">
+        <label for="register-birth-year">出生年份 *<input id="register-birth-year" required type="number" min="1926" max="2008" name="birth_year" inputmode="numeric" placeholder="1998"></label>
+        <label for="register-gender">性别 *<select id="register-gender" required name="gender"><option value="" selected disabled>请选择</option>{% for value in genders %}<option value="{{ value }}">{{ {'male':'男','female':'女','undisclosed':'不愿透露'}[value] }}</option>{% endfor %}</select></label>
+        <label for="register-match-gender">希望匹配性别 *<select id="register-match-gender" required name="match_gender"><option value="" selected disabled>请选择</option>{% for value in match_genders %}<option value="{{ value }}">{{ {'male':'男','female':'女','any':'不限'}[value] }}</option>{% endfor %}</select></label>
+        <label for="register-schedule">作息偏好<select id="register-schedule" name="schedule"><option value="">不填写</option>{% for value in schedules %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></label>
+        <label for="register-mbti">MBTI（可选）<select id="register-mbti" name="mbti"><option value="">不填写</option>{% for value in mbtis %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></label>
+        <label for="register-zodiac">星座（可选）<select id="register-zodiac" name="zodiac"><option value="">不填写</option>{% for value in zodiacs %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></label>
+      </div>
+    </section>
+
+    <section class="form-section" aria-labelledby="preference-section-title">
+      <div class="form-section-heading"><span>03</span><div><h2 id="preference-section-title">认识谁，聊什么</h2><p>多选项仍由你掌控，后续可以在资料中继续完善。</p></div></div>
+      <fieldset class="choice-fieldset">
+        <legend>交友目的 *（至少选择 1 项）</legend>
+        <div class="choice-grid">{% for value in purposes %}<label class="choice-tile"><input type="checkbox" name="purposes" value="{{ value }}"><span>{{ value }}</span></label>{% endfor %}</div>
+      </fieldset>
+      <fieldset class="choice-fieldset">
+        <legend>兴趣爱好（可选，可多选）</legend>
+        <div class="choice-grid">{% for value in interests %}<label class="choice-tile"><input type="checkbox" name="interests" value="{{ value }}"><span>{{ value }}</span></label>{% endfor %}</div>
+      </fieldset>
+    </section>
+    <div class="form-submit"><p>提交即创建匿名账号；第三方数据连接将在下一步由你主动授权。</p><button class="button button-large" type="submit">完成注册</button></div>
+  </form>
+{% endblock %}
