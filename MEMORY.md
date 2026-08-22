@@ -14,3 +14,13 @@
 - Do not install repository hooks through shared `core.hooksPath`; run the Kit gates explicitly.
 - User priority for the hackathon demo: use safe public interfaces first whenever they return useful behavior data; use mocks only as clearly labeled placeholders for unavailable integrations.
 - The shortest truthful live set is Duolingo public profile plus GitHub public REST. LeetCode may be labeled live only after its site-specific profile mapping, not merely GraphQL transport, is verified.
+
+## 2026-08-23: Frozen P0 implementation decisions
+
+- Preserve the server-rendered Flask/Jinja2/SQLite architecture for the hackathon candidate; the reliable path is a focused vertical slice, not a framework rewrite.
+- Public Live P0 sources are limited to bounded credential-free reads: Duolingo public profile, GitHub public REST user/repos/events, and the exact LeetCode.com public-profile GraphQL query. A public handle proves response provenance, not account ownership.
+- Keep is a deterministic demo-only Fixture. Steam, NetEase Cloud Music, WeRead, GitHub GraphQL, and LeetCode.cn product mapping remain Unavailable until their prerequisites and mappings are safely verified.
+- Public Live, Fixture, Unavailable, and Roadmap are mutually exclusive evidence classes. A Public Live failure preserves the last successful snapshot and must never silently load Fixture data.
+- Normalized external tags are self-only and are the only datasource input to matching. Raw upstream bodies, credentials, repository names, profile identity fields, raw match scores, and weight details must not enter storage or L0 output.
+- The offline judge path must remain resettable and credential-free. Demo accelerators and merchant benefits are Fixture behavior, never production, partner, payment, or deployment evidence.
+- Final publication must use a new candidate branch with exact remote SHA verification. Local and remote `main`, plus the protected source checkout at `C:\Users\DW\orca\xxx`, must not be modified.
