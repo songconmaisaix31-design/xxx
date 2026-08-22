@@ -4,6 +4,12 @@
 
 > 当前交付适合本地演示、产品评审和后续开发，不代表已经具备公开生产所需的身份核验、合规、实时通信、支付或规模化运维能力。
 
+## Hosted hackathon demo
+
+访问 [https://tags.davidwang.space](https://tags.davidwang.space)，点击“进入预置演示账号”即可体验完整流程。
+
+这是部署在 Vercel Function 上的黑客松 Demo。SQLite 状态使用临时存储，冷启动或并发实例可能导致操作结果重置；请勿输入敏感信息，也不要把该地址视为生产级持久化服务。部署证据和回滚边界见 [Deployment evidence](docs/DEPLOYMENT_EVIDENCE.md)。
+
 ## Quick start
 
 项目使用锁定的 Python 3.12 环境：
@@ -69,4 +75,6 @@ CI 使用同一份 `uv.lock` 和 Python 3.12 运行 Python tests、Node tests �
 - [API contract](docs/API_CONTRACT.md)
 - [PRD acceptance matrix](docs/PRD_ACCEPTANCE_MATRIX.md)
 - [Frontend handoff](docs/FRONTEND_HANDOFF.md)
+- [Deployment specification](docs/DEPLOYMENT_SPEC.md)
+- [Deployment evidence](docs/DEPLOYMENT_EVIDENCE.md)
 - [Production gaps and roadmap](docs/PRODUCTION_GAPS_AND_ROADMAP.md)

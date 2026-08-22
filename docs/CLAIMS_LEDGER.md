@@ -15,12 +15,14 @@
 | 一桌一码、时间/门店约束和 Demo 核销 | event/coupon tests | 未接真实 POS、支付或商家后台 |
 | CSRF、生产密钥门槛、外部请求边界和无原始响应落库 | security/adapter tests | 仍是黑客松 Demo，不等同于完成生产安全审计 |
 | PRD 视觉 token、硬投影、触控和 reduced-motion | CSS contract tests and desktop runtime QA | 本次自动化环境未完成移动端运行时截图 |
+| 独立子域名上的 HTTPS 托管 Demo | `docs/DEPLOYMENT_EVIDENCE.md`, hosted runtime smoke | Vercel `/tmp` SQLite 状态可能重置，不代表生产持久化或可用性承诺 |
 
 ## Live evidence
 
 | Capability | Evidence | Caveat |
 | --- | --- | --- |
 | Duolingo public profile | 2026-08-23 使用公开用户名 `duo` 完成只读 smoke，规范化为 6 个 Live 标签；adapter 单测覆盖成功、失败与边界 | 公开端点不是项目控制的稳定授权 API，随时可能变更、限流或不可用；CI 不依赖该端点 |
+| Hosted hackathon Demo | 2026-08-23 在 `https://tags.davidwang.space` 完成 HTTPS 首页、Demo 登录、标签、匹配、会话、饭局和静态资源 smoke | 仅证明该时间点可访问；不代表 SLA、持久化、备份或生产发布门禁 |
 
 ## Fixture-only capabilities
 
@@ -37,7 +39,7 @@
 - Keep production API, OAuth or credential storage.
 - Production SMS, maps/POI, merchant identity, POS, payment or notification integrations.
 - WebSocket/SSE real-time chat, push notifications and offline delivery.
-- Production deployment, observability, abuse/rate-limit operations, backups or disaster recovery.
+- Production-grade persistence, observability, abuse/rate-limit operations, backups or disaster recovery.
 - KYC, legal/compliance approval, security penetration test or external privacy audit.
 - Official user growth, retention, matching quality, conversion, latency or revenue metrics.
 
@@ -46,10 +48,11 @@
 - “Duolingo 支持公开资料 Live 同步；Keep 当前使用 Fixture。”
 - “Demo 跑通了从行为标签到匿名匹配、关系解锁和公开饭局的完整工作流。”
 - “餐厅、短信、商家和 POS 是明确标记的 Fixture，后续可替换为生产 adapter。”
+- “黑客松 Demo 已托管在独立子域名；状态可能重置，不等同于生产上线。”
 
 ## Disallowed wording
 
 - “已接入 Keep / 商家 / POS / 短信生产系统。”
 - “所有标签都是真实认证数据。”
 - “已验证真实餐厅”或“已有签约商户”。
-- “已上线”“生产可用”“通过安全审计”或任何无证据的商业/用户指标。
+- “正式上线”“生产可用”“通过安全审计”或任何无证据的商业/用户指标。

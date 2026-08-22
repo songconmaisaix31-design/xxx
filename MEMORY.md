@@ -29,5 +29,13 @@
 - PRD 最终会议决议优先于早期阶段表：`self_only` 行为标签在 L0–L4 均不得返回给匹配对象；L3 只展示本人填写的兴趣。
 - 已加入 Session 绑定 CSRF、生产密钥 fail-closed、生产环境 Demo 路由禁用和敏感字段最小化。当前仍是黑客松 Demo，不代表生产身份核验、支付、商家或合规能力已完成。
 - PRD 第 5 章视觉 token 已落入独立契约层；桌面 Edge 对首页、标签、连接、匹配、会话和活动主流程做过真实浏览器检查。移动端真实截图因浏览器自动化运行时不可用未完成，验收矩阵将该项保持为 `PARTIAL`。
-- 最终本地门禁：48/48 Python tests、4/4 Node tests、compileall、`uv lock --check`、`uv sync --locked` 和扩展后的 Harness 6/6 均通过。
+- 最终本地门禁：49/49 Python tests、4/4 Node tests、compileall、`uv lock --check`、`uv sync --locked` 和扩展后的 Harness 6/6 均通过。
 - 实现期间远端 `main` 推进到 `89e80a9eb3b21cd22441be218302f429c8d78471`（文档提交）；发布分支已 rebase 吸收，并把基于旧代码的生产缺口文档改为当前分支的事实与路线图。
+
+## 2026-08-23 托管部署结果
+
+- Vercel 项目为 `dwwww/realtags-demo`，自定义域名为 `https://tags.davidwang.space`；最终运行时代码提交为 `48cc41604d417ddd9fd38728db432629bb1b10a8`，生产部署 ID 为 `dpl_CpwW2mRyf9b11RvF2Bvcd9fUdS9W`。
+- 项目必须使用 Vercel `flask` Framework Preset；错误的 `Other` preset 会把根目录当静态输出并直接返回 `index.py`。仓库同时用 `[tool.vercel] entrypoint = "index:app"` 固定入口，防止新项目误判。
+- AliDNS 仅新增 `tags` CNAME：`9ac6b2035aca735c.vercel-dns-017.com`，Record ID `2091261038183694336`。apex 的四条 GitHub Pages A 记录和 `www` CNAME 未修改；部署前后博客内容 SHA-256 均为 `73EA2CF800B058F81997A2ED0185836102AFC21E8878BA86F9F2CB710B661904`。
+- Vercel 环境只记录配置项名称，不记录值：`FLASK_SECRET_KEY` 和 `DEMO_MODE`。线上 SQLite 位于 `/tmp/realtags`，可能因冷启动或多实例重置，因此只定位为黑客松托管 Demo。
+- 自定义域名 HTTPS smoke 已覆盖首页、Demo 登录、个人标签、匹配、会话、饭局、CSS 和品牌图片；所有检查返回 200，并显示线上临时状态提示。
