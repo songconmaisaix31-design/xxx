@@ -105,7 +105,8 @@
         "app/templates/event_detail.html",
         "app/templates/event_form.html",
         "app/static/**",
-        "tests/test_judge_experience.py"
+        "tests/test_judge_experience.py",
+        "docs/qa/hackathon/ui/**"
       ],
       "checks": [
         ".venv\\Scripts\\python.exe -m unittest discover -s tests -p \"test_judge_experience.py\" -v",
@@ -116,7 +117,9 @@
       "description": "Independent black-box acceptance, truthful claims, and submission package.",
       "allow": [
         "tests/acceptance/**",
-        "tools/hackathon_acceptance.py"
+        "tools/hackathon_acceptance.py",
+        "submission/**",
+        "docs/qa/hackathon/acceptance/**"
       ],
       "checks": [
         ".venv\\Scripts\\python.exe -m unittest discover -s tests/acceptance -v",
@@ -140,9 +143,6 @@
         "app/templates/admin_report_review.html",
         "tests/test_e2e_harness.py",
         "tools/harness_cli.py",
-        "submission/**",
-        "docs/qa/hackathon/acceptance/**",
-        "docs/qa/hackathon/ui/**",
         "docs/qa/hackathon/integration/**"
       ],
       "checks": [
