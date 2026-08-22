@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-08-22T20:07:00Z",
+  "logical_task": "GOV-003",
+  "branch": "songconmaisaix31-design/governance-data-base",
+  "sha": "b372e65306abc82b17e36959f532b6382df38901",
+  "parent_sha": "1bff1f3000be762111b97713cae178bb37fd8381",
+  "files": [
+    "MEMORY.md"
+  ],
+  "purpose": "Record durable P0 architecture, datasource truth boundaries, demo evidence classes, protected-main discipline, and final publication requirements in the project-owned memory before integration.",
+  "verification": {
+    "git_diff_check": "passed",
+    "secrets_recorded": false,
+    "remote_publication": "pending because GitHub connectivity is unavailable"
+  }
+}
