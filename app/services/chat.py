@@ -480,6 +480,7 @@ def _store_ai_reply(conversation_id: str) -> None:
     try:
         reply = complete_ai_reply(_ai_text_context(conversation_id))
     except AiFallbackFailure as error:
+        current_app.logger.warning("AI fallback request failed: %s", error.code)
         raise ValidationError("你的消息已保存，但 AI 候场搭子暂时没能回复，请稍后再试。") from error
     get_db().execute(
         """INSERT INTO messages

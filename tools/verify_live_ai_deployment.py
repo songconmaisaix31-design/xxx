@@ -183,15 +183,31 @@ def run_probe(deployment: str, timeout_seconds: float) -> ProbeResult:
             form=(("content", test_message),),
             use_session=True,
         )
+        user_message_stored = test_message in reply
+        mine_count = len(re.findall(r'class="chat-message mine', reply))
+        theirs_count = len(re.findall(r'class="chat-message theirs', reply))
+        ai_alias_visible = "AI 候场搭子" in reply
+        provider_failure_visible = "AI 候场搭子暂时没能回复" in reply
         ai_reply_stored = all(
             (
-                test_message in reply,
-                len(re.findall(r'class="chat-message mine', reply)) >= 1,
-                len(re.findall(r'class="chat-message theirs', reply)) >= 1,
-                "AI 候场搭子" in reply,
-                "AI 候场搭子暂时没能回复" not in reply,
+                user_message_stored,
+                mine_count >= 1,
+                theirs_count >= 1,
+                ai_alias_visible,
+                not provider_failure_visible,
             )
         )
+        if not ai_reply_stored:
+            diagnostics = {
+                "user_message_stored": user_message_stored,
+                "mine_count": mine_count,
+                "theirs_count": theirs_count,
+                "ai_alias_visible": ai_alias_visible,
+                "provider_failure_visible": provider_failure_visible,
+            }
+            raise SanitizedProbeFailure(
+                "AI reply assertion failed: " + json.dumps(diagnostics, sort_keys=True)
+            )
 
         events = client.request(
             "fixture contamination check",
@@ -207,16 +223,19 @@ def run_probe(deployment: str, timeout_seconds: float) -> ProbeResult:
         ai_reply_stored=ai_reply_stored,
         fixture_absent=fixture_absent,
     )
-    if not all(
-        (
-            result.register_auto_login,
-            result.empty_pool_ai_standby,
-            result.ai_reply_stored,
-            result.fixture_absent,
-            not result.secret_or_reply_content_emitted,
+    failed = [
+        name
+        for name, passed in (
+            ("register_auto_login", result.register_auto_login),
+            ("empty_pool_ai_standby", result.empty_pool_ai_standby),
+            ("ai_reply_stored", result.ai_reply_stored),
+            ("fixture_absent", result.fixture_absent),
+            ("secret_or_reply_content_not_emitted", not result.secret_or_reply_content_emitted),
         )
-    ):
-        raise SanitizedProbeFailure("One or more sanitized live AI assertions failed.")
+        if not passed
+    ]
+    if failed:
+        raise SanitizedProbeFailure("Failed assertions: " + ", ".join(failed) + ".")
     return result
 
 

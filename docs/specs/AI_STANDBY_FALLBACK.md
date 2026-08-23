@@ -129,8 +129,9 @@ excluded from runtime configuration and must be treated as exposed.
 - The model has no tools, database access, profile context, or secret context.
 - Human reports remain available for AI conversations. The human-specific block
   action is not shown and forged block requests are rejected.
-- Provider errors use a bounded internal taxonomy; upstream response bodies are
-  neither stored nor returned to users.
+- Provider errors log only a bounded internal taxonomy code; upstream response
+  bodies, request text, and credentials are neither logged, stored, nor returned
+  to users.
 
 ## Risks and controls
 

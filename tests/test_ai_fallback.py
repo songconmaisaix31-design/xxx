@@ -488,13 +488,16 @@ class AiFallbackFlowTests(unittest.TestCase):
             raise AiFallbackFailure("timeout")
 
         self.app.config["AI_FALLBACK_TRANSPORT"] = fail
-        response = client.post(
-            f"/conversations/{conversation_id}/messages",
-            data={"content": "这条消息应该保留"},
-            follow_redirects=True,
-        )
+        with self.assertLogs(self.app.logger.name, level="WARNING") as captured:
+            response = client.post(
+                f"/conversations/{conversation_id}/messages",
+                data={"content": "这条消息应该保留"},
+                follow_redirects=True,
+            )
         self.assertEqual(response.status_code, 200)
         self.assertIn("消息已保存，但 AI 候场搭子暂时没能回复", response.get_data(as_text=True))
+        self.assertTrue(any("AI fallback request failed: timeout" in line for line in captured.output))
+        self.assertTrue(all("这条消息应该保留" not in line for line in captured.output))
         with self.app.app_context():
             rows = get_db().execute(
                 """SELECT sender_id, content FROM messages
