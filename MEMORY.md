@@ -84,3 +84,13 @@
 - Production deployment `dpl_GuM7Q9sUNgvewZbr3EzfZqusuqc2` is Ready in `iad1` and serves the avatar registration module at `https://app.davidwang.space`. The app, root blog, and `tags.davidwang.space` all retained HTTP 200; no DNS record or unrelated Vercel project changed.
 - Desired match gender is selected on `/matches`, not during registration. New accounts default to `any`; match start validates and persists a supplied value before ranking, while omitted values preserve old-client compatibility.
 - Match-gender product commit `a0bb1632a22a5d4f8fe64766eaffc45ad0e16312` passed 114 Python tests, 11 Node tests, the 6/6 harness, and desktop plus 390x844 browser QA. Production deployment `dpl_9THtmEWsaDHgB6zZkuFmXnkeXnxq` is Ready in `iad1` and was promoted to `https://app.davidwang.space`; the blog and `tags.davidwang.space` retained HTTP 200 without DNS changes.
+
+## 2026-08-23: Production database cutover blocked by external Vercel state restoration
+
+- Implementation worktree: `C:\Users\DW\orca\workspaces\xxx\realtags-production-db-v2`; branch: `songconmaisaix31-design/realtags-production-db-v2`; verification-hardening commit: `4f2b3afb7ce65d4a85e0617c4e66801a173d13f0`.
+- The cutover was not completed. Existing resource `realtags-real-user-db` remains authoritative, `Available`, and connected to production and preview. Deployment `dpl_9THtmEWsaDHgB6zZkuFmXnkeXnxq` is Ready and serves `https://app.davidwang.space` with HTTP 200.
+- The latest sanitized source inspection passed integrity, foreign-key, missing-table, and Fixture-contamination checks. Core counts were 15 users, 8 conversations, 16 conversation members, 45 messages, 10 external connections, and 31 tags.
+- Candidate resources `store_WG5pzzjAltSRlDbJ` and `store_QssmVLDvu70J8erD` were separately created, initialized, copied, and then removed while the tool was performing read-only verification. Their maintenance deployments were `dpl_G657wyA79Sv4VRXLRZKx6Urc4eNz` and `dpl_D2hrArn51ymMqTqAAvXVvowEqe8a`.
+- Do not create a third candidate or change the production alias until account-side automation, rollback workflows, parallel deployment or cleanup jobs, and other operators that restore Vercel state are paused and that pause is confirmed.
+- Long source/target comparisons over Hrana require symmetrical connection keepalive. Cleanup rollback errors from an already expired stream must not mask a completed verification result, but loss of the source write-lock transaction must remain a hard failure.
+- The auditable evidence and exact unblock condition are in `docs/qa/hackathon/integration/PRODUCTION_DATABASE_CUTOVER_RECEIPT.md`. The post-hardening Python suite passed all 127 tests; the focused database/deployment suite passed all 22 tests.
