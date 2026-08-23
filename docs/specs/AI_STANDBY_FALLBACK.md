@@ -61,7 +61,8 @@ One authentication source is required:
 | Variable | Contract |
 | --- | --- |
 | `AI_FALLBACK_API_KEY` | Optional secret bearer credential for a verified OpenAI-compatible provider; never persisted or logged. |
-| `VERCEL_OIDC_TOKEN` | Automatically supplied by Vercel deployments and accepted only when the normalized completion URL exactly equals `https://ai-gateway.vercel.sh/v1/chat/completions`. |
+| `x-vercel-oidc-token` request header | Automatically supplied to each Vercel Function request and accepted only when the normalized completion URL exactly equals `https://ai-gateway.vercel.sh/v1/chat/completions`. |
+| `VERCEL_OIDC_TOKEN` | Build/local fallback only; Vercel does not expose this environment variable to deployed Function runtime code. |
 
 Server-owned defaults:
 
@@ -103,7 +104,7 @@ Accepted response boundary:
 ```
 
 The production adapter uses Vercel AI Gateway's documented OpenAI-compatible
-endpoint and deployment OIDC authentication. The selected model is
+endpoint and request-scoped deployment OIDC authentication. The selected model is
 `alibaba/qwen3.5-flash`. The credential previously posted in chat remains
 excluded from runtime configuration and must be treated as exposed.
 

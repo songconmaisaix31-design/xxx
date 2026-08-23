@@ -63,9 +63,9 @@ revalidated before claiming current hours or availability.
    when the human pool is empty.
 8. The animated page submits within 3 seconds in browsers with `requestSubmit`
    and legacy WebViews that expose only native `submit`.
-9. Vercel OIDC can authenticate only the exact
+9. Request-scoped Vercel OIDC can authenticate only the exact
    `https://ai-gateway.vercel.sh/v1/chat/completions` endpoint. It is never
-   forwarded to a custom base URL.
+   persisted or forwarded to a custom base URL.
 10. No secret enters source control, documentation, logs, browser storage,
     test evidence, or project memory.
 
@@ -89,6 +89,7 @@ node --test tests/match_flow.test.mjs
 node --test tests/*.test.mjs
 .\harness.cmd
 .\.venv\Scripts\python.exe -m compileall -q app tests
+.\.venv\Scripts\python.exe tools/verify_live_ai_deployment.py https://<isolated-qa-domain>
 git diff --check
 ```
 

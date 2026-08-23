@@ -9,7 +9,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit, urlunsplit
 from urllib.request import HTTPRedirectHandler, OpenerDirector, Request, build_opener
 
-from flask import current_app
+from flask import current_app, has_request_context, request
 
 
 SYSTEM_PROMPT = (
@@ -80,7 +80,11 @@ def _configured_bearer_token(base_url: str) -> str:
     if isinstance(api_key, str) and api_key.strip():
         return api_key.strip()
 
-    oidc_token = current_app.config.get("AI_FALLBACK_OIDC_TOKEN")
+    # Vercel injects the renewable runtime token into each Function request.
+    # The config fallback exists only for builds, local verification, and tests.
+    oidc_token = request.headers.get("x-vercel-oidc-token", "") if has_request_context() else ""
+    if not oidc_token:
+        oidc_token = current_app.config.get("AI_FALLBACK_OIDC_TOKEN")
     if (
         completion_url == VERCEL_AI_GATEWAY_COMPLETION_URL
         and isinstance(oidc_token, str)

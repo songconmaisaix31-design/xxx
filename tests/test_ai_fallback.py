@@ -234,6 +234,39 @@ class AiFallbackTransportTests(unittest.TestCase):
                 with rejected_app.app_context():
                     self.assertFalse(ai_fallback_available())
 
+    def test_vercel_runtime_oidc_comes_from_the_request_header(self) -> None:
+        runtime_config = type(
+            "VercelRuntimeGatewayConfig",
+            (Config,),
+            {
+                "TESTING": True,
+                "DATABASE": ":memory:",
+                "SECRET_KEY": "test",
+                "DEMO_MODE": False,
+                "AI_FALLBACK_ENABLED": True,
+                "AI_FALLBACK_API_KEY": "",
+                "AI_FALLBACK_OIDC_TOKEN": "",
+                "AI_FALLBACK_BASE_URL": "https://ai-gateway.vercel.sh/v1",
+                "AI_FALLBACK_MODEL": "alibaba/qwen3.5-flash",
+            },
+        )
+        app = create_app(runtime_config)
+        requests: list[CompletionRequest] = []
+
+        with app.app_context():
+            self.assertFalse(ai_fallback_available())
+        with app.test_request_context(
+            headers={"x-vercel-oidc-token": "non-secret-runtime-oidc-token"}
+        ):
+            self.assertTrue(ai_fallback_available())
+            complete_ai_reply(
+                [("user", "你好")],
+                transport=lambda request: requests.append(request) or "你好，我是 AI 候场搭子。",
+            )
+
+        self.assertEqual(len(requests), 1)
+        self.assertEqual(requests[0].api_key, "non-secret-runtime-oidc-token")
+
     def test_injected_transport_is_still_bounded(self) -> None:
         config = type(
             "BoundedTransportConfig",
