@@ -399,7 +399,11 @@ def load_table_snapshots(
     connection: Connection,
     schema: Mapping[str, tuple[ColumnDefinition, ...]],
     canonical_columns: Mapping[str, tuple[str, ...]] | None = None,
+    *,
+    role: str = "database",
+    progress: Callable[[str], None] | None = None,
 ) -> tuple[TableSnapshot, ...]:
+    report_progress = progress or (lambda _: None)
     snapshots = []
     for table in COPY_ORDER:
         definitions = schema[table]
@@ -424,10 +428,15 @@ def load_table_snapshots(
             raise InspectionError("table_without_primary_key")
         select_columns = ", ".join(_quote_identifier(column) for column in columns)
         order_columns = ", ".join(_quote_identifier(column) for column in primary_key)
-        cursor = connection.execute(
-            f"SELECT {select_columns} FROM {_quote_identifier(table)} ORDER BY {order_columns}"
-        )
-        rows = tuple(tuple(row) for row in cursor.fetchall())
+        report_progress(f"read_{role}_table_{table}")
+        try:
+            cursor = connection.execute(
+                f"SELECT {select_columns} FROM {_quote_identifier(table)} "
+                f"ORDER BY {order_columns}"
+            )
+            rows = tuple(tuple(row) for row in cursor.fetchall())
+        except Exception:
+            raise InspectionError(f"{role}_snapshot_read_failed_{table}") from None
         snapshots.append(TableSnapshot(table, columns, rows))
     return tuple(snapshots)
 
@@ -600,7 +609,12 @@ def migrate_databases(
         validate_schema_compatibility(source_schema, target_schema)
 
         report_progress("read_source_snapshot")
-        source_snapshots = load_table_snapshots(source, source_schema)
+        source_snapshots = load_table_snapshots(
+            source,
+            source_schema,
+            role="source",
+            progress=report_progress,
+        )
         source_counts = _snapshot_counts(source_snapshots)
         if source_counts != source_inspection["table_counts"]:
             raise InspectionError("source_snapshot_count_mismatch")
@@ -622,6 +636,8 @@ def migrate_databases(
             target,
             target_schema,
             _canonical_columns(source_snapshots),
+            role="target",
+            progress=report_progress,
         )
         _assert_snapshot_equality(source_snapshots, target_snapshots)
         return {
@@ -665,11 +681,19 @@ def verify_pair(
         source_schema = read_table_schema(source)
         target_schema = read_table_schema(target)
         validate_schema_compatibility(source_schema, target_schema)
-        source_snapshots = load_table_snapshots(source, source_schema)
+        report_progress("read_pair_snapshots")
+        source_snapshots = load_table_snapshots(
+            source,
+            source_schema,
+            role="source",
+            progress=report_progress,
+        )
         target_snapshots = load_table_snapshots(
             target,
             target_schema,
             _canonical_columns(source_snapshots),
+            role="target",
+            progress=report_progress,
         )
         _assert_snapshot_equality(source_snapshots, target_snapshots)
         return {

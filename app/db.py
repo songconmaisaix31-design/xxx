@@ -9,7 +9,7 @@ from urllib.parse import urlsplit
 from uuid import uuid4
 
 import turso_serverless
-from flask import current_app, g
+from flask import current_app, g, request
 from turso_serverless import Connection as TursoConnection
 from werkzeug.security import generate_password_hash
 
@@ -457,11 +457,16 @@ def init_app(app) -> None:
     def enforce_database_maintenance() -> object | None:
         if not app.config.get("DATABASE_MAINTENANCE_MODE", False):
             return None
+        status = 200 if request.method in {"GET", "HEAD", "OPTIONS"} else 503
         return app.response_class(
             "数据库维护中，请稍后重试。\n",
-            status=503,
+            status=status,
             content_type="text/plain; charset=utf-8",
-            headers={"Cache-Control": "no-store", "Retry-After": "120"},
+            headers={
+                "Cache-Control": "no-store",
+                "Retry-After": "120",
+                "X-Robots-Tag": "noindex",
+            },
         )
 
     @app.before_request

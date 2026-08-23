@@ -184,13 +184,20 @@ class DeploymentTests(unittest.TestCase):
             app = create_app(config)
             client = app.test_client()
 
-            for method, path in (("get", "/"), ("post", "/register")):
-                with self.subTest(method=method, path=path):
-                    response = getattr(client, method)(path)
-                    self.assertEqual(response.status_code, 503)
-                    self.assertEqual(response.headers["Cache-Control"], "no-store")
-                    self.assertEqual(response.headers["Retry-After"], "120")
-                    self.assertEqual(response.get_data(as_text=True), "数据库维护中，请稍后重试。\n")
+            checks = (("get", "/", 200), ("post", "/register", 503))
+            with patch("app.services.events.refresh_event_statuses") as refresh_events:
+                for method, path, expected_status in checks:
+                    with self.subTest(method=method, path=path):
+                        response = getattr(client, method)(path)
+                        self.assertEqual(response.status_code, expected_status)
+                        self.assertEqual(response.headers["Cache-Control"], "no-store")
+                        self.assertEqual(response.headers["Retry-After"], "120")
+                        self.assertEqual(response.headers["X-Robots-Tag"], "noindex")
+                        self.assertEqual(
+                            response.get_data(as_text=True),
+                            "数据库维护中，请稍后重试。\n",
+                        )
+                refresh_events.assert_not_called()
 
     def test_database_maintenance_rejects_demo_or_non_real_user_runtime(self) -> None:
         unsafe_settings = (

@@ -92,6 +92,11 @@ while public writes remain enabled. Use one of these consistency mechanisms:
    parameterized transaction, verify row counts and exact logical equality,
    switch the primary, and then remove maintenance mode.
 
+During that boundary, safe requests return a static `200` maintenance response
+without reaching database-backed route logic. Mutating methods return `503`.
+This freezes application writes without presenting the deployment as unhealthy
+to platform health and automatic rollback controls.
+
 The client-side batch must stop before writing when its unencoded value payload
 exceeds 32 MiB. A larger database requires a provider-side copy instead of an
 unbounded HTTP request.
