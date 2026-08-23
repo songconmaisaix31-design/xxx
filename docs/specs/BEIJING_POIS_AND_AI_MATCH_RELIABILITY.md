@@ -99,7 +99,7 @@ post-deploy contamination check that does not read or print credentials.
 
 ## Local verification result
 
-- Python: 110 tests passed.
+- Python: 113 tests passed.
 - JavaScript: 11 tests passed.
 - Harness: 6/6 gates passed.
 - Visual: ten route captures passed at 1100x900 and 390x844 with zero page

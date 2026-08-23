@@ -165,7 +165,7 @@ secret or profile field appears in the database or response.
 
 ## Local verification result
 
-- Python: 110 tests passed.
+- Python: 113 tests passed.
 - JavaScript: 11 tests passed.
 - Harness: 6/6 gates passed with the project virtual environment on `PATH`.
 - Python compilation, probe-script compilation, and `git diff --check` passed.

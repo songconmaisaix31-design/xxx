@@ -82,3 +82,13 @@
 - Browser registration drafts continue to exclude passwords and now also exclude file inputs. Desktop and 390x844 mobile QA cover registration and photo-bearing match results without horizontal overflow.
 - Avatar product commit `b56d16dfca7d5f65ae66f028ab36c64dbc715eed` passed 113 Python tests, 11 Node tests, the 6/6 isolated harness, syntax and diff checks, plus local registration/result screenshot QA at 1100x900 and 390x844.
 - Production deployment `dpl_GuM7Q9sUNgvewZbr3EzfZqusuqc2` is Ready in `iad1` and serves the avatar registration module at `https://app.davidwang.space`. The app, root blog, and `tags.davidwang.space` all retained HTTP 200; no DNS record or unrelated Vercel project changed.
+
+## 2026-08-23: AI Gateway runtime permission hold
+
+- The integration candidate is `songconmaisaix31-design/realtags-ai-permission-hold`, based on pushed avatar evidence commit `7952cbb399f114688ba4897a6a3b3f84595d9817`. It remains unpromoted while the AI runtime gate is unresolved.
+- Deployed Vercel Functions receive renewable OIDC in the request-scoped `x-vercel-oidc-token` header, not the runtime `VERCEL_OIDC_TOKEN` environment variable. The token is accepted only for the exact Vercel AI Gateway completion endpoint.
+- A sanitized isolated probe passed registration, empty-pool AI standby creation, truthful disclosure, user-message persistence, and safe failure copy. AI Gateway returned HTTP 403, recorded only as `permission_denied`; a real model reply is not verified.
+- Read-only checks found `alibaba/qwen3.5-flash` listed with an available endpoint and no team routing rules. These facts do not prove inference permission. Activation stays `HOLD` until the account owner resolves the Gateway permission boundary and reruns one controlled model turn.
+- Vercel QA SQLite must use `DATABASE_PATH=/tmp/<name>.sqlite3`; `DATABASE` is not an application configuration input. The temporary `qa-ai-20260823` DNS record, its Vercel aliases, and project `realtags-ai-live-qa-20260823` were removed after the probe.
+- Final candidate verification passed 113 Python tests, 11 Node tests, the 6/6 isolated harness, Python compilation, probe-script compilation, and `git diff --check`.
+- No AI candidate was promoted. Concurrent production deployment `dpl_GuM7Q9sUNgvewZbr3EzfZqusuqc2` remained current, its default alias was restored to the same deployment, and the app, registration, blog, tags, and demo domains returned HTTP 200.
