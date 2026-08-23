@@ -140,8 +140,8 @@ missing or ambiguously paired.
 
 ```powershell
 .\.venv\Scripts\python.exe -m unittest tests.test_production_database -v
-vercel env run -e production --project realtags-real-user -- .\.venv\Scripts\python.exe tools/production_database.py inspect-source
-vercel env run -e production --project realtags-real-user -- .\.venv\Scripts\python.exe tools/production_database.py check-readiness
+vercel env run -e production --project realtags-real-user -- .\.venv\Scripts\python.exe -m tools.production_database inspect-source
+vercel env run -e production --project realtags-real-user -- .\.venv\Scripts\python.exe -m tools.production_database check-readiness
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 .\.venv\Scripts\python.exe -m compileall -q app tests tools
 .\harness.cmd
