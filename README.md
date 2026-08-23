@@ -1,5 +1,7 @@
 # 真实标签
 
+
+
 _TagPulse 工程代号 · Flask + Jinja2 服务端渲染社交产品 MVP · 文档基线 2026-08-23_
 
 ---
@@ -979,7 +981,7 @@ flask --app run.py process-events
 - 所有新增 P0 流程进入 Harness
 
 ### 许可证与上游资料
-
+张晨真帅
 本项目使用 [MIT License](LICENSE)。
 
 - [Flask 官方文档](https://flask.palletsprojects.com/)
