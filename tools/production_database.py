@@ -402,6 +402,7 @@ def load_table_snapshots(
     *,
     role: str = "database",
     progress: Callable[[str], None] | None = None,
+    after_table: Callable[[], None] | None = None,
 ) -> tuple[TableSnapshot, ...]:
     report_progress = progress or (lambda _: None)
     snapshots = []
@@ -438,6 +439,8 @@ def load_table_snapshots(
         except Exception:
             raise InspectionError(f"{role}_snapshot_read_failed_{table}") from None
         snapshots.append(TableSnapshot(table, columns, rows))
+        if after_table is not None:
+            after_table()
     return tuple(snapshots)
 
 
@@ -545,6 +548,48 @@ def _assert_snapshot_equality(
         raise InspectionError("source_target_data_mismatch")
 
 
+def _keep_source_lock_alive(source: Connection) -> None:
+    _keep_connection_alive(
+        source,
+        error_code="source_write_lock_lost",
+        require_transaction=True,
+    )
+
+
+def _keep_target_connection_alive(target: Connection) -> None:
+    _keep_connection_alive(
+        target,
+        error_code="target_connection_lost",
+        require_transaction=False,
+    )
+
+
+def _keep_connection_alive(
+    connection: Connection,
+    *,
+    error_code: str,
+    require_transaction: bool,
+) -> None:
+    try:
+        connection.execute("SELECT 1").fetchone()
+    except Exception:
+        raise InspectionError(error_code) from None
+    if require_transaction and not connection.in_transaction:
+        raise InspectionError(error_code)
+
+
+def _close_connection(connection: Connection, *, rollback: bool) -> None:
+    try:
+        if rollback and connection.in_transaction:
+            connection.rollback()
+    except Exception:
+        # Closing the Hrana stream also releases or expires its transaction.
+        # Cleanup failure must not hide an already verified migration result.
+        pass
+    finally:
+        connection.close()
+
+
 def check_readiness(
     progress: Callable[[str], None] | None = None,
 ) -> dict[str, object]:
@@ -614,6 +659,7 @@ def migrate_databases(
             source_schema,
             role="source",
             progress=report_progress,
+            after_table=lambda: _keep_target_connection_alive(target),
         )
         source_counts = _snapshot_counts(source_snapshots)
         if source_counts != source_inspection["table_counts"]:
@@ -638,7 +684,9 @@ def migrate_databases(
             _canonical_columns(source_snapshots),
             role="target",
             progress=report_progress,
+            after_table=lambda: _keep_source_lock_alive(source),
         )
+        report_progress("compare_logical_snapshots")
         _assert_snapshot_equality(source_snapshots, target_snapshots)
         return {
             "source_table_counts": source_counts,
@@ -649,12 +697,8 @@ def migrate_databases(
             "target_integrity_ok": target_inspection["integrity_ok"],
         }
     finally:
-        if target.in_transaction:
-            target.rollback()
-        target.close()
-        if source_locked:
-            source.rollback()
-        source.close()
+        _close_connection(target, rollback=True)
+        _close_connection(source, rollback=source_locked)
 
 
 def verify_pair(
@@ -687,6 +731,7 @@ def verify_pair(
             source_schema,
             role="source",
             progress=report_progress,
+            after_table=lambda: _keep_target_connection_alive(target),
         )
         target_snapshots = load_table_snapshots(
             target,
@@ -694,7 +739,9 @@ def verify_pair(
             _canonical_columns(source_snapshots),
             role="target",
             progress=report_progress,
+            after_table=lambda: _keep_source_lock_alive(source),
         )
+        report_progress("compare_logical_snapshots")
         _assert_snapshot_equality(source_snapshots, target_snapshots)
         return {
             "source_table_counts": _snapshot_counts(source_snapshots),
@@ -704,10 +751,8 @@ def verify_pair(
             "target_integrity_ok": target_inspection["integrity_ok"],
         }
     finally:
-        target.close()
-        if source_locked:
-            source.rollback()
-        source.close()
+        _close_connection(target, rollback=False)
+        _close_connection(source, rollback=source_locked)
 
 
 def parse_args() -> argparse.Namespace:

@@ -161,12 +161,18 @@ class ProductionDatabaseInspectionTests(unittest.TestCase):
         )
         self.database.commit()
         schema = read_table_schema(self.database)
+        completed_tables = []
 
-        snapshots = load_table_snapshots(self.database, schema)
+        snapshots = load_table_snapshots(
+            self.database,
+            schema,
+            after_table=lambda: completed_tables.append(True),
+        )
 
         users = next(snapshot for snapshot in snapshots if snapshot.name == "users")
         self.assertEqual(users.columns, tuple(sorted(users.columns)))
         self.assertEqual(len(users.rows), 1)
+        self.assertEqual(len(completed_tables), len(APP_TABLES))
 
     def test_copy_batch_uses_bound_values_and_conditional_commit(self) -> None:
         sensitive_value = "private-person@example.test"
