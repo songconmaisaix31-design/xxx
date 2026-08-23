@@ -1,6 +1,6 @@
 # Beijing POIs and AI Match Reliability Specification
 
-Status: **Implemented and locally verified; deployment verification pending**
+Status: **Implemented and deployed to the isolated public Demo**
 
 Date: 2026-08-23
 
@@ -105,3 +105,15 @@ post-deploy contamination check that does not read or print credentials.
 - Visual: ten route captures passed at 1100x900 and 390x844 with zero page
   horizontal overflow and zero broken images. A full mobile event-list check
   confirmed eight rows, no title or venue overflow, and no title/venue overlap.
+
+## Public Demo deployment result
+
+- Vercel project `dwwww/realtags-prize-demo` deployment
+  `dpl_EazzAnxDTq3FUwRMGaC8DHggN5E5` is Ready and serves
+  `https://realtags.davidwang.space`.
+- Demo login redirected to `/profile`; `/events` returned HTTP 200 with all eight
+  expected Beijing venue names, no legacy Shanghai venue name, and the existing
+  `商家饭局 · Fixture` disclosure.
+- All eight seeded event detail routes returned HTTP 200 and rendered a Beijing
+  address. The persistent real-user project, blog, and tags domains were not
+  deployment targets for this release.
