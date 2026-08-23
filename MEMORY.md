@@ -84,3 +84,11 @@
 - Production deployment `dpl_GuM7Q9sUNgvewZbr3EzfZqusuqc2` is Ready in `iad1` and serves the avatar registration module at `https://app.davidwang.space`. The app, root blog, and `tags.davidwang.space` all retained HTTP 200; no DNS record or unrelated Vercel project changed.
 - Desired match gender is selected on `/matches`, not during registration. New accounts default to `any`; match start validates and persists a supplied value before ranking, while omitted values preserve old-client compatibility.
 - Match-gender product commit `a0bb1632a22a5d4f8fe64766eaffc45ad0e16312` passed 114 Python tests, 11 Node tests, the 6/6 harness, and desktop plus 390x844 browser QA. Production deployment `dpl_9THtmEWsaDHgB6zZkuFmXnkeXnxq` is Ready in `iad1` and was promoted to `https://app.davidwang.space`; the blog and `tags.davidwang.space` retained HTTP 200 without DNS changes.
+
+## 2026-08-23: Cancelled database cutover recovery
+
+- A delayed, session-owned marketplace automation completed after the first cancellation and recreated `realtags-production-db-v2`, `NEXT_TURSO_DATABASE_URL`, `NEXT_TURSO_AUTH_TOKEN`, `DATABASE_MAINTENANCE_MODE`, and a production deployment. The database itself did not independently enter maintenance.
+- A safe cancellation must stop only the exact orphaned cutover processes before changing Vercel state. Do not terminate the Orca daemon, the Codex runtime, or the user's browser processes.
+- Recovery restores both production aliases to verified Ready deployment `dpl_9THtmEWsaDHgB6zZkuFmXnkeXnxq`, removes only the three cutover variables, disconnects and deletes only `realtags-production-db-v2`, and preserves `realtags-real-user-db` plus its original encrypted variables.
+- Vercel's free rollback command may reject an older target with HTTP 402. After verifying the deployment ID and status, explicitly reassign `app.davidwang.space` and `realtags-real-user.vercel.app` instead.
+- Ten consecutive production checks over approximately eight minutes confirmed the expected deployment, original database availability, absent cutover variables/resource, HTTP 200 registration, and no maintenance page recurrence.
