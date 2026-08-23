@@ -80,3 +80,5 @@
 - Face recognition is explicitly `mock_placeholder`, not identity or liveness verification. Product copy must continue to say that it is unverified until a consented real provider replaces it.
 - `photo_only` is reciprocal and available only to accounts with an avatar. Otherwise photo candidates form the primary pool; no-photo candidates appear only when that pool is empty and receive a 15 percent raw-score reduction.
 - Browser registration drafts continue to exclude passwords and now also exclude file inputs. Desktop and 390x844 mobile QA cover registration and photo-bearing match results without horizontal overflow.
+- Avatar product commit `b56d16dfca7d5f65ae66f028ab36c64dbc715eed` passed 113 Python tests, 11 Node tests, the 6/6 isolated harness, syntax and diff checks, plus local registration/result screenshot QA at 1100x900 and 390x844.
+- Production deployment `dpl_GuM7Q9sUNgvewZbr3EzfZqusuqc2` is Ready in `iad1` and serves the avatar registration module at `https://app.davidwang.space`. The app, root blog, and `tags.davidwang.space` all retained HTTP 200; no DNS record or unrelated Vercel project changed.
