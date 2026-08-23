@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>真实标签 TagPulse · 路演版（正文 10 页）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="deck.css">
+<noscript><style>
+/* 无 JS 时没有任何 .is-on，.slide{visibility:hidden} 会让整个 deck 全白。
+ * brand-spec §10 要求脚本失效后页面仍完全可读，所以退化成纵向长图：
+ * 15 页依次铺开，可滚动、可打印，只是不能翻页。 */
+body{overflow:auto}
+.viewport{position:static;display:block;padding:20px;background:#17150F}
+.stage{width:1280px;height:auto;margin-inline:auto;transform:none;display:block}
+.slide{position:relative;inset:auto;height:720px;visibility:visible;opacity:1;transform:none;margin-bottom:18px}
+.reveal>*,.sh>*,.cover-left>*,.cover-right{opacity:1;transform:none}
+.ring{--pa:var(--p)}
+.hud{display:none}
+</style></noscript>
+</head>
+<body>
+<a class="skip-link" href="#deck">跳到幻灯片内容</a>
+<div class="viewport" id="viewport">
+<div class="stage" id="deck" role="region" aria-label="演示幻灯片" tabindex="-1">
+
+<!-- ============================================================
+     正文 10 页
+     ============================================================ -->
+
+<!-- 01 封面 -->
+<section class="slide slide--cover" data-nav="封面">
+  <div class="cover-left">
+    <span class="eyebrow">TAGPULSE · V1.0 HACKATHON MVP</span>
+    <h1 class="cover-title">真实<em>标签</em></h1>
+    <p class="cover-sub">用你在别的 App 里的<b>真实行为数据</b>匹配人。<br>线上先匿名聊，线下约一桌<b>同频的人</b>吃饭。</p>
+    <ul class="chip-row">
+      <li class="chip">线上 · 1V1 匿名匹配</li>
+      <li class="chip">线下 · 3–10 人兴趣局</li>
+    </ul>
+    <p class="cover-meta">先验证同频，再逐步认识 · 2026-08-23 · 产品 / 研发 / 设计</p>
+  </div>
+  <div class="cover-right">
+    <div class="ring" style="--p:87">
+      <div class="ring-core"><b class="num" data-count="87">87</b><i>%</i><small>匹配度</small></div>
+    </div>
+    <p class="ring-cap">你们有 <b>4</b> 个隐藏共同点</p>
+    <ul class="qcards" data-qcards>
+      <li><button class="qcard" data-reveal="都在 22:00 后学习">?</button></li>
+      <li><button class="qcard" data-reveal="都在学日语">?</button></li>
+      <li><button class="qcard" data-reveal="都是夜跑型">?</button></li>
+      <li><button class="qcard" data-reveal="都想找学习搭子">?</button></li>
+    </ul>
+    <p class="hint">点一下问号卡试试 →</p>
+  </div>
+</section>
+
+<!-- 02 痛点 · 线上三个断点 + 线下真实需求 -->
+<section class="slide" data-nav="痛点">
+  <header class="sh">
+    <span class="eyebrow">01 · WHY NOW</span>
+    <h2>线上<em>不敢信</em>，线下<em>没场景</em></h2>
+    <p class="lede">线上社交有四个断点，第一条是<b>需求本身被误解了</b>。线下的需求则是<b>已经被验证过的</b>——大家早就在微信群和小红书自己找搭子了，只是没有产品在认真做。</p>
+  </header>
+  <div class="split">
+    <div class="col">
+      <h3 class="col-h">线上 · 四个断点</h3>
+      <ul class="ulist reveal">
+        <li><b>很多人不是来 dating 的，是来找倾诉对象的</b><span>大部分女性用户的线上社交<b>并不以恋爱为目的</b>：现实压力想说说、好玩的事想分享、需要被理解和治愈。产品却默认所有人都在找对象。</span></li>
+        <li><b>对方的数据不真实</b><span>资料全靠自填，写「热爱运动」「正在学日语」零成本、零证据。用户有强烈的<b>真实性验证需求</b>，产品没给抓手。</span></li>
+        <li><b>匹配后无法快速破冰</b><span>匹配成功不等于关系开始。没有共同话题，双方都在等对方先说，<b>绝大多数会话止于前三句</b>。</span></li>
+        <li><b>主流产品只会刷卡片</b><span>放大的是照片、身高、学校。<b>选择悖论</b>：可选项质量提升不会提高满意度，只会抬高标准 —— 看得越多，越挑，越不满意。</span></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3 class="col-h">线下 · 需求真实，但没人在做</h3>
+      <ul class="ulist ulist--hot reveal">
+        <li><b>用户早就在自己找搭子了</b><span>微信群、小红书上到处是「找饭搭子」「找学习搭子」的帖子。<b>需求已经被验证</b>，但渠道分散、效率极低、也没有任何信任机制。</span></li>
+        <li><b>一个人吃饭没意思，想认识同好却缺场景</b><span>刚到新城市、独居、周末想约饭凑不齐人 —— 缺的不是匹配算法，是<b>一个能坐下来的场景</b>。</span></li>
+        <li><b>餐厅的空桌也没人管</b><span>非高峰时段空桌率高，线上获客成本又贵。餐饮毛利率高，<b>愿意用套餐让利换客流</b>，但缺少把「一群精准的人」凑到店里的工具。</span></li>
+      </ul>
+    </div>
+  </div>
+  <p class="foot">国内现状：<b>美团点评</b>解决「去哪里吃」，不解决「和谁吃」；<b>探探陌陌</b>解决泛社交，但饭局场景弱、信任感差；<b>微信群和豆瓣小组</b>有需求但分散低效、无信任机制。<b>目前没有一个有强心智的「饭局社交」品牌。</b></p>
+</section>
+
+<!-- 03 产品全貌 · 闭环（新增的结构页） -->
+<section class="slide" data-nav="产品全貌">
+  <header class="sh">
+    <span class="eyebrow">02 · THE LOOP</span>
+    <h2>线上建立信任，<em>线下落地关系</em></h2>
+    <p class="lede">这不是四个并列的功能，而是<b>两个板块构成一个闭环</b>。两边侧重点完全不同，但共用同一套真实标签体系。</p>
+  </header>
+  <div class="split">
+    <div class="col">
+      <h3 class="col-h">线上 · 1 对 1 · 全程匿名</h3>
+      <ul class="ulist reveal">
+        <li><b>解决「信不信」</b><span>标签从多邻国、Keep 自动生成，不是自填</span></li>
+        <li><b>解决「怎么选」</b><span>只给一个匹配度数字，规避选择悖论</span></li>
+        <li><b>解决「聊什么」</b><span>破冰工具箱把话题变成按提示做</span></li>
+      </ul>
+      <div class="card card--flat reveal">
+        <span class="tag tag--purple">侧重点</span>
+        <p>把陌生人之间的<b>信任</b>建立起来。慢、深、一对一。</p>
+      </div>
+    </div>
+    <div class="col">
+      <h3 class="col-h">线下 · 3–10 人 · 兴趣局</h3>
+      <ul class="ulist ulist--hot reveal">
+        <li><b>解决「关系往哪去」</b><span>多人局替代 1V1 见面，压力被人数分散</span></li>
+        <li><b>钩子是共同兴趣</b><span>「都对 AI 感兴趣」「都在创业」，话题天然存在</span></li>
+        <li><b>带商业闭环</b><span>餐厅让利换客流，用户拿折扣</span></li>
+      </ul>
+      <div class="card card--hot reveal">
+        <span class="tag tag--hot">侧重点</span>
+        <p>把线上关系<b>落到现实</b>。快、轻、多人群组。</p>
+      </div>
+    </div>
+  </div>
+  <ol class="flow reveal">
+    <li class="step"><b>1</b><span>真实标签</span><small>自动生成</small></li>
+    <li class="step step--on"><b>2</b><span>匿名匹配</span><small>只给百分比</small></li>
+    <li class="step"><b>3</b><span>破冰聊天</span><small>渐进解锁</small></li>
+    <li class="step"><b>4</b><span>报名兴趣局</span><small>3–10 人成团</small></li>
+    <li class="step"><b>5</b><span>线下见面</span><small>关系落地</small></li>
+    <li class="step"><b>6</b><span>回到 1V1 会话</span><small>闭环，重新开始</small></li>
+  </ol>
+</section>
+
+<!-- 04 线上① 真实数据 -->
+<section class="slide" data-nav="线上① 真实数据">
+  <header class="sh">
+    <span class="eyebrow">03 · ONLINE ①</span>
+    <h2>标签不是填的，<em>是从你用的 App 里长出来的</em></h2>
+    <p class="lede">五个数据源，覆盖学习、运动、音乐、阅读、代码五类真实行为。接口层与数据层解耦，统一 <code>DataSourceAdapter</code> 抽象，字段结构、鉴权流程、错误码全部按真实接入设计。</p>
+  </header>
+  <div class="split">
+    <div class="col">
+      <h3 class="col-h">五个数据源 · 标签自动生成</h3>
+      <ul class="ulist reveal">
+        <li><b>多邻国</b><span>在学语种、<b>连续打卡 971 天</b>、学习时段、等级</span></li>
+        <li><b>Keep</b><span>运动类型、周频次、累计里程、<b>晨练还是夜跑</b></span></li>
+        <li><b>网易云音乐</b><span>音乐口味、常听歌手与歌单、<b>深夜听歌习惯</b></span></li>
+        <li><b>微信读书</b><span>在读书单、阅读品类、读书时长与完读本数</span></li>
+        <li><b>GitHub</b><span>技术栈语言、提交频率、开源参与、<b>深夜提交</b></span></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3 class="col-h">跨源复合标签 · 真正的差异化</h3>
+      <ul class="ulist ulist--hot reveal">
+        <li><b>自律程度</b><span>多邻国打卡 + Keep 打卡 + GitHub 提交，<b>三个源一起算</b></span></li>
+        <li><b>活跃时间重叠度</b><span>学习、运动、听歌、提交时段交叉，得出<b>真实作息画像</b></span></li>
+        <li><b>兴趣纵深</b><span>不只是「喜欢音乐」，而是<b>听什么、读什么、写什么语言</b></span></li>
+        <li><b>目的一致性</b><span>自填目的与行为数据是否自洽，可做<b>可信度徽标</b></span></li>
+      </ul>
+    </div>
+  </div>
+  <p class="foot">注册时另填 <b>8 个基础标签</b>兜底，没授权任何 App 也能完成匹配。每个标签都带 <code>source</code> 来源徽标，前端展示「来自网易云音乐」——这是真实性唯一的可视化证明。所有标签 <code>visibility: self_only</code>，<b>只有本人可见</b>。</p>
+</section>
+
+<!-- 05 线上② 匿名匹配 -->
+<section class="slide slide--demo" data-nav="线上② 匿名匹配">
+  <header class="sh sh--tight">
+    <span class="eyebrow">03 · ONLINE ②</span>
+    <h2>只展示一个数字，<em>不告诉你匹配在哪</em></h2>
+    <p class="lede">刷卡片放大的是可比较的参数，越比越挑。我们把一个人收敛成<b>一个数字</b>，决策成本骤降，注意力回到聊天本身。</p>
+  </header>
+  <div class="demo2">
+    <div class="phone reveal">
+      <div class="phone-bar"><span>匿名匹配</span><i>L0</i></div>
+      <div class="phone-body">
+        <div class="ring ring--sm" style="--p:92"><div class="ring-core"><b class="num" data-count="92">92</b><i>%</i></div></div>
+        <p class="anon"><span class="avatar" aria-hidden="true">?</span><b>候选 · 灰羽 07</b></p>
+        <p class="ring-cap ring-cap--sm">你们有 <b>4</b> 个隐藏共同点</p>
+        <ul class="qcards qcards--sm" data-qcards>
+          <li><button class="qcard" data-reveal="都在学日语">?</button></li>
+          <li><button class="qcard" data-reveal="都是夜猫子">?</button></li>
+          <li><button class="qcard" data-reveal="都想找学习搭子">?</button></li>
+          <li><button class="qcard" data-reveal="都在跑步">?</button></li>
+        </ul>
+        <p class="phone-btn">开始匿名会话</p>
+      </div>
+    </div>
+    <ul class="notlist reveal">
+      <li class="not"><b>不展示</b><span>照片、真实昵称、年龄、性别、学历、职业、标签明细</span></li>
+      <li class="yes"><b>只展示</b><span>匹配度百分比 + 一句氛围文案「你们有 4 个隐藏共同点」</span></li>
+      <li class="yes"><b>匹配点位</b><span>「？」占位卡，明确告知有 4 个匹配点，聊天解锁</span></li>
+      <li class="not"><b>权重规则</b><span>后端参数，<b>双方都看不到</b>，产品内也不解释比例</span></li>
+      <li class="not"><b>DOM 契约</b><span>候选身份、原始分、权重、完整用户对象<b>不写入 DOM</b></span></li>
+    </ul>
+  </div>
+  <p class="foot">「？」卡是<b>隐私边界</b>，不是加载占位符 —— 它代表后端刻意隐藏的共同点。算法细节见附录。</p>
+</section>
+
+<!-- 06 线上③ 破冰与解锁 -->
+<section class="slide" data-nav="线上③ 破冰解锁">
+  <header class="sh sh--tight">
+    <span class="eyebrow">03 · ONLINE ③</span>
+    <h2>聊天是核心，<em>游戏是聊天里的工具箱</em></h2>
+  </header>
+  <div class="demo2">
+    <ul class="tools reveal">
+      <li class="tool"><b class="tool-i" aria-hidden="true">⚄</b><div><h3>摇骰子</h3><p>摇出 1–6 点，每个点数对应一个话题，直接推送到聊天框</p></div><span class="pill pill--green">P0</span></li>
+      <li class="tool"><b class="tool-i" aria-hidden="true">▤</b><div><h3>抽任务卡</h3><p>抽一张任务卡，如「说出你最近最想学的东西」</p></div><span class="pill pill--green">P0</span></li>
+      <li class="tool"><b class="tool-i" aria-hidden="true">?</b><div><h3>匹配点解锁</h3><p>完成话题任务后解锁一个共同点，带解锁动画</p></div><span class="pill pill--green">P0</span></li>
+      <li class="tool tool--off"><b class="tool-i" aria-hidden="true">♠</b><div><h3>扑克牌 / 大富翁</h3><p>轻量对话游戏，牌面与格子触发话题</p></div><span class="pill">P1 / P2</span></li>
+    </ul>
+    <div class="chat reveal">
+      <div class="phone-bar"><span>灰羽 07</span><i>L1 · 进度 40%</i></div>
+      <div class="chat-body">
+        <p class="msg msg--them">你也是 22 点以后才开始学吗</p>
+        <p class="msg msg--me">对，白天根本坐不住</p>
+        <div class="syscard" id="diceCard">
+          <b class="dice" id="dice" aria-hidden="true">⚄</b>
+          <p id="diceTopic">点「摇骰子」出一个话题</p>
+          <small>系统卡片消息 · 双方都能看到</small>
+        </div>
+        <p class="msg msg--them">这个话题有意思</p>
+      </div>
+      <div class="chat-bar">
+        <button class="tbtn" type="button" id="rollDice">⚄ 摇骰子</button>
+        <button class="tbtn" type="button" id="drawCard">▤ 抽任务卡</button>
+        <span class="fakeinput">说点什么…</span>
+      </div>
+    </div>
+  </div>
+  <ol class="flow reveal">
+    <li class="step step--on"><b>L0</b><span>完全匿名</span><small>只有匹配度</small></li>
+    <li class="step"><b>L1</b><span>初识 · 满 1 天</span><small>城市、年龄段</small></li>
+    <li class="step"><b>L2</b><span>熟悉 · 满 3 天</span><small>模糊头像</small></li>
+    <li class="step"><b>L3</b><span>熟络 · 满 7 天</span><small>清晰头像、完整标签</small></li>
+    <li class="step"><b>L4</b><span>走出产品</span><small>交换联系方式</small></li>
+  </ol>
+</section>
+
+<!-- 07 线下① 兴趣饭局 -->
+<section class="slide slide--demo" data-nav="线下① 兴趣饭局">
+  <header class="sh sh--tight">
+    <span class="eyebrow">04 · OFFLINE ①</span>
+    <h2>3–10 人兴趣局，<em>不是相亲</em></h2>
+    <p class="lede">和 1V1 见面的区别：人数从 2 变 <b>3–10</b>，钩子从颜值条件变<b>共同兴趣</b>，压力被人数分散，一桌里总有能聊的。活动广场默认<b>按匹配度排序</b>。</p>
+  </header>
+  <ul class="events reveal">
+    <li class="ev">
+      <div class="ev-top"><span class="tag tag--purple">C 端发起</span><b class="ev-score">89%</b></div>
+      <h3>聊聊 AI 创业，周五晚</h3>
+      <p class="ev-meta">09-04 周五 19:00 · 望京 · 人均 100–200 · AA</p>
+      <ul class="ev-tags"><li>对 AI 感兴趣</li><li>创业中</li></ul>
+      <p class="ev-foot"><b>5</b> / 8 已报名 · 先到先得</p>
+      <div class="ev-bar" style="--f:62"><i></i></div>
+    </li>
+    <li class="ev ev--merchant">
+      <div class="ev-top"><span class="tag tag--hot">商家发起</span><b class="ev-score">84%</b></div>
+      <h3>AI 从业者交流局</h3>
+      <p class="ev-meta">09-03 周四 19:30 · 三里屯 · 人均 50–100</p>
+      <ul class="ev-tags"><li>对 AI 感兴趣</li><li>夜猫子</li></ul>
+      <p class="ev-foot"><b>3</b> / 6 已报名 · 空闲时段特价</p>
+      <div class="ev-bar" style="--f:50"><i></i></div>
+      <span class="coupon">到店 8 折</span>
+    </li>
+    <li class="ev">
+      <div class="ev-top"><span class="tag tag--purple">C 端发起</span><b class="ev-score">76%</b></div>
+      <h3>学英语的一起吃个饭</h3>
+      <p class="ev-meta">09-06 周日 12:00 · 五道口 · 人均 50 以下 · AA</p>
+      <ul class="ev-tags"><li>在学英语</li><li>学习搭子</li></ul>
+      <p class="ev-foot"><b>3</b> / 5 已报名 · 发起人审核</p>
+      <div class="ev-bar" style="--f:60"><i></i></div>
+    </li>
+    <li class="ev ev--low">
+      <div class="ev-top"><span class="tag">C 端发起</span><b class="ev-score ev-score--low">31%</b></div>
+      <h3>周末骑行局，骑完撸串</h3>
+      <p class="ev-meta">09-05 周六 15:00 · 奥森 · 人均 50–100 · AA</p>
+      <ul class="ev-tags"><li>骑行爱好者</li></ul>
+      <p class="ev-foot ev-foot--warn">你和这个局的匹配度较低</p>
+      <div class="ev-bar" style="--f:31"><i></i></div>
+      <span class="grayed">报名按钮置灰</span>
+    </li>
+  </ul>
+  <p class="foot">发起人审核时<b>只看得到匹配度和共同标签数量</b>，看不到照片，避免退化成看脸筛人。低于 <b>40%</b> 阈值按钮置灰但不硬拦，避免冷启动没人能报。</p>
+</section>
+
+<!-- 08 线下② B 端闭环 -->
+<section class="slide" data-nav="线下② B 端闭环">
+  <header class="sh">
+    <span class="eyebrow">04 · OFFLINE ②</span>
+    <h2>餐厅让利换客流，<em>三方都赚</em></h2>
+    <p class="lede">这是这个功能区别于纯社交产品的地方：餐厅出让一部分利润换<b>真实客流</b>，平台提供<b>成团能力与精准人群</b>，用户拿到<b>折扣</b>。</p>
+  </header>
+  <div class="split">
+    <div class="col">
+      <h3 class="col-h">商家能拿到什么</h3>
+      <ul class="ulist ulist--hot reveal">
+        <li><b>填满空闲时段</b><span>自己选投放时段，通常是周二到周四晚这类空桌最多的时候</span></li>
+        <li><b>精准人群</b><span>用标签描述想吸引的人，比如「AI 从业者」「独立开发者」</span></li>
+        <li><b>可证明的引流效果</b><span>平台记录核销数据，这是后续 B 端付费的基础</span></li>
+      </ul>
+      <ul class="rules rules--tight reveal">
+        <li><b>防套利</b>券只在本次饭局时间窗口 + 本门店有效</li>
+        <li><b>成团才发</b>未成团不发，活动取消则券自动失效</li>
+        <li><b>一场一码</b>服务员扫成团核销码，Demo 用静态码手动核销</li>
+      </ul>
+    </div>
+    <div class="col col--center">
+      <div class="ticket reveal">
+        <div class="ticket-top">
+          <span class="tag tag--hot">商家券 · 成团后生效</span>
+          <h3>到店 8 折</h3>
+          <p>AI 从业者交流局 · 三里屯 XX 餐厅</p>
+        </div>
+        <div class="ticket-cut" aria-hidden="true"></div>
+        <div class="ticket-bot">
+          <div class="qr" aria-hidden="true"></div>
+          <div>
+            <p class="ticket-code">RC_2026_0901</p>
+            <p class="ticket-win">有效窗口<br>09-04 18:00 – 22:00</p>
+            <p class="ticket-state">未核销</p>
+          </div>
+        </div>
+      </div>
+      <p class="hint hint--c">让利形式还有满减、免费小食、空闲时段特价</p>
+    </div>
+  </div>
+</section>
+
+<!-- 09 现场 Demo -->
+<section class="slide" data-nav="现场 Demo">
+  <header class="sh">
+    <span class="eyebrow">05 · LIVE DEMO</span>
+    <h2>不讲了，<em>直接看能跑的东西</em></h2>
+    <p class="lede">下面这条链路会真实走一遍，全程可点击。前面所有主张，一次演示就能验证。</p>
+  </header>
+  <ol class="flow reveal">
+    <li class="step"><b>1</b><span>注册</span><small>手机号 + 验证码</small></li>
+    <li class="step"><b>2</b><span>填 8 个标签</span><small>年龄性别只做筛选</small></li>
+    <li class="step step--on"><b>3</b><span>授权多邻国 / Keep</span><small>现场生成 10 个真实标签</small></li>
+    <li class="step"><b>4</b><span>匹配</span><small>三步算法 → 87%</small></li>
+    <li class="step"><b>5</b><span>点开「？」卡</span><small>看隐私边界</small></li>
+    <li class="step"><b>6</b><span>活动广场报名</span><small>成团 → 建群 → 发券</small></li>
+  </ol>
+  <ul class="grid3 reveal">
+    <li class="card card--yellow"><h3>看点一 · 标签是真的</h3><p>连接多邻国后，<b>971 天打卡</b>直接变成标签，带来源徽标。不是我们编的文案，是接口字段。</p></li>
+    <li class="card card--yellow"><h3>看点二 · 只给一个数字</h3><p>匹配结果页除了百分比什么都没有。四张「？」卡是<b>刻意隐藏</b>的共同点，不是没加载出来。</p></li>
+    <li class="card card--yellow"><h3>看点三 · 关系能落地</h3><p>报名满员当场成团，自动建群并发券。线上关系<b>真的走到了线下</b>，这是闭环的最后一步。</p></li>
+  </ul>
+  <p class="foot">原型文件 <code>ui/prototype.html</code>，单文件可离线打开。解锁周期 7 天无法现场等，Demo 提供调试开关手动跳阶段。</p>
+</section>
+
+<!-- 10 收尾 -->
+<section class="slide slide--end" data-nav="落地与规划">
+  <div class="end-inner">
+    <span class="eyebrow">06 · WHAT'S DONE &amp; NEXT</span>
+    <h2 class="end-h">先验证同频，<em>再逐步认识</em></h2>
+    <ul class="grid3 next reveal">
+      <li class="card card--tall"><b class="idx">DONE</b><h3>MVP 已跑通</h3><p>注册授权、20+ 真实标签、匹配算法与结果页、匿名聊天、破冰工具箱、约饭发起报名成团、B 端发券核销。<b>P0 全部闭环</b>。</p></li>
+      <li class="card card--tall"><b class="idx">P1</b><h3>加分项在做</h3><p>真实 API 打通（至少一个数据源即为强加分）、语音聊天、按交友目的的差异化权重组、出席信誉分与活动后互评。</p></li>
+      <li class="card card--tall"><b class="idx">V2</b><h3>商业化闭环</h3><p>商家自助后台、券核销与 POS 打通、按成团数或核销数收费；线下从吃饭扩展到运动局、观影局、City Walk。</p></li>
+    </ul>
+    <p class="end-foot">真实标签 · TagPulse ｜ 线上建立信任 · 线下落地关系 ｜ 2026-08-23</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     附录 5 页 · 答辩弹药，不计入正文
+     不需要时整段删除即可，正文 10 页可独立放映
+     ============================================================ -->
+
+<!-- A1 匹配算法 -->
+<section class="slide" data-nav="附录 A1 · 匹配算法">
+  <header class="sh">
+    <span class="eyebrow">附录 A1 · ALGORITHM</span>
+    <h2>匹配度计算<em>四步</em></h2>
+  </header>
+  <ol class="algo reveal">
+    <li class="acard"><b class="acard-n">第一步</b><h3>硬性过滤</h3><p>按年龄区间、希望匹配性别过滤候选池。</p><span class="tag">不占权重</span></li>
+    <li class="acard"><b class="acard-n">第二步</b><h3>逐标签打分</h3><p>对候选池每个用户计算 <code>sim_i ∈ [0,1]</code>。</p><span class="tag">6 种类型</span></li>
+    <li class="acard"><b class="acard-n">第三步</b><h3>加权求和</h3><p><code>匹配度 = Σ(w_i × sim_i) × 100%</code>，其中 <code>Σw_i = 1</code>。</p><span class="tag">合计 100%</span></li>
+    <li class="acard acard--on"><b class="acard-n">第四步</b><h3>展示平滑</h3><p>原始分映射到 <b>60%–98%</b> 区间后展示，避免 12% 这类挫伤体验的低分。</p><span class="tag tag--hot">排序仍按原始分</span></li>
+  </ol>
+  <div class="tablewrap reveal">
+    <table class="dt dt--compact">
+      <caption class="sr-only">六种标签类型的相似度算法</caption>
+      <thead><tr><th scope="col">标签类型</th><th scope="col">举例</th><th scope="col">相似度算法</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">枚举型</th><td>城市、星座、作息</td><td>完全相同 = 1.0 ｜ 同大类不同项 = 0.5 ｜ 无交集 = 0</td></tr>
+        <tr><th scope="row">多选枚举型</th><td>兴趣爱好、交友目的</td><td>Jaccard = 交集数量 / 并集数量</td></tr>
+        <tr><th scope="row">数值型</th><td>打卡天数、周运动频次</td><td>1 − |A−B| / 归一化上限，下限截断为 0</td></tr>
+        <tr><th scope="row">时段型</th><td>学习 / 运动活跃时段</td><td>重叠小时数 / 并集小时数</td></tr>
+        <tr><th scope="row">分级型</th><td>坚持度、运动强度</td><td>1 − |等级差| / (总等级数 − 1)</td></tr>
+        <tr><th scope="row">MBTI</th><td>INFP / ENTJ</td><td>4 个字母逐位比较，相同位数 / 4</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- A2 权重表 -->
+<section class="slide" data-nav="附录 A2 · 后端权重">
+  <header class="sh">
+    <span class="eyebrow">附录 A2 · WEIGHTS</span>
+    <h2>权重是<em>后端参数</em>，不是用户功能</h2>
+    <p class="lede">100% 按比例分配到各标签，写在统一配置文件里。<b>用户端没有任何权重配置入口</b>：没有配置页、没有滑块、没有拖拽格子。取值后续靠 A/B 测试选优，本次 Demo 用固定权重。</p>
+  </header>
+  <ul class="weights reveal" data-weights>
+    <li style="--w:30"><b>交友目的</b><span class="wbar"><i></i></span><em>30%</em><small>自填 · 目的不一致，其他维度再像也聊不下去</small></li>
+    <li style="--w:25" class="w--api"><b>API 行为标签</b><span class="wbar"><i></i></span><em>25%</em><small>多邻国 / Keep · 差异化卖点必须有话语权</small></li>
+    <li style="--w:20"><b>兴趣爱好</b><span class="wbar"><i></i></span><em>20%</em><small>自填 · 共同话题的直接来源</small></li>
+    <li style="--w:15"><b>活跃时间重叠度</b><span class="wbar"><i></i></span><em>15%</em><small>自填 + API 复合 · 隐性但强相关</small></li>
+    <li style="--w:5"><b>城市</b><span class="wbar"><i></i></span><em>5%</em><small>匿名线上为主，同城不是刚需</small></li>
+    <li style="--w:5"><b>MBTI</b><span class="wbar"><i></i></span><em>5%</em><small>弱信号，只做微调</small></li>
+  </ul>
+  <div class="split split--tight">
+    <div class="card card--yellow reveal"><h3>兜底规则</h3><p>未授权任何第三方 App 时，行为标签的 25% 按 <b>30:20</b> 回补到交友目的与兴趣爱好 → 交友目的 45% + 兴趣爱好 30% + 时间重叠 15% + 城市 5% + MBTI 5%。</p></div>
+    <div class="card card--flat reveal"><h3>研发要求</h3><p>权重集中在 <code>matchWeights.config.ts</code>，禁止散落硬编码；预留 <code>groupKey</code> 对应交友目的；启动时<b>断言各组权重之和等于 1</b>。</p></div>
+  </div>
+</section>
+
+<!-- A3 匹配过程 -->
+<section class="slide" data-nav="附录 A3 · 匹配过程">
+  <header class="sh">
+    <span class="eyebrow">附录 A3 · SEARCHING</span>
+    <h2>三阶段过程动画，<em>状态机在服务端</em></h2>
+  </header>
+  <div class="searching reveal">
+    <button class="btn btn--primary" type="button" id="runSearch">▶ 播放匹配过程</button>
+    <ol class="phases" id="phases">
+      <li data-at="260"><b>260ms</b><span>硬性筛选</span><small>年龄区间 · 希望匹配性别</small></li>
+      <li data-at="1000"><b>1000ms</b><span>相似度计算</span><small>逐标签 sim_i 打分</small></li>
+      <li data-at="1740"><b>1740ms</b><span>匿名排序</span><small>按原始分排序</small></li>
+      <li data-at="2500"><b>2500ms</b><span>完成</span><small>POST /matches/search/complete</small></li>
+    </ol>
+  </div>
+  <div class="split split--tight">
+    <div class="card card--flat reveal"><h3>前端只管时序</h3><p>前端只控制展示时序与提交普通 POST 表单。候选选择、尝试令牌、取消、旧页面失效、结果确认<b>全部由服务端状态机处理</b>。</p></div>
+    <div class="card card--flat reveal"><h3>降级路径</h3><p>无 JavaScript 时可直接提交「查看结果」；<code>prefers-reduced-motion</code> 下立即完成步骤。匹配中 HTML <b>不含</b>候选 ID、代号、分数、标签或结果 JSON。</p></div>
+  </div>
+</section>
+
+<!-- A4 隐私与安全 -->
+<section class="slide" data-nav="附录 A4 · 隐私与安全">
+  <header class="sh">
+    <span class="eyebrow">附录 A4 · PRIVACY &amp; SAFETY</span>
+    <h2>平台<em>永不主动替用户揭面</em></h2>
+    <p class="lede">线下见面必然要露脸，和匿名机制存在天然冲突。这里定一套明确规则，研发不要自行推断。</p>
+  </header>
+  <div class="split">
+    <div class="col">
+      <h3 class="col-h">标签可见性契约</h3>
+      <ul class="vis reveal">
+        <li class="vis--yes"><b>用户看自己</b><span>全部展示，要看到自己有哪些标签</span></li>
+        <li class="vis--no"><b>看匹配对象（匹配阶段）</b><span>不展示，只给匹配度百分比</span></li>
+        <li class="vis--wait"><b>看匹配对象（聊天阶段）</b><span>按 L0–L4 解锁进度逐步展示</span></li>
+        <li class="vis--no"><b>任何人看权重规则</b><span>永不展示，产品内也不解释比例</span></li>
+        <li class="vis--wait"><b>线下约饭场景</b><span>报名只见匹配度与共同标签数量</span></li>
+      </ul>
+      <blockquote class="quote reveal">「我导进来的数据只对我展示，不会对别人展示。」<cite>会议原话 · 决策 #2</cite></blockquote>
+    </div>
+    <div class="col">
+      <h3 class="col-h">线下安全机制 · 全部 P0</h3>
+      <ul class="rules reveal">
+        <li><b>地点限定</b>只能选真实餐厅 POI，禁止私人住址、KTV 包房等封闭场所</li>
+        <li><b>实名门槛</b>发起线下活动需手机号验证；商家需资质审核，Demo 可 mock</li>
+        <li><b>性别构成透明</b>报名前可见当前性别比例，支持仅同性别局</li>
+        <li><b>举报入口</b>活动页与群聊内均有举报入口</li>
+        <li><b>成团后可见</b>群聊内只有匿名代号 + 1–2 个兴趣标签，用于破冰</li>
+        <li><b>线下见面</b>现实中自然可见，平台内资料仍不主动展示</li>
+      </ul>
+      <div class="card card--hot reveal">
+        <h3>核心原则</h3>
+        <p>线下见到的是<b>现实</b>，平台内的资料解锁仍然<b>由聊天进度决定</b>。两套逻辑互不干扰。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- A5 风险 -->
+<section class="slide" data-nav="附录 A5 · 风险">
+  <header class="sh">
+    <span class="eyebrow">附录 A5 · RISK</span>
+    <h2>已识别风险与<em>应对</em></h2>
+  </header>
+  <ul class="risks reveal">
+    <li class="risk risk--high"><h3>线下饭局的人身安全</h3><p class="risk-i">一旦出事对产品是致命打击</p><p class="risk-f">强制真实餐厅 POI、实名门槛、性别构成透明、举报入口、支持仅同性别局</p></li>
+    <li class="risk risk--high"><h3>匿名 + 真实数据的隐私合规</h3><p class="risk-i">上线风险</p><p class="risk-f">明确授权弹窗、数据最小化采集、标签仅本人可见</p></li>
+    <li class="risk"><h3>多邻国 / Keep 是否有开放接口</h3><p class="risk-i">影响「真实性」核心卖点的说服力</p><p class="risk-f">优先验证；接不通用 mock，话术讲清接口已抽象预留</p></li>
+    <li class="risk"><h3>匹配度分布过低，观感差</h3><p class="risk-i">用户看到 20% 直接流失</p><p class="risk-f">展示层平滑，收敛到 60%–98%，排序仍按原始分</p></li>
+    <li class="risk"><h3>约饭冷启动，广场空</h3><p class="risk-i">用户进来没有局可报</p><p class="risk-f">B 端活动兜底 + 预置 mock 活动；初期限定 1–2 个城市</p></li>
+    <li class="risk"><h3>成团失败率高</h3><p class="risk-i">体验挫伤</p><p class="risk-f">下限 3 人、截止提前 2 小时、未成团自动取消通知；P1 补信誉分</p></li>
+    <li class="risk"><h3>解锁周期 7 天无法真实演示</h3><p class="risk-i">评委看不到完整链路</p><p class="risk-f">提供演示模式，可手动跳阶段</p></li>
+    <li class="risk"><h3>B 端让利意愿未验证</h3><p class="risk-i">影响商业模式成立</p><p class="risk-f">Demo 用 mock 商家；赛后实地访谈 3–5 家餐厅验证让利幅度</p></li>
+  </ul>
+</section>
+
+</div>
+</div>
+<div class="hud">
+  <div class="hud-bar"><span id="hudFill"></span></div>
+  <nav class="hud-ctrl" aria-label="幻灯片控制">
+    <button type="button" id="btnPrev" aria-label="上一页">←</button>
+    <span class="hud-count"><b id="hudNow">1</b> / <i id="hudAll">1</i></span>
+    <button type="button" id="btnNext" aria-label="下一页">→</button>
+    <button type="button" id="btnGrid" aria-label="总览" aria-pressed="false">总览</button>
+    <button type="button" id="btnFull" aria-label="全屏">全屏</button>
+  </nav>
+  <p class="hud-help"><span class="help-wide">← → 翻页 · O 总览 · F 全屏 · 正文 1–10 页，11–15 为附录</span><span class="help-small">横屏或双指放大更清晰</span></p>
+</div>
+<!-- 翻页对读屏用户是无声的：幻灯片只是换了 is-on，焦点不移动，
+     没有这个 live region 就完全没有播报。polite 避免打断正在读的内容。 -->
+<p class="sr-only" id="liveNow" aria-live="polite" role="status"></p>
+<script src="deck.js"></script>
+</body>
+</html>
