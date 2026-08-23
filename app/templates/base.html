@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/judge-journey.css') }}">
   <script defer src="{{ url_for('static', filename='js/motion.js') }}"></script>
   <script defer src="{{ url_for('static', filename='js/chat-mission-deck.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/registration-draft.js') }}"></script>
 </head>
 <body class="{% block body_class %}{% endblock %}" data-page="{{ request.blueprint or 'main' }}" data-endpoint="{{ request.endpoint or '' }}" data-auth="{{ 'signed-in' if current_user else 'guest' }}" data-judge-stage="{% if request.endpoint in ('auth.profile', 'auth.connections') %}tags{% elif request.blueprint == 'matches' %}match{% elif request.blueprint == 'chat' %}chat{% elif request.blueprint == 'events' %}event{% else %}trust{% endif %}" data-motion-status="booting">
   <a class="skip-link" href="#main-content">跳到主要内容</a>
