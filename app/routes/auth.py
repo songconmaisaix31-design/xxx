@@ -34,7 +34,7 @@ def register():
         return redirect(url_for("auth.profile"))
     if request.method == "POST":
         try:
-            user_id = create_user(request.form)
+            user_id = create_user(request.form, request.files.get("avatar"))
         except ValidationError as error:
             flash(str(error), "error")
         else:

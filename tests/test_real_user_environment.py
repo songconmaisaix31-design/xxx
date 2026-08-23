@@ -77,8 +77,9 @@ class RealUserEnvironmentTests(unittest.TestCase):
         registration_html = registration.get_data(as_text=True)
         self.assertEqual(registration.status_code, 200)
         self.assertIn("data-registration-draft", registration_html)
-        self.assertIn("刷新或回退会恢复本标签页暂存的资料；密码不会保存", registration_html)
+        self.assertIn("刷新或回退会恢复本标签页暂存的资料；密码和照片不会保存", registration_html)
         self.assertIn('/static/js/registration-draft.js', registration_html)
+        self.assertIn('/static/js/avatar-upload.js', registration_html)
         self.assertEqual(self.client.post("/demo/login").status_code, 404)
 
     def test_registration_persists_all_fields_and_authenticates_the_session(self) -> None:

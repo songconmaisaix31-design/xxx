@@ -10,7 +10,19 @@
     </div>
     <div class="result-content">
       <p class="eyebrow">匿名匹配结果</p>
-      <h1 id="match-result-title">这是一位值得聊聊的陌生人</h1>
+      <div class="match-avatar-card" data-avatar-state="{{ 'ready' if match.candidate.avatar_data_url else 'standby' }}">
+        {% if match.candidate.avatar_data_url %}
+          <img src="{{ match.candidate.avatar_data_url }}" alt="匹配对象上传的头像">
+        {% else %}
+          <span class="match-avatar-placeholder" aria-hidden="true">NO<br>PHOTO</span>
+        {% endif %}
+        <div>
+          <span>{{ 'PHOTO PRIMARY' if match.candidate.avatar_data_url else 'NO-PHOTO STANDBY' }}</span>
+          <strong>{{ '已上传照片' if match.candidate.avatar_data_url else '无照片候补' }}</strong>
+          <p>{{ '人脸核验为 Mock 占位，尚未真实验证。' if match.candidate.avatar_data_url else '当前没有可用的有照片候选，候补分数已下调。' }}</p>
+        </div>
+      </div>
+      <h1 id="match-result-title">{{ '这是一位值得聊聊的陌生人' if match.candidate.avatar_data_url else '这是一位无照片候补' }}</h1>
       <p class="result-lede">你们有 {{ match.common_point_count }} 个隐藏共同点。开始聊天后，完成互动任务可逐个解锁。</p>
       <div class="unknown-points large-points" aria-label="{{ match.common_point_count }} 个待解锁匹配点">{% for _ in range(match.common_point_count) %}<span aria-hidden="true">?</span>{% endfor %}</div>
       <p class="result-next-step"><strong>NEXT / L0 CHAT TOOLS</strong><span>进入后仍保持匿名，可先摇骰子或抽任务卡破冰。</span></p>
@@ -30,6 +42,6 @@
       </div>
       <a class="text-link back-link" href="{{ url_for('matches.index') }}">结束本次匹配</a>
     </div>
-    <aside class="privacy-boundary"><strong>此刻不会显示什么</strong><p>照片、真实姓名、年龄、性别、城市、职业和标签详情仍被封存。对话中的解锁由双方共同推进。</p></aside>
+    <aside class="privacy-boundary"><strong>此刻仍不会显示什么</strong><p>真实姓名、年龄、性别、城市、职业和标签详情仍被封存；头像是用户主动选择公开的唯一资料。</p></aside>
   </section>
 {% endblock %}

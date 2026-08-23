@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 import re
 from datetime import date
@@ -10,12 +11,30 @@ from functools import wraps
 from flask import abort, current_app, flash, redirect, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from ..constants import CITIES, GENDERS, INTERESTS, MATCH_GENDERS, MBTIS, PURPOSES, SCHEDULES, ZODIACS
+from ..constants import (
+    CITIES,
+    GENDERS,
+    INTERESTS,
+    MATCH_GENDERS,
+    MBTIS,
+    PHOTO_MATCH_PREFERENCES,
+    PURPOSES,
+    SCHEDULES,
+    ZODIACS,
+)
 from ..db import get_db, is_integrity_error, utcnow
 
 
 class ValidationError(ValueError):
     pass
+
+
+MAX_AVATAR_BYTES = 400 * 1024
+AVATAR_MIME_SIGNATURES = (
+    ("image/jpeg", lambda value: value.startswith(b"\xff\xd8\xff")),
+    ("image/png", lambda value: value.startswith(b"\x89PNG\r\n\x1a\n")),
+    ("image/webp", lambda value: value.startswith(b"RIFF") and value[8:12] == b"WEBP"),
+)
 
 
 def _decode_user(row):
@@ -24,6 +43,7 @@ def _decode_user(row):
     user = dict(row)
     user["purposes"] = json.loads(user.pop("purposes_json"))
     user["interests"] = json.loads(user.pop("interests_json"))
+    user["has_avatar"] = bool(user.get("avatar_data_url"))
     return user
 
 
@@ -82,7 +102,22 @@ def _selected(form, key: str, allowed: tuple[str, ...], *, required: bool = Fals
     return values
 
 
-def create_user(form) -> str:
+def _avatar_data_url(upload) -> tuple[str | None, str]:
+    if upload is None or not getattr(upload, "filename", ""):
+        return None, "not_submitted"
+    payload = upload.stream.read(MAX_AVATAR_BYTES + 1)
+    if not payload:
+        raise ValidationError("头像文件不能为空。")
+    if len(payload) > MAX_AVATAR_BYTES:
+        raise ValidationError("头像需小于 400 KiB。")
+    mime = next((name for name, matches in AVATAR_MIME_SIGNATURES if matches(payload)), None)
+    if mime is None:
+        raise ValidationError("头像仅支持 JPG、PNG 或 WebP。")
+    encoded = base64.b64encode(payload).decode("ascii")
+    return f"data:{mime};base64,{encoded}", "mock_placeholder"
+
+
+def create_user(form, avatar_upload=None) -> str:
     email = form.get("email", "").strip().lower()
     password = form.get("password", "")
     alias = form.get("anonymous_alias", "").strip()
@@ -106,10 +141,16 @@ def create_user(form) -> str:
     mbti = form.get("mbti") or "不知道"
     zodiac = form.get("zodiac") or "不知道"
     schedule = form.get("schedule") or "正常"
+    photo_match_preference = form.get("photo_match_preference") or "photo_or_standby"
     if gender not in GENDERS or match_gender not in MATCH_GENDERS or city not in CITIES:
         raise ValidationError("请完整填写性别、匹配偏好和城市。")
     if mbti not in MBTIS or zodiac not in ZODIACS or schedule not in SCHEDULES:
         raise ValidationError("个性标签包含无效选项。")
+    if photo_match_preference not in PHOTO_MATCH_PREFERENCES:
+        raise ValidationError("照片匹配偏好无效。")
+    avatar_data_url, avatar_face_check = _avatar_data_url(avatar_upload)
+    if photo_match_preference == "photo_only" and avatar_data_url is None:
+        raise ValidationError("上传头像后才能选择只匹配有头像用户。")
     purposes = _selected(form, "purposes", PURPOSES, required=True)
     interests = _selected(form, "interests", INTERESTS)
     user_id = f"user_{uuid4().hex[:12]}"
@@ -117,11 +158,12 @@ def create_user(form) -> str:
         get_db().execute(
             """INSERT INTO users (
                 id, email, password_hash, anonymous_alias, birth_year, gender, match_gender, city,
-                purposes_json, interests_json, mbti, zodiac, schedule, phone_verified, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)""",
+                purposes_json, interests_json, mbti, zodiac, schedule, avatar_data_url,
+                avatar_face_check, photo_match_preference, phone_verified, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)""",
             (user_id, email, generate_password_hash(password), alias, birth_year, gender, match_gender, city,
              json.dumps(purposes, ensure_ascii=False), json.dumps(interests, ensure_ascii=False), mbti, zodiac,
-             schedule, utcnow()),
+             schedule, avatar_data_url, avatar_face_check, photo_match_preference, utcnow()),
         )
         get_db().commit()
     except Exception as error:

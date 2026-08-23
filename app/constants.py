@@ -4,6 +4,7 @@ from decimal import Decimal
 
 GENDERS = ("male", "female", "undisclosed")
 MATCH_GENDERS = ("male", "female", "any")
+PHOTO_MATCH_PREFERENCES = ("photo_or_standby", "photo_only")
 CITIES = ("北京", "上海", "广州", "深圳", "杭州", "成都", "海外")
 PURPOSES = ("学习搭子", "运动搭子", "聊天倾诉", "兴趣同好", "饭搭子", "随便聊聊")
 INTERESTS = ("音乐", "影视", "游戏", "健身", "旅行", "摄影", "美食", "二次元", "阅读", "宠物", "人工智能", "创业")

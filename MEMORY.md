@@ -70,3 +70,13 @@
 - Verification passed 105 Python tests, 8 Node tests, the 6-stage Harness pipeline, syntax and diff checks, plus 1440px desktop and true 390x844 mobile browser QA with no horizontal overflow.
 - Dormant fallback code commit `fe8b8b99836fdc3eb8439f7dee92573d78ee1645` was deployed to the existing `dwwww/realtags-real-user` project as production deployment `dpl_CqJ2GisoiUauqZSsDYPM3V4fk4kj`, aliased to `https://app.davidwang.space` in Ready state. No AI environment variables were added, so public behavior remains disabled until verified activation.
 - Post-deployment smoke returned `200` for the app landing and registration pages, preserved the login redirect on `/matches`, and retained `200` responses for the blog, blog `/tags/`, `tags.davidwang.space`, and `realtags.davidwang.space`. No DNS record was changed.
+
+## 2026-08-23: Beijing dining, request-scoped AI, and avatar matching
+
+- Active implementation worktree: `C:\Users\DW\orca\workspaces\xxx\realtags-beijing-ai-reliability`; branch: `songconmaisaix31-design/realtags-beijing-ai-reliability`. The protected source checkout remains unchanged.
+- The Demo restaurant catalog has exactly eight Beijing POIs. Real-user mode still seeds no merchant events or Fixture data; the catalog is the allowlist for future reviewed events.
+- Vercel AI Gateway authentication uses the request-scoped `x-vercel-oidc-token` only for the exact `https://ai-gateway.vercel.sh/v1/chat/completions` endpoint. The exposed chat credential remains unused and must not enter source, environment pull files, logs, or memory.
+- Registration accepts optional JPEG, PNG, or WebP avatars up to 400 KiB. The hackathon implementation stores a bounded data URL in the existing database to survive serverless filesystem resets; move avatars to private object storage before sustained production traffic.
+- Face recognition is explicitly `mock_placeholder`, not identity or liveness verification. Product copy must continue to say that it is unverified until a consented real provider replaces it.
+- `photo_only` is reciprocal and available only to accounts with an avatar. Otherwise photo candidates form the primary pool; no-photo candidates appear only when that pool is empty and receive a 15 percent raw-score reduction.
+- Browser registration drafts continue to exclude passwords and now also exclude file inputs. Desktop and 390x844 mobile QA cover registration and photo-bearing match results without horizontal overflow.

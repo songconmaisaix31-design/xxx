@@ -48,6 +48,11 @@ CREATE TABLE IF NOT EXISTS users (
     mbti TEXT NOT NULL,
     zodiac TEXT NOT NULL,
     schedule TEXT NOT NULL,
+    avatar_data_url TEXT,
+    avatar_face_check TEXT NOT NULL DEFAULT 'not_submitted'
+        CHECK(avatar_face_check IN ('not_submitted', 'mock_placeholder')),
+    photo_match_preference TEXT NOT NULL DEFAULT 'photo_or_standby'
+        CHECK(photo_match_preference IN ('photo_or_standby', 'photo_only')),
     phone_verified INTEGER NOT NULL DEFAULT 0,
     is_demo INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL
@@ -316,6 +321,14 @@ def _migrate_schema(db: DatabaseConnection) -> None:
     user_columns = {row["name"] for row in db.execute("PRAGMA table_info(users)").fetchall()}
     if "is_demo" not in user_columns:
         db.execute("ALTER TABLE users ADD COLUMN is_demo INTEGER NOT NULL DEFAULT 0")
+    user_additions = {
+        "avatar_data_url": "TEXT",
+        "avatar_face_check": "TEXT NOT NULL DEFAULT 'not_submitted'",
+        "photo_match_preference": "TEXT NOT NULL DEFAULT 'photo_or_standby'",
+    }
+    for name, definition in user_additions.items():
+        if name not in user_columns:
+            db.execute(f"ALTER TABLE users ADD COLUMN {name} {definition}")
     db.execute(
         "UPDATE users SET is_demo = 1 WHERE id IN ('demo_001', 'demo_002', 'demo_003', 'demo_004')"
     )

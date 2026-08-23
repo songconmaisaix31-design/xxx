@@ -10,6 +10,9 @@ from ..db import get_db
 from .users import get_user, matching_tags
 
 
+NO_PHOTO_STANDBY_FACTOR = 0.85
+
+
 def validate_weight_groups() -> None:
     for group in MATCH_WEIGHT_GROUPS.values():
         total = sum(group["weights"].values(), Decimal("0"))
@@ -101,7 +104,20 @@ def is_hard_filter_match(viewer: dict, candidate: dict) -> bool:
         return False
     viewer_accepts = viewer["match_gender"] == "any" or viewer["match_gender"] == candidate["gender"]
     candidate_accepts = candidate["match_gender"] == "any" or candidate["match_gender"] == viewer["gender"]
-    return viewer_accepts and candidate_accepts
+    if not (viewer_accepts and candidate_accepts):
+        return False
+    viewer_requires_photo = (
+        bool(viewer.get("avatar_data_url"))
+        and viewer.get("photo_match_preference") == "photo_only"
+    )
+    candidate_requires_photo = (
+        bool(candidate.get("avatar_data_url"))
+        and candidate.get("photo_match_preference") == "photo_only"
+    )
+    return not (
+        (viewer_requires_photo and not candidate.get("avatar_data_url"))
+        or (candidate_requires_photo and not viewer.get("avatar_data_url"))
+    )
 
 
 def calculate_match(viewer: dict, candidate: dict) -> dict:
@@ -139,14 +155,28 @@ def ranked_matches(viewer_id: str) -> list[dict]:
              )""",
         (viewer_id, int(bool(viewer["is_demo"])), viewer_id, viewer_id),
     ).fetchall()
-    matches = []
+    primary_matches = []
+    standby_matches = []
     for row in rows:
         candidate = get_user(row["id"])
         if not is_hard_filter_match(viewer, candidate):
             continue
         score = calculate_match(viewer, candidate)
-        matches.append({"candidate": candidate, **score})
-    return sorted(matches, key=lambda item: item["raw_score"], reverse=True)
+        if candidate.get("avatar_data_url"):
+            primary_matches.append({"candidate": candidate, "is_photo_standby": False, **score})
+            continue
+        standby_raw = score["raw_score"] * NO_PHOTO_STANDBY_FACTOR
+        standby_matches.append(
+            {
+                "candidate": candidate,
+                "is_photo_standby": True,
+                **score,
+                "raw_score": standby_raw,
+                "display_score": smooth_display_score(standby_raw),
+            }
+        )
+    selected_pool = primary_matches or standby_matches
+    return sorted(selected_pool, key=lambda item: item["raw_score"], reverse=True)
 
 
 def event_match_score(user_id: str, required_tags: list[str]) -> dict:

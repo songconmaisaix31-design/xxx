@@ -10,6 +10,14 @@
     </div>
     <div class="profile-passport" aria-label="我的基础资料">
       <div class="profile-passport-head"><span>匿名资料护照</span><strong>{{ tags|length }} 个信号</strong></div>
+      <div class="profile-avatar-summary" data-avatar-state="{{ 'ready' if user.has_avatar else 'empty' }}">
+        {% if user.has_avatar %}<img src="{{ user.avatar_data_url }}" alt="我的头像">{% else %}<span class="profile-avatar-placeholder" aria-hidden="true">NO<br>PHOTO</span>{% endif %}
+        <div>
+          <strong>{{ '已上传头像' if user.has_avatar else '尚未上传头像' }}</strong>
+          <p>{{ '人脸核验：Mock 占位，未真实验证' if user.has_avatar else '作为无头像候补参与匹配' }}</p>
+          <small>{{ '只匹配有照片用户' if user.photo_match_preference == 'photo_only' else '有照片优先，也接受无照片候补' }}</small>
+        </div>
+      </div>
       <dl class="profile-facts">
         <div><dt>城市</dt><dd>{{ user.city }}</dd></div>
         <div><dt>作息</dt><dd>{{ user.schedule }}</dd></div>

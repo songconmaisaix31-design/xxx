@@ -50,12 +50,17 @@ def _is_result_reference(flow: dict, supplied: str) -> bool:
 
 
 def _result_projection(match: dict, attempt_id: str) -> dict:
-    """Return only fields permitted in the L0 template context."""
+    """Return the opted-in avatar and fields permitted in the L0 result."""
     return {
         "display_score": match["display_score"],
         "common_point_count": match["common_point_count"],
+        "is_photo_standby": match["is_photo_standby"],
         # The existing template needs an action reference, never the profile id.
-        "candidate": {"id": attempt_id},
+        "candidate": {
+            "id": attempt_id,
+            "avatar_data_url": match["candidate"].get("avatar_data_url"),
+            "avatar_face_check": match["candidate"].get("avatar_face_check", "not_submitted"),
+        },
     }
 
 

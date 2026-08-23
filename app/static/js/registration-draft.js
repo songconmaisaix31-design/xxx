@@ -21,6 +21,7 @@
     birth_year: Object.freeze({ kind: "single", maxLength: 4 }),
     gender: Object.freeze({ kind: "single", maxLength: 16 }),
     match_gender: Object.freeze({ kind: "single", maxLength: 16 }),
+    photo_match_preference: Object.freeze({ kind: "single", maxLength: 32 }),
     schedule: Object.freeze({ kind: "single", maxLength: 32 }),
     mbti: Object.freeze({ kind: "single", maxLength: 8 }),
     zodiac: Object.freeze({ kind: "single", maxLength: 16 }),
@@ -215,7 +216,7 @@
     const restore = () => {
       const restored = restoreDraft(form, readDraft(storage));
       if (restored && status) {
-        status.textContent = "已恢复本标签页暂存的注册资料；密码未保存。";
+        status.textContent = "已恢复本标签页暂存的注册资料；密码和照片未保存。";
       }
       return restored;
     };

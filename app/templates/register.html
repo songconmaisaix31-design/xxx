@@ -4,9 +4,9 @@
 {% block content %}
   <section class="form-page-heading" aria-labelledby="register-title">
     <div><p class="eyebrow">CREATE YOUR PRIVATE PROFILE</p><h1 id="register-title">创建匿名账号</h1></div>
-    <aside class="privacy-note"><strong>默认最小披露</strong><p>基础资料只用于服务端匹配，不会出现在匿名匹配页。</p><p data-registration-draft-status>刷新或回退会恢复本标签页暂存的资料；密码不会保存。</p></aside>
+    <aside class="privacy-note"><strong>默认最小披露</strong><p>除你主动上传的头像外，基础资料只用于服务端匹配，不会出现在匹配结果页。</p><p data-registration-draft-status>刷新或回退会恢复本标签页暂存的资料；密码和照片不会保存。</p></aside>
   </section>
-  <form class="structured-form" data-registration-draft method="post" action="{{ url_for('auth.register') }}">
+  <form class="structured-form" data-registration-draft method="post" enctype="multipart/form-data" action="{{ url_for('auth.register') }}">
     <section class="form-section" aria-labelledby="account-section-title">
       <div class="form-section-heading"><span>01</span><div><h2 id="account-section-title">账号与匿名身份</h2><p>带 * 的字段为完成注册的必要信息。</p></div></div>
       <div class="form-grid two">
@@ -17,8 +17,34 @@
       </div>
     </section>
 
+    <section class="form-section avatar-upload-section" aria-labelledby="avatar-section-title">
+      <div class="form-section-heading"><span>02</span><div><h2 id="avatar-section-title">上传帅照</h2><p>照片会出现在匹配结果；当前人脸识别仅为黑客松 Mock 占位，不代表真人认证。</p></div></div>
+      <div class="avatar-upload-grid">
+        <div class="avatar-preview-card" data-avatar-preview-card data-state="empty">
+          <div class="avatar-preview-frame">
+            <img data-avatar-preview hidden alt="待上传头像预览">
+            <span data-avatar-placeholder aria-hidden="true">PHOTO<br>READY</span>
+          </div>
+          <div><span>FACE CHECK</span><strong data-avatar-status>Mock 占位 · 未真实验证</strong><p>仅检查文件格式；不会声称照片已通过人脸识别。</p></div>
+        </div>
+        <div class="avatar-upload-controls">
+          <label for="register-avatar">选择头像（可选）
+            <input id="register-avatar" type="file" name="avatar" accept="image/jpeg,image/png,image/webp" data-avatar-input>
+            <small>JPG、PNG 或 WebP，最大 400 KiB。文件名不会被保存。</small>
+          </label>
+          <label for="register-photo-preference">照片匹配偏好
+            <select id="register-photo-preference" name="photo_match_preference">
+              <option value="photo_or_standby" selected>有照片优先，也接受无照片候补</option>
+              <option value="photo_only">只匹配有照片用户</option>
+            </select>
+            <small>“只匹配有照片”仅在你上传头像后生效；无照片用户不会进入主候选池。</small>
+          </label>
+        </div>
+      </div>
+    </section>
+
     <section class="form-section" aria-labelledby="match-section-title">
-      <div class="form-section-heading"><span>02</span><div><h2 id="match-section-title">匹配必要信息</h2><p>这些字段只参与服务端筛选与计算，不会组成公开资料卡。</p></div></div>
+      <div class="form-section-heading"><span>03</span><div><h2 id="match-section-title">匹配必要信息</h2><p>这些字段只参与服务端筛选与计算，不会组成公开资料卡。</p></div></div>
       <div class="form-grid two">
         <label for="register-birth-year">出生年份 *<input id="register-birth-year" required type="number" min="1926" max="2008" name="birth_year" inputmode="numeric" placeholder="1998"></label>
         <label for="register-gender">性别 *<select id="register-gender" required name="gender"><option value="" selected disabled>请选择</option>{% for value in genders %}<option value="{{ value }}">{{ {'male':'男','female':'女','undisclosed':'不愿透露'}[value] }}</option>{% endfor %}</select></label>
@@ -30,7 +56,7 @@
     </section>
 
     <section class="form-section" aria-labelledby="preference-section-title">
-      <div class="form-section-heading"><span>03</span><div><h2 id="preference-section-title">认识谁，聊什么</h2><p>多选项仍由你掌控，后续可以在资料中继续完善。</p></div></div>
+      <div class="form-section-heading"><span>04</span><div><h2 id="preference-section-title">认识谁，聊什么</h2><p>多选项仍由你掌控，后续可以在资料中继续完善。</p></div></div>
       <fieldset class="choice-fieldset">
         <legend>交友目的 *（至少选择 1 项）</legend>
         <div class="choice-grid">{% for value in purposes %}<label class="choice-tile"><input type="checkbox" name="purposes" value="{{ value }}"><span>{{ value }}</span></label>{% endfor %}</div>
@@ -43,3 +69,4 @@
     <div class="form-submit"><p>提交即创建匿名账号；第三方数据连接将在下一步由你主动授权。</p><button class="button button-large" type="submit">完成注册</button></div>
   </form>
 {% endblock %}
+{% block scripts %}<script defer src="{{ url_for('static', filename='js/avatar-upload.js') }}"></script>{% endblock %}
