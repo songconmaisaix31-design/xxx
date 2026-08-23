@@ -24,7 +24,7 @@ form loss without turning the browser into long-term personal-data storage.
   and same-tab history navigation but expires when the tab session ends.
 - Use one versioned key: `realtags.registration-draft.v1`.
 - Persist only this allowlist: `email`, `anonymous_alias`, `city`,
-  `birth_year`, `gender`, `match_gender`, `schedule`, `mbti`, `zodiac`,
+  `birth_year`, `gender`, `photo_match_preference`, `schedule`, `mbti`, `zodiac`,
   `purposes`, and `interests`.
 - Never persist `password`, cookies, authorization data, hidden fields, or
   arbitrary future form controls.

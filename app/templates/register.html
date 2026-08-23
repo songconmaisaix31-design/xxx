@@ -48,7 +48,6 @@
       <div class="form-grid two">
         <label for="register-birth-year">出生年份 *<input id="register-birth-year" required type="number" min="1926" max="2008" name="birth_year" inputmode="numeric" placeholder="1998"></label>
         <label for="register-gender">性别 *<select id="register-gender" required name="gender"><option value="" selected disabled>请选择</option>{% for value in genders %}<option value="{{ value }}">{{ {'male':'男','female':'女','undisclosed':'不愿透露'}[value] }}</option>{% endfor %}</select></label>
-        <label for="register-match-gender">希望匹配性别 *<select id="register-match-gender" required name="match_gender"><option value="" selected disabled>请选择</option>{% for value in match_genders %}<option value="{{ value }}">{{ {'male':'男','female':'女','any':'不限'}[value] }}</option>{% endfor %}</select></label>
         <label for="register-schedule">作息偏好<select id="register-schedule" name="schedule"><option value="">不填写</option>{% for value in schedules %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></label>
         <label for="register-mbti">MBTI（可选）<select id="register-mbti" name="mbti"><option value="">不填写</option>{% for value in mbtis %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></label>
         <label for="register-zodiac">星座（可选）<select id="register-zodiac" name="zodiac"><option value="">不填写</option>{% for value in zodiacs %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></label>

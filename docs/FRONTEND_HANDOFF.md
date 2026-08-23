@@ -51,7 +51,7 @@
 | 注册 | `GET/POST /register` | `register.html` | 各枚举选项 | 成功后 `/profile/connections` |
 | 我的标签 | `GET /profile` | `profile.html` | `user`、`tags`、`connections` | 数据连接 |
 | 数据连接 | `GET /profile/connections` | `connections.html` | `user`、`connections` | `POST /profile/connections/<source>/authorize` |
-| 匹配准备 | `GET /matches` | `matches.html` | `candidate_count` | `POST /matches/search/start` |
+| 匹配准备 | `GET /matches` | `matches.html` | `candidate_count`、`match_genders`、`selected_match_gender` | `POST /matches/search/start` |
 | 匹配计算 | `GET /matches/searching` | `match_searching.html` | `attempt_id` | 完成或取消 POST |
 | 开始 / 完成 / 取消 / 换一位 | `POST /matches/search/start|complete|cancel|retry` | 无 | 签名 session `match_flow` | 全部使用 302 PRG |
 | 匹配详情 | `GET /matches/<candidate_id>` | `match_detail.html` | `match`（受限）、`attempt_id`（可选） | 开启会话或换一位 |
@@ -95,7 +95,7 @@ tag_id, category, name, value, source, verified, visibility, updated_at
 
 ### 5.2 匿名匹配
 
-候选集合只存在于服务端。`GET /matches` 仅接收 `candidate_count` 用于决定是否可开始；`GET /matches/searching` 只接收当前 `attempt_id`，不得渲染候选 ID、匿名代号、分数、标签或结果 JSON。
+候选集合只存在于服务端。`GET /matches` 接收 `candidate_count`、允许的匹配性别和当前保存值；`POST /matches/search/start` 可提交 `match_gender`，服务端校验并保存后才重新计算候选池。`GET /matches/searching` 只接收当前 `attempt_id`，不得渲染候选 ID、匿名代号、分数、标签或结果 JSON。
 
 服务端完成匹配后，`match_detail.html` 的 `match` 只有：
 
@@ -115,7 +115,7 @@ idle → searching → result → chat
           └→ cancel → idle
 ```
 
-- `POST /matches/search/start` 由后端选择候选并创建 `attempt_id`；重复点击保持同一次 searching，不重复创建任务。
+- `POST /matches/search/start` 先校验并保存可选的 `match_gender`，再由后端选择候选并创建 `attempt_id`；旧客户端未提交该字段时沿用已保存值，重复点击保持同一次 searching，不重复创建任务。
 - 真实账户只进入真实候选池，演示账户只进入演示候选池；`DEMO_MODE=0` 时不播种演示数据，也不展示或接受演示登录。
 - searching 页约在 `260 / 1000 / 1740 / 2500ms` 展示硬筛、相似度、排序和完成，但 JS 不读取候选或分数。
 - `complete`、`cancel`、`retry` 都必须提交当前隐藏字段 `attempt_id`。旧页面令牌失效，不能覆盖新的匹配。
@@ -181,11 +181,12 @@ alias, interest_tags  # 仅 1–2 个兴趣标签
 | `anonymous_alias` | 是 | 2–20 字符 |
 | `birth_year` | 是 | 18–100 岁 |
 | `gender` | 是 | `male` / `female` / `undisclosed` |
-| `match_gender` | 是 | `male` / `female` / `any` |
 | `city` | 是 | 由模板 `cities` 提供 |
 | `purposes` | 是，多选 | 至少 1 个，由 `purposes` 提供 |
 | `interests` | 否，多选 | 由 `interests` 提供 |
 | `mbti` / `zodiac` / `schedule` | 否 | 均使用后端下发枚举 |
+
+`match_gender` 不再属于注册表单。新账号默认保存 `any`，用户在匹配准备页提交 `male`、`female` 或 `any` 后更新该硬筛选偏好。
 
 ### 6.2 连接数据源：`POST /profile/connections/<source>/authorize`
 

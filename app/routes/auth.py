@@ -8,7 +8,6 @@ from ..constants import (
     DATA_SOURCE_STATE_COPY,
     GENDERS,
     INTERESTS,
-    MATCH_GENDERS,
     MBTIS,
     PURPOSES,
     SCHEDULES,
@@ -45,7 +44,7 @@ def register():
             flash(success_message, "success")
             return redirect(url_for("auth.connections"))
     return render_template(
-        "register.html", cities=CITIES, genders=GENDERS, match_genders=MATCH_GENDERS,
+        "register.html", cities=CITIES, genders=GENDERS,
         purposes=PURPOSES, interests=INTERESTS, mbtis=MBTIS, zodiacs=ZODIACS, schedules=SCHEDULES,
     )
 

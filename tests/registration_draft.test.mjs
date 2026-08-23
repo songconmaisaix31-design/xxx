@@ -110,6 +110,7 @@ test("draft collection persists only allowlisted non-secret fields", () => {
     fakeField({ name: "email", value: "person@example.test" }),
     fakeField({ name: "password", value: "must-never-persist", type: "password" }),
     fakeField({ name: "anonymous_alias", value: "回退旅人" }),
+    fakeField({ name: "match_gender", value: "female" }),
     fakeField({ name: "purposes", value: "学习搭子", type: "checkbox", checked: true }),
     fakeField({ name: "purposes", value: "饭搭子", type: "checkbox", checked: false }),
     fakeField({ name: "unexpected_future_field", value: "not-allowed" })
@@ -121,6 +122,7 @@ test("draft collection persists only allowlisted non-secret fields", () => {
   assert.equal(draft.values.anonymous_alias, "回退旅人");
   assert.deepEqual(draft.values.purposes, ["学习搭子"]);
   assert.equal(Object.hasOwn(draft.values, "password"), false);
+  assert.equal(Object.hasOwn(draft.values, "match_gender"), false);
   assert.equal(Object.hasOwn(draft.values, "unexpected_future_field"), false);
   assert.equal(JSON.stringify(draft).includes("must-never-persist"), false);
 });

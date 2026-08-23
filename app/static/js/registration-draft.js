@@ -20,7 +20,6 @@
     city: Object.freeze({ kind: "single", maxLength: 32 }),
     birth_year: Object.freeze({ kind: "single", maxLength: 4 }),
     gender: Object.freeze({ kind: "single", maxLength: 16 }),
-    match_gender: Object.freeze({ kind: "single", maxLength: 16 }),
     photo_match_preference: Object.freeze({ kind: "single", maxLength: 32 }),
     schedule: Object.freeze({ kind: "single", maxLength: 32 }),
     mbti: Object.freeze({ kind: "single", maxLength: 8 }),

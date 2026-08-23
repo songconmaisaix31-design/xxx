@@ -71,6 +71,39 @@ class CoreFlowTests(unittest.TestCase):
         self.assertIn('href="/matches"', profile_html)
         self.assertNotIn('href="#/', profile_html)
 
+    def test_match_gender_is_chosen_and_persisted_at_match_start(self) -> None:
+        registration_html = self.client.get("/register").get_data(as_text=True)
+        self.assertNotIn("希望匹配性别", registration_html)
+        self.assertNotIn('name="match_gender"', registration_html)
+
+        self._login_demo()
+        idle = self.client.get("/matches").get_data(as_text=True)
+        self.assertIn("希望匹配性别", idle)
+        self.assertIn('name="match_gender"', idle)
+        self.assertIn('<option value="male">男</option>', idle)
+        self.assertIn('<option value="female">女</option>', idle)
+        self.assertIn('<option value="any" selected>不限</option>', idle)
+
+        invalid = self.client.post("/matches/search/start", data={"match_gender": "invalid"})
+        self.assertEqual(invalid.status_code, 302)
+        self.assertTrue(invalid.headers["Location"].endswith("/matches"))
+        with self.app.app_context():
+            self.assertEqual(get_db().execute(
+                "SELECT match_gender FROM users WHERE id = 'demo_001'"
+            ).fetchone()["match_gender"], "any")
+        with self.client.session_transaction() as flask_session:
+            self.assertNotIn("match_flow", flask_session)
+
+        started = self.client.post("/matches/search/start", data={"match_gender": "male"})
+        self.assertEqual(started.status_code, 302)
+        self.assertTrue(started.headers["Location"].endswith("/matches/searching"))
+        with self.app.app_context():
+            self.assertEqual(get_db().execute(
+                "SELECT match_gender FROM users WHERE id = 'demo_001'"
+            ).fetchone()["match_gender"], "male")
+        updated_idle = self.client.get("/matches").get_data(as_text=True)
+        self.assertIn('<option value="male" selected>男</option>', updated_idle)
+
     def test_match_flow_is_server_owned_and_cancel_invalidates_stale_completion(self) -> None:
         self._login_demo()
         home = self.client.get("/").get_data(as_text=True)
@@ -83,6 +116,10 @@ class CoreFlowTests(unittest.TestCase):
         start = self.client.post("/matches/search/start")
         self.assertEqual(start.status_code, 302)
         self.assertTrue(start.headers["Location"].endswith("/matches/searching"))
+        with self.app.app_context():
+            self.assertEqual(get_db().execute(
+                "SELECT match_gender FROM users WHERE id = 'demo_001'"
+            ).fetchone()["match_gender"], "any")
         with self.client.session_transaction() as flask_session:
             first_flow = dict(flask_session["match_flow"])
         self.assertEqual(first_flow["phase"], "searching")

@@ -4,10 +4,17 @@ import secrets
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 
+from ..constants import MATCH_GENDERS
 from ..services.ai_fallback import ai_fallback_available
 from ..services.chat import start_ai_fallback_conversation, start_direct_conversation
 from ..services.matching import ranked_matches
-from ..services.users import ValidationError, current_user, get_user, login_required
+from ..services.users import (
+    ValidationError,
+    current_user,
+    get_user,
+    login_required,
+    set_match_gender_preference,
+)
 
 bp = Blueprint("matches", __name__)
 MATCH_FLOW_SESSION_KEY = "match_flow"
@@ -99,6 +106,8 @@ def index():
         "matches.html",
         candidate_count=len(matches),
         ai_fallback_available=ai_fallback_available(),
+        match_genders=MATCH_GENDERS,
+        selected_match_gender=user["match_gender"],
     )
 
 
@@ -106,6 +115,13 @@ def index():
 @login_required
 def search_start():
     user = current_user()
+    requested_match_gender = request.form.get("match_gender")
+    if requested_match_gender is not None:
+        try:
+            set_match_gender_preference(user["id"], requested_match_gender)
+        except ValidationError as error:
+            flash(str(error), "error")
+            return redirect(url_for("matches.index"))
     matches = ranked_matches(user["id"])
     if not matches:
         fallback = _redirect_to_ai_fallback(user["id"])

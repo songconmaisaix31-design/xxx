@@ -354,8 +354,9 @@ class AiFallbackFlowTests(unittest.TestCase):
     def test_empty_human_pool_creates_labeled_single_member_ai_conversation(self) -> None:
         client, user_id = self._register("solo@example.test", "独行读者")
         match_page = client.get("/matches").get_data(as_text=True)
-        self.assertIn("AI 候场搭子可以先陪你聊", match_page)
+        self.assertIn("按当前偏好暂时没有真人候选", match_page)
         self.assertIn("AI STANDBY · NOT A REAL PERSON", match_page)
+        self.assertIn("确认偏好并开始匹配", match_page)
 
         conversation_id = self._start_fallback(client)
         self.assertEqual(self.requests, [])

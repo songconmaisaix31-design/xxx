@@ -136,14 +136,14 @@ def create_user(form, avatar_upload=None) -> str:
         raise ValidationError("目前仅支持 18 岁及以上用户注册。")
 
     gender = form.get("gender")
-    match_gender = form.get("match_gender")
+    match_gender = "any"
     city = form.get("city")
     mbti = form.get("mbti") or "不知道"
     zodiac = form.get("zodiac") or "不知道"
     schedule = form.get("schedule") or "正常"
     photo_match_preference = form.get("photo_match_preference") or "photo_or_standby"
-    if gender not in GENDERS or match_gender not in MATCH_GENDERS or city not in CITIES:
-        raise ValidationError("请完整填写性别、匹配偏好和城市。")
+    if gender not in GENDERS or city not in CITIES:
+        raise ValidationError("请完整填写性别和城市。")
     if mbti not in MBTIS or zodiac not in ZODIACS or schedule not in SCHEDULES:
         raise ValidationError("个性标签包含无效选项。")
     if photo_match_preference not in PHOTO_MATCH_PREFERENCES:
@@ -171,6 +171,15 @@ def create_user(form, avatar_upload=None) -> str:
             raise ValidationError("该邮箱已注册。") from error
         raise
     return user_id
+
+
+def set_match_gender_preference(user_id: str, match_gender: str) -> None:
+    """Persist the validated hard-filter preference chosen at match start."""
+    if match_gender not in MATCH_GENDERS:
+        raise ValidationError("请选择有效的匹配性别。")
+    db = get_db()
+    db.execute("UPDATE users SET match_gender = ? WHERE id = ?", (match_gender, user_id))
+    db.commit()
 
 
 def profile_tags(user_id: str) -> list[dict]:

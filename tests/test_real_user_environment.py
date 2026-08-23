@@ -31,7 +31,6 @@ class RealUserEnvironmentTests(unittest.TestCase):
             "anonymous_alias": "真实旅人",
             "birth_year": "1996",
             "gender": "female",
-            "match_gender": "any",
             "city": "上海",
             "purposes": ["学习搭子", "随便聊聊"],
             "interests": ["人工智能", "阅读"],
@@ -80,6 +79,7 @@ class RealUserEnvironmentTests(unittest.TestCase):
         self.assertIn("刷新或回退会恢复本标签页暂存的资料；密码和照片不会保存", registration_html)
         self.assertIn('/static/js/registration-draft.js', registration_html)
         self.assertIn('/static/js/avatar-upload.js', registration_html)
+        self.assertNotIn('name="match_gender"', registration_html)
         self.assertEqual(self.client.post("/demo/login").status_code, 404)
 
     def test_registration_persists_all_fields_and_authenticates_the_session(self) -> None:
