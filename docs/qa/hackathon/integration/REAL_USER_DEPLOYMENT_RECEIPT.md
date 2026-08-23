@@ -1,19 +1,19 @@
 # Persistent Real-User Deployment Receipt
 
 Status: **PASS WITH DOCUMENTED BETA LIMITS**
-Verified at: `2026-08-23T08:05:13+08:00`
+Verified at: `2026-08-23T08:52:20+08:00`
 
 ## Release identity
 
 - Branch: `songconmaisaix31-design/realtags-real-user-test`
-- Deployed application commit: `b11038b9869fe7434832882f6cd4e608d4cb5022`
+- Deployed application commit: `3961b91707ac7398380b6f0f61d3a484cacdeaf4`
 - Persistent database implementation commit:
   `2164df5fb965b15c1dc9e885a703d79f1645a085`
 - Vercel project: `dwwww/realtags-real-user`
 - Vercel project ID: `prj_wdpE2Y4LPRVZAINBbURC33Rjj57s`
-- Production deployment ID: `dpl_32uNbGak86wC3ErAWtxBcSfVA9jR`
+- Production deployment ID: `dpl_Jk89xsmbSz5T29VRDnvQcgKAeRCL`
 - Generated deployment URL:
-  `https://realtags-real-user-7cd1hyjq4-dwwww.vercel.app`
+  `https://realtags-real-user-5yudddk4w-dwwww.vercel.app`
 - Public URL: `https://app.davidwang.space`
 - Function region: `iad1`
 
@@ -88,15 +88,30 @@ No user-data write was issued during the final-resource smoke check.
 | `/register` | `200` |
 | `/static/css/judge-journey.css` | `200` |
 | `/static/js/motion.js` | `200` |
+| `/static/js/registration-draft.js` | `200` |
 | `/static/img/brand-mark.png` | `200` |
 | Anonymous `/profile` | `302` to login |
 | `POST /demo/login` | `404` |
 | Registration link on landing page | Present |
 | Demo-login link on landing page | Absent |
 | Fixture copy on real-user landing page | Absent |
+| Registration draft hook and notice | Present |
 
 Both a reviewed Vercel edge and normal public DNS returned `200` for the public
 origin.
+
+## Registration draft persistence
+
+- Registration fields are restored after refresh and history navigation within
+  the same browser tab through `sessionStorage`.
+- Persistence uses an explicit field allowlist and never stores the password.
+- Signed-in pages clear the saved draft so a completed registration does not
+  leave profile data behind in the tab.
+- Storage parsing is bounded and malformed or unavailable Web Storage fails
+  open without blocking registration.
+- A clean Chrome session verified refresh restoration. Node behavior tests
+  cover the `pagehide` and deferred `pageshow` lifecycle used by browser Back
+  and BFCache restoration.
 
 ## Domain isolation and regression
 
@@ -125,7 +140,8 @@ No existing apex, `www`, `tags`, or `realtags` record was changed.
 ## Repository gates
 
 - Python unit and acceptance tests: `91/91` passed.
-- Browser-motion Node tests: `4/4` passed.
+- Browser behavior Node tests: `8/8` passed, including `4/4` registration-draft
+  lifecycle tests.
 - Persistent workflow harness: `6/6` passed.
 - Python bytecode compilation: passed.
 - `git diff --check`: passed.

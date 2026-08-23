@@ -47,12 +47,13 @@
 
 ## 2026-08-23: Persistent real-user deployment
 
-- The live branch is `songconmaisaix31-design/realtags-real-user-test`; deployed application commit `b11038b9869fe7434832882f6cd4e608d4cb5022` runs at `https://app.davidwang.space`.
-- The isolated Vercel project is `dwwww/realtags-real-user` (`prj_wdpE2Y4LPRVZAINBbURC33Rjj57s`); production deployment `dpl_32uNbGak86wC3ErAWtxBcSfVA9jR` is Ready in `iad1` and is separate from both demo projects.
+- The live branch is `songconmaisaix31-design/realtags-real-user-test`; deployed application commit `3961b91707ac7398380b6f0f61d3a484cacdeaf4` runs at `https://app.davidwang.space`.
+- The isolated Vercel project is `dwwww/realtags-real-user` (`prj_wdpE2Y4LPRVZAINBbURC33Rjj57s`); production deployment `dpl_Jk89xsmbSz5T29VRDnvQcgKAeRCL` is Ready in `iad1` and is separate from both demo projects.
 - The final persistent store is Turso `realtags-real-user-db`, Vercel resource `store_tywM9V3uulfX6MPt`, provider resource `01a02be8-5d01-739d-9717-aac2c46bfdc6`. It was created fresh after QA and received no QA registration or Fixture load.
 - Online persistence QA passed registration, automatic login, Duolingo/GitHub/LeetCode.com Public Live sync, anonymous match, two-way chat, report, block, event verification boundary, and fresh-session reads after a second deployment. Disposable QA resource `store_ZQU6a6kbEbDIQhBL` was permanently deleted afterward.
 - Keep remains unavailable in real-user mode and its sync route returns `404`. A public handle proves response provenance, not external-account ownership. Phone verification remains unavailable, so event hosting stays blocked.
 - Hosted configuration uses only the encrypted Vercel variables `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `FLASK_SECRET_KEY`, `SESSION_COOKIE_SECURE`, `REAL_USER_ONLY`, and `DEMO_MODE`; never pull or record their values.
 - AliDNS record `2091310372422056960` is the only DNS addition: `app` CNAME to `cname.vercel-dns.com`, TTL 600. It is reachable with valid HTTPS; Vercel's project-specific recommendation remains a regional-routing follow-up.
 - Final smoke returned `200` for the landing page, registration, and representative assets; anonymous profile redirected to login and demo login returned `404`. The blog, blog `/tags/`, `tags.davidwang.space`, and `realtags.davidwang.space` all retained HTTP `200`.
+- Registration drafts use same-tab `sessionStorage` with an explicit profile-field allowlist. Passwords are never stored, successful authentication clears the draft, clean Chrome verified refresh restoration, and automated lifecycle tests cover history Back/BFCache restoration.
 - Rollback detaches only `app.davidwang.space` and deletes only AliDNS record `2091310372422056960`; retain the final database until an explicit real-user data-retention decision.
