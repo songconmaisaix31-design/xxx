@@ -72,6 +72,7 @@ class RealUserEnvironmentTests(unittest.TestCase):
         home = self.client.get("/")
         self.assertEqual(home.status_code, 200)
         self.assertNotIn("进入预置演示账号", home.get_data(as_text=True))
+        self.assertNotIn("Fixture", home.get_data(as_text=True))
         self.assertEqual(self.client.get("/register").status_code, 200)
         self.assertEqual(self.client.post("/demo/login").status_code, 404)
 
@@ -113,6 +114,10 @@ class RealUserEnvironmentTests(unittest.TestCase):
         self.assertIn("注册成功，已自动登录", connections_html)
         self.assertNotIn("/profile/connections/keep/sync", connections_html)
         self.assertEqual(self.client.post("/profile/connections/keep/sync").status_code, 404)
+
+        profile = self.client.get("/profile").get_data(as_text=True)
+        self.assertIn("Public Live 或 unavailable", profile)
+        self.assertNotIn("Public Live、Fixture 或 unavailable", profile)
 
         for path in ("/profile", "/matches", "/conversations"):
             self.assertEqual(self.client.get(path).status_code, 200, path)

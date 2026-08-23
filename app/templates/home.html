@@ -6,7 +6,11 @@
     <div class="hero-copy">
       <p class="eyebrow">真实行为数据 / 匿名匹配 / 兴趣饭局</p>
       <h1 id="home-title">先聊同频，<span>再决定要不要认识。</span></h1>
-      <p class="hero-lede">连接可公开读取的行为资料，或使用明确标注的离线 Fixture。服务端生成仅自己可见的行为标签；匹配阶段只展示百分比，身份信息随双方互动逐步解锁。</p>
+      {% if demo_mode %}
+        <p class="hero-lede">连接可公开读取的行为资料，或使用明确标注的离线 Fixture。服务端生成仅自己可见的行为标签；匹配阶段只展示百分比，身份信息随双方互动逐步解锁。</p>
+      {% else %}
+        <p class="hero-lede">连接可公开读取的行为资料。服务端生成仅自己可见的行为标签；匹配阶段只展示百分比，身份信息随双方互动逐步解锁。</p>
+      {% endif %}
       <div class="action-row judge-entry-actions">
         {% if user %}
           <a class="button" data-primary-action href="{{ url_for('matches.index') }}">开始一次匿名匹配</a>

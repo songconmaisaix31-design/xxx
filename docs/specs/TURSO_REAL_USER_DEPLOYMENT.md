@@ -14,8 +14,10 @@ route, and `tags.davidwang.space` unchanged.
 - Create a separate Vercel project named `realtags-real-user`.
 - Create a separate Turso database named `realtags-real-user-db` in `iad1`,
   colocated with the default Vercel function region.
-- Validate first on the Vercel-generated hostname. Bind
-  `app.davidwang.space` only after the persistent workflow passes.
+- Prefer the Vercel-generated hostname for initial validation. If regional DNS
+  prevents that hostname from being reached, bind the new
+  `app.davidwang.space` hostname only after the isolated project, managed
+  database, and rollback target are confirmed.
 - Do not relink or reconfigure `realtags-prize-demo` or `realtags-demo`.
 - Do not update or delete the apex, `www`, `realtags`, or `tags` DNS records.
 - Store secret values only in Vercel's encrypted environment. Never pull them
@@ -55,9 +57,10 @@ key.
 - A public handle proves response provenance, not account ownership.
 - No user is marked `phone_verified` without a real verification provider, so
   hosted event creation remains blocked.
-- Production QA accounts use reserved exact email addresses and are deleted in
-  one scoped transaction after persistence verification. The final zero-user
-  state is verified before DNS binding.
+- Online QA uses a disposable managed database and reserved random email
+  addresses. After persistence verification, delete that entire QA resource
+  and create a new final database before the last deployment. No QA account is
+  ever written to the final resource.
 
 ## Reliability and security controls
 
@@ -90,8 +93,9 @@ key.
    rules.
 6. Public datasource success or explicit upstream failure is recorded without
    Fixture fallback or secret/raw-response persistence.
-7. QA rows are deleted by exact IDs and emails; the production database returns
-   to zero users, tags, connections, events, conversations, and messages.
+7. The disposable QA database is permanently removed after verification. A new
+   final resource is connected and deployed without issuing any registration or
+   other user-data write.
 8. `app.davidwang.space` serves the verified persistent project over HTTPS,
    while the blog, `/tags/`, `tags.davidwang.space`, and
    `realtags.davidwang.space` retain their pre-deployment behavior.

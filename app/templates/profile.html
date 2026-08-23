@@ -33,7 +33,11 @@
           <span class="status-pill status-neutral">演示数据 Fixture</span>
           <p>用于演示流程，不是账号实况</p>
         {% endif %}
-        <p>先在连接页确认 Public Live、Fixture 或 unavailable 状态；本页只展示你的私密标签投影。</p>
+        {% if demo_mode %}
+          <p>先在连接页确认 Public Live、Fixture 或 unavailable 状态；本页只展示你的私密标签投影。</p>
+        {% else %}
+          <p>先在连接页确认 Public Live 或 unavailable 状态；本页只展示你的私密标签投影。</p>
+        {% endif %}
       </div>
     </div>
     {% if tags %}
