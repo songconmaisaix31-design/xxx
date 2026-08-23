@@ -167,6 +167,52 @@ class DeploymentTests(unittest.TestCase):
 
             self.assertTrue(database.is_file())
 
+    def test_database_maintenance_blocks_reads_and_writes_before_route_work(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config = type(
+                "MaintenanceConfig",
+                (Config,),
+                {
+                    "TESTING": True,
+                    "DATABASE": str(Path(temp_dir) / "maintenance.sqlite3"),
+                    "SECRET_KEY": "test",
+                    "DEMO_MODE": False,
+                    "REAL_USER_ONLY": True,
+                    "DATABASE_MAINTENANCE_MODE": True,
+                },
+            )
+            app = create_app(config)
+            client = app.test_client()
+
+            for method, path in (("get", "/"), ("post", "/register")):
+                with self.subTest(method=method, path=path):
+                    response = getattr(client, method)(path)
+                    self.assertEqual(response.status_code, 503)
+                    self.assertEqual(response.headers["Cache-Control"], "no-store")
+                    self.assertEqual(response.headers["Retry-After"], "120")
+                    self.assertEqual(response.get_data(as_text=True), "数据库维护中，请稍后重试。\n")
+
+    def test_database_maintenance_rejects_demo_or_non_real_user_runtime(self) -> None:
+        unsafe_settings = (
+            {"DEMO_MODE": True, "REAL_USER_ONLY": False},
+            {"DEMO_MODE": False, "REAL_USER_ONLY": False},
+        )
+        for settings in unsafe_settings:
+            with self.subTest(settings=settings), tempfile.TemporaryDirectory() as temp_dir:
+                config = type(
+                    "UnsafeMaintenanceConfig",
+                    (Config,),
+                    {
+                        "TESTING": True,
+                        "DATABASE": str(Path(temp_dir) / "maintenance.sqlite3"),
+                        "SECRET_KEY": "test",
+                        "DATABASE_MAINTENANCE_MODE": True,
+                        **settings,
+                    },
+                )
+                with self.assertRaisesRegex(RuntimeError, "DATABASE_MAINTENANCE_MODE"):
+                    create_app(config)
+
     def test_public_asset_build_excludes_qa_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             repo_root = Path(temp_dir)

@@ -445,6 +445,24 @@ def _seed_admin(db: DatabaseConnection) -> None:
 def init_app(app) -> None:
     if app.config.get("REAL_USER_ONLY", False) and app.config.get("DEMO_MODE", False):
         raise RuntimeError("REAL_USER_ONLY cannot run with DEMO_MODE enabled.")
+    if app.config.get("DATABASE_MAINTENANCE_MODE", False) and (
+        app.config.get("DEMO_MODE", False)
+        or not app.config.get("REAL_USER_ONLY", False)
+    ):
+        raise RuntimeError(
+            "DATABASE_MAINTENANCE_MODE requires the non-Demo real-user environment."
+        )
+
+    @app.before_request
+    def enforce_database_maintenance() -> object | None:
+        if not app.config.get("DATABASE_MAINTENANCE_MODE", False):
+            return None
+        return app.response_class(
+            "数据库维护中，请稍后重试。\n",
+            status=503,
+            content_type="text/plain; charset=utf-8",
+            headers={"Cache-Control": "no-store", "Retry-After": "120"},
+        )
 
     @app.before_request
     def refresh_due_events() -> None:
