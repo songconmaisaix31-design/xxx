@@ -26,12 +26,17 @@ EVENT_STATUSES = {
     "rejected": "审核未通过",
 }
 
-# Server-only coordinates for the existing verified restaurant whitelist.
+# Server-only coordinates for the public restaurant whitelist.
 # User coordinates are used only while handling the current request.
 POI_LOCATIONS = {
-    "poi_001": {"city": "上海", "lat": 31.2253, "lng": 121.4420},
-    "poi_002": {"city": "上海", "lat": 31.2035, "lng": 121.4465},
-    "poi_003": {"city": "上海", "lat": 31.2380, "lng": 121.5155},
+    "poi_001": {"city": "北京", "lat": 39.914525, "lng": 116.402873},
+    "poi_002": {"city": "北京", "lat": 39.941174, "lng": 116.419240},
+    "poi_003": {"city": "北京", "lat": 39.886721, "lng": 116.363329},
+    "poi_004": {"city": "北京", "lat": 39.927286, "lng": 116.413522},
+    "poi_005": {"city": "北京", "lat": 39.871734, "lng": 116.405566},
+    "poi_006": {"city": "北京", "lat": 39.899292, "lng": 116.385072},
+    "poi_007": {"city": "北京", "lat": 39.932207, "lng": 116.367609},
+    "poi_008": {"city": "北京", "lat": 39.914089, "lng": 116.412053},
 }
 DEFAULT_RADIUS_KM = 5.0
 MAX_RADIUS_KM = 50.0

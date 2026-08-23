@@ -189,6 +189,51 @@ class AiFallbackTransportTests(unittest.TestCase):
                 with app.app_context():
                     self.assertFalse(ai_fallback_available())
 
+    def test_vercel_oidc_is_accepted_only_for_the_exact_ai_gateway_endpoint(self) -> None:
+        gateway_config = type(
+            "VercelGatewayConfig",
+            (Config,),
+            {
+                "TESTING": True,
+                "DATABASE": ":memory:",
+                "SECRET_KEY": "test",
+                "DEMO_MODE": False,
+                "AI_FALLBACK_ENABLED": True,
+                "AI_FALLBACK_API_KEY": "",
+                "AI_FALLBACK_OIDC_TOKEN": "non-secret-test-oidc-token",
+                "AI_FALLBACK_BASE_URL": "https://ai-gateway.vercel.sh/v1",
+                "AI_FALLBACK_MODEL": "alibaba/qwen3.5-flash",
+            },
+        )
+        app = create_app(gateway_config)
+        requests: list[CompletionRequest] = []
+        with app.app_context():
+            self.assertTrue(ai_fallback_available())
+            reply = complete_ai_reply(
+                [("user", "你好")],
+                transport=lambda request: requests.append(request) or "你好，我是 AI 候场搭子。",
+            )
+
+        self.assertEqual(reply, "你好，我是 AI 候场搭子。")
+        self.assertEqual(len(requests), 1)
+        self.assertEqual(requests[0].url, "https://ai-gateway.vercel.sh/v1/chat/completions")
+        self.assertEqual(requests[0].api_key, "non-secret-test-oidc-token")
+
+        for unsafe_base_url in (
+            "https://provider.example.test/v1",
+            "https://ai-gateway.vercel.sh.example.test/v1",
+            "https://ai-gateway.vercel.sh:443/v1",
+        ):
+            with self.subTest(base_url=unsafe_base_url):
+                rejected_config = type(
+                    "RejectedOidcConfig",
+                    (gateway_config,),
+                    {"AI_FALLBACK_BASE_URL": unsafe_base_url},
+                )
+                rejected_app = create_app(rejected_config)
+                with rejected_app.app_context():
+                    self.assertFalse(ai_fallback_available())
+
     def test_injected_transport_is_still_bounded(self) -> None:
         config = type(
             "BoundedTransportConfig",
@@ -356,6 +401,51 @@ class AiFallbackFlowTests(unittest.TestCase):
                 "SELECT COUNT(*) AS count FROM conversations WHERE counterpart_type = 'ai'"
             ).fetchone()["count"]
         self.assertEqual(ai_count, 0)
+
+    def test_candidate_disappearing_during_search_falls_back_to_ai(self) -> None:
+        first, _ = self._register("race-first@example.test", "竞态真人甲")
+        self._register("race-second@example.test", "竞态真人乙", gender="male")
+
+        started = first.post("/matches/search/start")
+        self.assertTrue(started.headers["Location"].endswith("/matches/searching"))
+        with first.session_transaction() as flask_session:
+            flow = dict(flask_session["match_flow"])
+        with self.app.app_context():
+            get_db().execute("DELETE FROM users WHERE id = ?", (flow["candidate_id"],))
+            get_db().commit()
+
+        completed = first.post(
+            "/matches/search/complete",
+            data={"attempt_id": flow["attempt_id"]},
+        )
+
+        self.assertEqual(completed.status_code, 302)
+        self.assertIn("/conversations/ai_", completed.headers["Location"])
+        self.assertEqual(self.requests, [])
+
+    def test_candidate_disappearing_continues_with_another_human_first(self) -> None:
+        first, _ = self._register("replacement-first@example.test", "候选真人甲")
+        self._register("replacement-second@example.test", "候选真人乙", gender="male")
+        self._register("replacement-third@example.test", "候选真人丙", gender="male")
+
+        first.post("/matches/search/start")
+        with first.session_transaction() as flask_session:
+            original_flow = dict(flask_session["match_flow"])
+        with self.app.app_context():
+            get_db().execute("DELETE FROM users WHERE id = ?", (original_flow["candidate_id"],))
+            get_db().commit()
+
+        completed = first.post(
+            "/matches/search/complete",
+            data={"attempt_id": original_flow["attempt_id"]},
+        )
+
+        self.assertTrue(completed.headers["Location"].endswith("/matches/searching"))
+        with first.session_transaction() as flask_session:
+            replacement_flow = dict(flask_session["match_flow"])
+        self.assertNotEqual(replacement_flow["candidate_id"], original_flow["candidate_id"])
+        self.assertEqual(replacement_flow["phase"], "searching")
+        self.assertEqual(self.requests, [])
 
     def test_provider_failure_preserves_user_message_without_fake_reply(self) -> None:
         client, _ = self._register("failure@example.test", "故障观察者")

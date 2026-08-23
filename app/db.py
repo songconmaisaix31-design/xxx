@@ -14,6 +14,7 @@ from turso_serverless import Connection as TursoConnection
 from werkzeug.security import generate_password_hash
 
 from .config import DEVELOPMENT_SECRET_KEY
+from .constants import POIS
 
 
 DatabaseConnection = sqlite3.Connection | TursoConnection
@@ -561,11 +562,13 @@ def _upgrade_legacy_demo_fixture(db: DatabaseConnection) -> None:
 
 
 def _seed_database(db: DatabaseConnection) -> None:
+    start = datetime.now(timezone.utc).replace(microsecond=0) + timedelta(days=5)
     if db.execute("SELECT 1 FROM users WHERE id = 'demo_001'").fetchone():
         # Keep the checked-in demo state repairable across schema/code updates.
         _upgrade_legacy_demo_fixture(db)
-        if db.execute("SELECT 1 FROM events WHERE id = 'event_002'").fetchone():
-            _ensure_seed_group_conversation(db, "event_002")
+        _ensure_demo_event_fixtures(db, start)
+        _ensure_demo_event_members(db)
+        _ensure_seed_group_conversation(db, "event_002")
         db.commit()
         return
 
@@ -590,42 +593,119 @@ def _seed_database(db: DatabaseConnection) -> None:
     _seed_behavior_tags(db, "demo_002", ["英语", "日语"], ["跑步", "力量训练"], [21, 22], [20, 21], 186, 4)
     _seed_behavior_tags(db, "demo_003", ["英语"], ["跑步", "骑行"], [7, 8], [6, 7], 83, 5)
     _seed_behavior_tags(db, "demo_004", ["韩语", "英语"], ["瑜伽"], [20, 21], [18, 19], 122, 2)
-    start = datetime.now(timezone.utc).replace(microsecond=0) + timedelta(days=5)
-    _insert_seed_event(
-        db, "event_001", "merchant", "merchant_001", "AI 从业者交流晚餐", "poi_001", start,
-        3, 6, ["interest_ai", "lang_learning_en"], "first_come", "recruiting",
-        {"type": "discount", "label": "到店全单 8 折", "value": "0.8"}, "和一桌对 AI 感兴趣的人聊聊正在做的事。",
+    _ensure_demo_event_fixtures(db, start)
+    _ensure_demo_event_members(db)
+    _ensure_seed_group_conversation(db, "event_002")
+    db.commit()
+
+
+def _demo_event_fixtures(start: datetime) -> tuple[dict, ...]:
+    return (
+        {
+            "event_id": "event_001", "host_type": "merchant", "host_id": "merchant_001",
+            "title": "AI 从业者交流晚餐", "poi_id": "poi_001", "start": start,
+            "min_size": 3, "max_size": 6, "tags": ["interest_ai", "lang_learning_en"],
+            "signup_mode": "first_come", "status": "recruiting",
+            "benefit": {"type": "discount", "label": "到店全单 8 折", "value": "0.8"},
+            "description": "和一桌对 AI 感兴趣的人聊聊正在做的事。",
+        },
+        {
+            "event_id": "event_002", "host_type": "merchant", "host_id": "merchant_002",
+            "title": "周末跑步后的铜锅聚餐", "poi_id": "poi_005", "start": start + timedelta(days=2),
+            "min_size": 3, "max_size": 8, "tags": ["sport_running", "interest_food"],
+            "signup_mode": "review", "status": "formed",
+            "benefit": {"type": "free_snack", "label": "到店赠送手作小食", "value": "1"},
+            "description": "8 公里轻松跑后，认识同频运动伙伴。",
+        },
+        {
+            "event_id": "event_003", "host_type": "user", "host_id": "demo_004",
+            "title": "读书与独立电影分享局", "poi_id": "poi_004", "start": start + timedelta(days=3),
+            "min_size": 3, "max_size": 5, "tags": ["interest_reading"],
+            "signup_mode": "review", "status": "recruiting", "benefit": None,
+            "description": "带一本最近最喜欢的书来。",
+        },
+        {
+            "event_id": "event_004", "host_type": "merchant", "host_id": "merchant_004",
+            "title": "簋街夜宵与城市新朋友", "poi_id": "poi_002", "start": start + timedelta(days=4),
+            "min_size": 3, "max_size": 6, "tags": ["interest_food"],
+            "signup_mode": "first_come", "status": "recruiting",
+            "benefit": {"type": "discount", "label": "演示到店礼遇", "value": "fixture"},
+            "description": "下班后一起吃夜宵，认识同城的新朋友。",
+        },
+        {
+            "event_id": "event_005", "host_type": "merchant", "host_id": "merchant_005",
+            "title": "创业者铜锅晚餐", "poi_id": "poi_003", "start": start + timedelta(days=5),
+            "min_size": 4, "max_size": 8, "tags": ["identity_startup", "interest_food"],
+            "signup_mode": "review", "status": "recruiting",
+            "benefit": {"type": "discount", "label": "演示到店礼遇", "value": "fixture"},
+            "description": "围绕早期产品、增长和团队建设交换经验。",
+        },
+        {
+            "event_id": "event_006", "host_type": "merchant", "host_id": "merchant_006",
+            "title": "北京味道文化晚餐", "poi_id": "poi_006", "start": start + timedelta(days=6),
+            "min_size": 3, "max_size": 7, "tags": ["interest_food", "interest_reading"],
+            "signup_mode": "first_come", "status": "recruiting",
+            "benefit": {"type": "free_snack", "label": "演示到店小食", "value": "fixture"},
+            "description": "从北京饮食聊到城市历史与生活方式。",
+        },
+        {
+            "event_id": "event_007", "host_type": "user", "host_id": "demo_002",
+            "title": "英语学习者周末午餐", "poi_id": "poi_007", "start": start + timedelta(days=7),
+            "min_size": 3, "max_size": 6, "tags": ["lang_learning_en", "interest_food"],
+            "signup_mode": "review", "status": "recruiting", "benefit": None,
+            "description": "用轻松话题练习英语，也欢迎刚开始学习的人。",
+        },
+        {
+            "event_id": "event_008", "host_type": "merchant", "host_id": "merchant_008",
+            "title": "云南菜与旅行故事局", "poi_id": "poi_008", "start": start + timedelta(days=8),
+            "min_size": 3, "max_size": 8, "tags": ["interest_food"],
+            "signup_mode": "first_come", "status": "recruiting",
+            "benefit": {"type": "discount", "label": "演示到店礼遇", "value": "fixture"},
+            "description": "分享旅途中难忘的食物、城市和人。",
+        },
     )
-    _insert_seed_event(
-        db, "event_002", "merchant", "merchant_002", "周末跑步后的早午餐", "poi_003", start + timedelta(days=2),
-        3, 8, ["sport_running", "interest_food"], "review", "formed",
-        {"type": "free_snack", "label": "到店赠送手作小食", "value": "1"}, "8 公里轻松跑后，认识同频运动伙伴。",
-    )
-    _insert_seed_event(
-        db, "event_003", "user", "demo_004", "读书与独立电影分享局", "poi_002", start + timedelta(days=3),
-        3, 5, ["interest_reading"], "review", "recruiting", None, "带一本最近最喜欢的书来。",
-    )
+
+
+def _ensure_demo_event_fixtures(db: DatabaseConnection, start: datetime) -> None:
+    for fixture in _demo_event_fixtures(start):
+        poi = POIS[fixture["poi_id"]]
+        if db.execute("SELECT 1 FROM events WHERE id = ?", (fixture["event_id"],)).fetchone():
+            # Upgrade location-facing fixture fields without resetting demo interaction state.
+            db.execute(
+                "UPDATE events SET title = ?, poi_id = ?, poi_name = ?, poi_address = ? WHERE id = ?",
+                (fixture["title"], fixture["poi_id"], poi["name"], poi["address"], fixture["event_id"]),
+            )
+            continue
+        _insert_seed_event(db, **fixture)
+
+
+def _ensure_demo_event_members(db: DatabaseConnection) -> None:
     for event_id, user_id, role, score, common in (
         ("event_002", "demo_003", "host", 100, 2), ("event_002", "demo_001", "member", 84, 2),
         ("event_002", "demo_002", "member", 76, 1),
     ):
+        if db.execute(
+            "SELECT 1 FROM event_members WHERE event_id = ? AND user_id = ?", (event_id, user_id)
+        ).fetchone():
+            continue
         db.execute(
             "INSERT INTO event_members (event_id, user_id, role, membership_status, match_score, common_tag_count, checked_in, joined_at) VALUES (?, ?, ?, 'approved', ?, ?, 0, ?)",
             (event_id, user_id, role, score, common, utcnow()),
         )
-    _ensure_seed_group_conversation(db, "event_002")
-    db.commit()
 
 
 def _insert_seed_event(db: DatabaseConnection, event_id: str, host_type: str, host_id: str, title: str,
                        poi_id: str, start: datetime, min_size: int, max_size: int, tags: list[str],
                        signup_mode: str, status: str, benefit: dict | None, description: str) -> None:
-    poi = {"poi_001": ("知味里·静安店", "上海市静安区愚园路 88 号"),
-           "poi_002": ("源野咖啡·徐汇店", "上海市徐汇区衡山路 214 号"),
-           "poi_003": ("山海小馆·浦东店", "上海市浦东新区张杨路 501 号")}[poi_id]
+    poi = POIS[poi_id]
     db.execute(
-        """INSERT INTO events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '50-100', 'AA', ?, 'balanced', ?, ?, ?, ?, ?)""",
-        (event_id, host_type, host_id, title, poi_id, poi[0], poi[1], start.isoformat(),
+        """INSERT INTO events (
+               id, host_type, host_id, title, poi_id, poi_name, poi_address, start_at,
+               signup_deadline, min_size, max_size, budget_level, pay_type,
+               required_tags_json, gender_policy, signup_mode, status, description,
+               merchant_benefit_json, created_at
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '50-100', 'AA', ?, 'balanced', ?, ?, ?, ?, ?)""",
+        (event_id, host_type, host_id, title, poi_id, poi["name"], poi["address"], start.isoformat(),
          (start - timedelta(hours=2)).isoformat(), min_size, max_size, json.dumps(tags), signup_mode,
          status, description, json.dumps(benefit, ensure_ascii=False) if benefit else None, utcnow()),
     )

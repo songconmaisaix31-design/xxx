@@ -14,6 +14,7 @@ class Config:
     DATA_SOURCE_TIMEOUT_SECONDS = 4.0
     AI_FALLBACK_ENABLED = os.environ.get("AI_FALLBACK_ENABLED", "0") == "1"
     AI_FALLBACK_API_KEY = os.environ.get("AI_FALLBACK_API_KEY", "")
+    AI_FALLBACK_OIDC_TOKEN = os.environ.get("VERCEL_OIDC_TOKEN", "")
     AI_FALLBACK_BASE_URL = os.environ.get("AI_FALLBACK_BASE_URL", "")
     AI_FALLBACK_MODEL = os.environ.get("AI_FALLBACK_MODEL", "")
     AI_FALLBACK_TIMEOUT_SECONDS = 8.0

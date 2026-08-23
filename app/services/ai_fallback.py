@@ -22,6 +22,7 @@ USER_AGENT = "RealTags-AI-Standby/1.0"
 MAX_CONTEXT_TURNS = 12
 MAX_RESPONSE_BYTES = 64 * 1024
 MAX_REPLY_CHARS = 500
+VERCEL_AI_GATEWAY_COMPLETION_URL = "https://ai-gateway.vercel.sh/v1/chat/completions"
 
 
 class AiFallbackFailure(RuntimeError):
@@ -73,18 +74,31 @@ def _completion_url(base_url: str) -> str:
     return urlunsplit(("https", parsed.netloc, f"{path}/chat/completions", "", ""))
 
 
+def _configured_bearer_token(base_url: str) -> str:
+    completion_url = _completion_url(base_url)
+    api_key = current_app.config.get("AI_FALLBACK_API_KEY")
+    if isinstance(api_key, str) and api_key.strip():
+        return api_key.strip()
+
+    oidc_token = current_app.config.get("AI_FALLBACK_OIDC_TOKEN")
+    if (
+        completion_url == VERCEL_AI_GATEWAY_COMPLETION_URL
+        and isinstance(oidc_token, str)
+        and oidc_token.strip()
+    ):
+        return oidc_token.strip()
+    raise AiFallbackFailure("not_configured")
+
+
 def ai_fallback_available() -> bool:
     if not current_app.config.get("AI_FALLBACK_ENABLED", False):
         return False
-    values = (
-        current_app.config.get("AI_FALLBACK_API_KEY"),
-        current_app.config.get("AI_FALLBACK_BASE_URL"),
-        current_app.config.get("AI_FALLBACK_MODEL"),
-    )
-    if not all(isinstance(value, str) and value.strip() for value in values):
+    base_url = current_app.config.get("AI_FALLBACK_BASE_URL")
+    model = current_app.config.get("AI_FALLBACK_MODEL")
+    if not all(isinstance(value, str) and value.strip() for value in (base_url, model)):
         return False
     try:
-        _completion_url(str(values[1]))
+        _configured_bearer_token(base_url)
     except AiFallbackFailure:
         return False
     return True
@@ -105,7 +119,7 @@ def _configured_request(messages: list[tuple[str, str]]) -> CompletionRequest:
         raise AiFallbackFailure("invalid_context")
     return CompletionRequest(
         url=_completion_url(current_app.config["AI_FALLBACK_BASE_URL"]),
-        api_key=current_app.config["AI_FALLBACK_API_KEY"].strip(),
+        api_key=_configured_bearer_token(current_app.config["AI_FALLBACK_BASE_URL"]),
         model=current_app.config["AI_FALLBACK_MODEL"].strip(),
         messages=tuple(bounded_messages),
         timeout_seconds=float(current_app.config.get("AI_FALLBACK_TIMEOUT_SECONDS", 8.0)),

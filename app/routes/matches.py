@@ -72,6 +72,19 @@ def _start_attempt(user_id: str, match: dict, seen_ids: list[str]) -> dict:
     return flow
 
 
+def _redirect_to_ai_fallback(user_id: str):
+    if not ai_fallback_available():
+        return None
+    try:
+        conversation_id = start_ai_fallback_conversation(user_id)
+    except ValidationError as error:
+        flash(str(error), "error")
+        return None
+    session.pop(MATCH_FLOW_SESSION_KEY, None)
+    flash("当前没有符合条件的真人候选，已进入明确标注的 AI 候场互动。", "info")
+    return redirect(url_for("chat.detail", conversation_id=conversation_id))
+
+
 @bp.get("/matches")
 @login_required
 def index():
@@ -90,15 +103,9 @@ def search_start():
     user = current_user()
     matches = ranked_matches(user["id"])
     if not matches:
-        if ai_fallback_available():
-            try:
-                conversation_id = start_ai_fallback_conversation(user["id"])
-            except ValidationError as error:
-                flash(str(error), "error")
-            else:
-                session.pop(MATCH_FLOW_SESSION_KEY, None)
-                flash("当前没有符合条件的真人候选，已进入明确标注的 AI 候场互动。", "info")
-                return redirect(url_for("chat.detail", conversation_id=conversation_id))
+        fallback = _redirect_to_ai_fallback(user["id"])
+        if fallback is not None:
+            return fallback
         flash("暂时没有符合硬性筛选条件的候选人。我们不会为了填满结果而放宽你的偏好。", "info")
         return redirect(url_for("matches.index"))
 
@@ -127,9 +134,26 @@ def searching():
 def search_complete():
     user = current_user()
     flow = _flow_for(user["id"])
-    match = _find_match(user["id"], flow["candidate_id"])
-    if not _matches_attempt(flow, "searching") or match is None:
+    if not _matches_attempt(flow, "searching"):
         flash("这次匹配已失效，请重新开始。", "info")
+        return redirect(url_for("matches.index"))
+    match = _find_match(user["id"], flow["candidate_id"])
+    if match is None:
+        matches = ranked_matches(user["id"])
+        seen_ids = set(flow["seen_ids"])
+        replacement = next(
+            (item for item in matches if item["candidate"]["id"] not in seen_ids),
+            matches[0] if matches else None,
+        )
+        if replacement is not None:
+            _start_attempt(user["id"], replacement, flow["seen_ids"])
+            flash("候选状态刚刚变化，已自动继续寻找下一位真人。", "info")
+            return redirect(url_for("matches.searching"))
+        fallback = _redirect_to_ai_fallback(user["id"])
+        if fallback is not None:
+            return fallback
+        session.pop(MATCH_FLOW_SESSION_KEY, None)
+        flash("候选状态刚刚变化，请稍后重新匹配。", "info")
         return redirect(url_for("matches.index"))
     flow["phase"] = "result"
     session[MATCH_FLOW_SESSION_KEY] = flow

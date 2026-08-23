@@ -1,6 +1,6 @@
 # AI Standby Fallback Specification
 
-Status: **Implemented and verified; provider activation blocked on verified configuration**
+Status: **Implemented and verified; Vercel AI Gateway activation in progress**
 
 ## Product outcome
 
@@ -37,9 +37,10 @@ trust promise or inserting a synthetic user into the real-user pool.
    retries are performed.
 9. If configuration is absent or invalid, the current empty-candidate behavior
    remains and existing AI conversations become read-only.
-10. The provider key is accepted only from an encrypted runtime environment
-    variable. No secret value enters Git, documentation, logs, evidence, the
-    database, browser storage, or project memory.
+10. A provider credential is accepted only from an encrypted runtime variable,
+    or from Vercel's deployment-scoped OIDC token when the endpoint is the exact
+    Vercel AI Gateway URL. No secret value enters Git, documentation, logs,
+    evidence, the database, browser storage, or project memory.
 
 ## Runtime contract
 
@@ -47,14 +48,20 @@ The first adapter is intentionally provider-neutral and uses the common
 OpenAI-compatible Chat Completions wire shape. Activation requires the provider
 to document this compatibility.
 
-Required encrypted/runtime configuration:
+Required runtime configuration:
 
 | Variable | Contract |
 | --- | --- |
 | `AI_FALLBACK_ENABLED` | Must equal `1` to enable the fallback. |
-| `AI_FALLBACK_API_KEY` | Secret bearer credential; never persisted or logged. |
 | `AI_FALLBACK_BASE_URL` | Verified HTTPS provider base URL, without query, fragment, or embedded credentials. |
 | `AI_FALLBACK_MODEL` | Exact provider model identifier. |
+
+One authentication source is required:
+
+| Variable | Contract |
+| --- | --- |
+| `AI_FALLBACK_API_KEY` | Optional secret bearer credential for a verified OpenAI-compatible provider; never persisted or logged. |
+| `VERCEL_OIDC_TOKEN` | Automatically supplied by Vercel deployments and accepted only when the normalized completion URL exactly equals `https://ai-gateway.vercel.sh/v1/chat/completions`. |
 
 Server-owned defaults:
 
@@ -95,9 +102,10 @@ Accepted response boundary:
 }
 ```
 
-No provider-specific request is allowed until the provider's official base URL,
-model identifier, and compatibility documentation are supplied. The credential
-already posted in chat must be rotated before activation.
+The production adapter uses Vercel AI Gateway's documented OpenAI-compatible
+endpoint and deployment OIDC authentication. The selected model is
+`alibaba/qwen3.5-flash`. The credential previously posted in chat remains
+excluded from runtime configuration and must be treated as exposed.
 
 ## Data model
 
@@ -129,11 +137,11 @@ already posted in chat must be rotated before activation.
 | --- | --- |
 | AI masquerades as a person | Persistent `AI standby / not a real person` labeling and system instruction. |
 | Private profile leakage | Text-only bounded context; no profile or datasource fields. |
-| Secret leakage | Encrypted environment variable only; never logged or stored. |
+| Secret leakage | Encrypted provider key or deployment-scoped OIDC only; never logged or stored. |
 | Cost or abuse | One call per accepted message, 30-reply cap, 500-character input, no retries. |
 | Provider outage | Preserve the user's message, store no fake reply, show safe failure copy. |
 | Prompt injection or unsafe output | No tools/secrets, fixed system prompt, bounded escaped output, existing report flow. |
-| SSRF or credential forwarding | HTTPS-only configuration validation; reject userinfo, query, fragment, and redirects. |
+| SSRF or credential forwarding | HTTPS-only validation; reject userinfo, query, fragment, and redirects; permit OIDC only for the exact Gateway endpoint. |
 
 ## Verification
 
