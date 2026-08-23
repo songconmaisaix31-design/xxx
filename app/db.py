@@ -124,6 +124,7 @@ CREATE TABLE IF NOT EXISTS event_members (
 CREATE TABLE IF NOT EXISTS conversations (
     id TEXT PRIMARY KEY,
     type TEXT NOT NULL CHECK(type IN ('direct', 'event_group')),
+    counterpart_type TEXT NOT NULL DEFAULT 'human' CHECK(counterpart_type IN ('human', 'ai')),
     event_id TEXT REFERENCES events(id) ON DELETE SET NULL,
     demo_progress_offset INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL,
@@ -317,6 +318,16 @@ def _migrate_schema(db: DatabaseConnection) -> None:
     db.execute(
         "UPDATE users SET is_demo = 1 WHERE id IN ('demo_001', 'demo_002', 'demo_003', 'demo_004')"
     )
+
+    conversation_columns = {
+        row["name"] for row in db.execute("PRAGMA table_info(conversations)").fetchall()
+    }
+    if "counterpart_type" not in conversation_columns:
+        db.execute(
+            """ALTER TABLE conversations
+               ADD COLUMN counterpart_type TEXT NOT NULL DEFAULT 'human'
+               CHECK(counterpart_type IN ('human', 'ai'))"""
+        )
 
     report_columns = {row["name"] for row in db.execute("PRAGMA table_info(reports)").fetchall()}
     additions = {

@@ -57,3 +57,14 @@
 - Final smoke returned `200` for the landing page, registration, and representative assets; anonymous profile redirected to login and demo login returned `404`. The blog, blog `/tags/`, `tags.davidwang.space`, and `realtags.davidwang.space` all retained HTTP `200`.
 - Registration drafts use same-tab `sessionStorage` with an explicit profile-field allowlist. Passwords are never stored, successful authentication clears the draft, clean Chrome verified refresh restoration, and automated lifecycle tests cover history Back/BFCache restoration.
 - Rollback detaches only `app.davidwang.space` and deletes only AliDNS record `2091310372422056960`; retain the final database until an explicit real-user data-retention decision.
+
+## 2026-08-23: Truthful AI standby fallback
+
+- Implementation worktree: `C:\Users\DW\orca\workspaces\xxx\realtags-ai-standby-fallback`; candidate branch: `songconmaisaix31-design/realtags-ai-standby-fallback`.
+- Human candidates always take precedence. Only an empty eligible human pool may create or reuse a single-member AI standby conversation, which is persistently labeled as AI and not a real person.
+- AI conversations never create synthetic user records and expose no match score, profile reveal, contact exchange, human unlock tools, or block-person action. Forged human-only actions are rejected server-side.
+- The provider receives only the fixed system instruction and at most the latest 12 bounded text turns. Profile fields, aliases, tags, source data, match weights, and credentials stay outside the request.
+- Runtime activation uses only `AI_FALLBACK_ENABLED`, `AI_FALLBACK_API_KEY`, `AI_FALLBACK_BASE_URL`, and `AI_FALLBACK_MODEL`. The feature defaults to disabled, and existing AI history becomes read-only when configuration is missing or invalid.
+- Provider transport is an HTTPS-only OpenAI-compatible Chat Completions boundary with an 8-second timeout, no redirects or retries, a 64 KiB response limit, a 500-character stored reply limit, and a 30-reply conversation cap.
+- The credential posted in chat was treated as exposed and was not used or stored. Activation remains blocked until the user rotates it and supplies the official provider base URL and exact model identifier through encrypted Vercel configuration.
+- Verification passed 105 Python tests, 8 Node tests, the 6-stage Harness pipeline, syntax and diff checks, plus 1440px desktop and true 390x844 mobile browser QA with no horizontal overflow.

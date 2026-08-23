@@ -9,6 +9,7 @@ from uuid import uuid4
 from flask import current_app
 
 from ..db import get_db, utcnow
+from .ai_fallback import AiFallbackFailure, ai_fallback_available, complete_ai_reply
 from .matching import calculate_match, is_hard_filter_match
 from .users import ValidationError, get_user, matching_tags, profile_tags
 
@@ -83,6 +84,11 @@ def _conversation_row(conversation_id: str):
     return get_db().execute("SELECT * FROM conversations WHERE id = ?", (conversation_id,)).fetchone()
 
 
+def is_ai_fallback_conversation(conversation_id: str) -> bool:
+    row = _conversation_row(conversation_id)
+    return bool(row and row["counterpart_type"] == "ai")
+
+
 def _ensure_member(conversation_id: str, user_id: str):
     if not get_db().execute(
         "SELECT 1 FROM conversation_members WHERE conversation_id = ? AND user_id = ?", (conversation_id, user_id)
@@ -92,7 +98,7 @@ def _ensure_member(conversation_id: str, user_id: str):
 
 def _is_direct_blocked(conversation_id: str) -> bool:
     row = _conversation_row(conversation_id)
-    if not row or row["type"] != "direct":
+    if not row or row["type"] != "direct" or row["counterpart_type"] == "ai":
         return False
     member_ids = [member["user_id"] for member in _members(conversation_id)]
     if len(member_ids) != 2:
@@ -111,7 +117,7 @@ def _is_direct_blocked(conversation_id: str) -> bool:
 
 def _is_cross_pool_direct(conversation_id: str) -> bool:
     row = _conversation_row(conversation_id)
-    if not row or row["type"] != "direct":
+    if not row or row["type"] != "direct" or row["counterpart_type"] == "ai":
         return False
     members = _members(conversation_id)
     return len(members) == 2 and bool(members[0]["is_demo"]) != bool(members[1]["is_demo"])
@@ -122,6 +128,8 @@ def _ensure_interactive(conversation_id: str, user_id: str):
     conversation = _conversation_row(conversation_id)
     if conversation["archived_at"]:
         raise ValidationError("该会话已归档，不能继续互动。")
+    if conversation["counterpart_type"] == "ai" and not ai_fallback_available():
+        raise ValidationError("AI 候场服务当前未启用，这段历史会话暂时只能查看。")
     if _is_cross_pool_direct(conversation_id):
         raise ValidationError("该历史会话已停用，不能继续互动。")
     if _is_direct_blocked(conversation_id):
@@ -141,6 +149,34 @@ def _insert_system(
            VALUES (?, ?, 'system_card', ?, ?, ?)""",
         (conversation_id, sender_id, content, json.dumps(metadata or {}, ensure_ascii=False), utcnow()),
     )
+
+
+def start_ai_fallback_conversation(user_id: str) -> str:
+    """Create one clearly labeled, single-member AI standby conversation."""
+    if not get_user(user_id) or not ai_fallback_available():
+        raise ValidationError("AI 候场服务当前不可用。")
+    conversation_id = f"ai_{hashlib.sha256(f'ai:{user_id}'.encode()).hexdigest()[:20]}"
+    db = get_db()
+    created = db.execute(
+        """INSERT OR IGNORE INTO conversations
+           (id, type, counterpart_type, event_id, created_at)
+           VALUES (?, 'direct', 'ai', NULL, ?)""",
+        (conversation_id, utcnow()),
+    ).rowcount
+    db.execute(
+        """INSERT OR IGNORE INTO conversation_members
+           (conversation_id, user_id, group_alias, joined_at)
+           VALUES (?, ?, NULL, ?)""",
+        (conversation_id, user_id, utcnow()),
+    )
+    if created:
+        _insert_system(
+            conversation_id,
+            "当前没有符合硬性条件的真人候选。这里是明确标注的 AI 候场互动，不是真人匹配。",
+            {"kind": "ai_fallback_started"},
+        )
+    db.commit()
+    return conversation_id
 
 
 def start_direct_conversation(viewer_id: str, candidate_id: str) -> str:
@@ -194,7 +230,10 @@ def conversation_list(user_id: str) -> list[dict]:
     conversations = []
     for row in rows:
         conversation = dict(row)
-        if conversation["type"] == "direct":
+        if conversation["type"] == "direct" and conversation["counterpart_type"] == "ai":
+            conversation["display_name"] = "AI 候场搭子"
+            conversation["subtitle"] = "AI 互动兜底 · 非真人"
+        elif conversation["type"] == "direct":
             other = next(member for member in _members(conversation["id"]) if member["user_id"] != user_id)
             conversation["display_name"] = other["anonymous_alias"]
             conversation["subtitle"] = "匿名一对一会话"
@@ -262,6 +301,19 @@ def relationship_progress(conversation_id: str, viewer_id: str | None = None) ->
     conversation = _conversation_row(conversation_id)
     if not conversation or conversation["type"] != "direct":
         return {"level": 0, "label": "群聊", "next_requirement": "使用破冰工具，让全桌都能自然开口。", "unlocked_points": []}
+    if conversation["counterpart_type"] == "ai":
+        text_count = get_db().execute(
+            "SELECT COUNT(*) AS count FROM messages WHERE conversation_id = ? AND message_type = 'text'",
+            (conversation_id,),
+        ).fetchone()["count"]
+        return {
+            "level": 0,
+            "label": "AI 候场",
+            "next_requirement": "真人候选出现前，可在明确知情的前提下进行 AI 文字互动。",
+            "heat": text_count,
+            "unlocked_points": [],
+            "total_point_count": 0,
+        }
     members = _members(conversation_id)
     counts = get_db().execute(
         """SELECT sender_id, COUNT(*) AS count
@@ -352,7 +404,10 @@ def get_conversation(conversation_id: str, viewer_id: str) -> dict:
         raise ValidationError("会话不存在。")
     conversation = dict(row)
     conversation["is_archived"] = bool(conversation["archived_at"])
-    conversation["is_disabled"] = _is_cross_pool_direct(conversation_id)
+    conversation["is_ai_fallback"] = conversation["counterpart_type"] == "ai"
+    conversation["is_disabled"] = _is_cross_pool_direct(conversation_id) or (
+        conversation["is_ai_fallback"] and not ai_fallback_available()
+    )
     conversation["is_blocked"] = _is_direct_blocked(conversation_id)
     messages = []
     for message in get_db().execute(
@@ -365,7 +420,10 @@ def get_conversation(conversation_id: str, viewer_id: str) -> dict:
     if conversation["type"] == "direct":
         progress = relationship_progress(conversation_id, viewer_id)
         conversation["progress"] = progress
-        conversation["counterpart"] = _visible_counterpart(viewer_id, conversation_id, progress)
+        if conversation["is_ai_fallback"]:
+            conversation["counterpart"] = {"anonymous_alias": "AI 候场搭子", "level": 0}
+        else:
+            conversation["counterpart"] = _visible_counterpart(viewer_id, conversation_id, progress)
         conversation["members"] = []
     else:
         event = get_db().execute("SELECT * FROM events WHERE id = ?", (conversation["event_id"],)).fetchone()
@@ -382,20 +440,77 @@ def get_conversation(conversation_id: str, viewer_id: str) -> dict:
     return conversation
 
 
+def _ensure_ai_reply_budget(conversation_id: str) -> None:
+    try:
+        configured_maximum = int(current_app.config.get("AI_FALLBACK_MAX_REPLIES", 30))
+    except (TypeError, ValueError):
+        configured_maximum = 30
+    maximum = max(1, min(100, configured_maximum))
+    count = get_db().execute(
+        """SELECT COUNT(*) AS count FROM messages
+           WHERE conversation_id = ? AND message_type = 'text'
+             AND json_extract(metadata_json, '$.kind') = 'ai_reply'""",
+        (conversation_id,),
+    ).fetchone()["count"]
+    if count >= maximum:
+        raise ValidationError("本次 AI 候场互动已达到回复上限，请等待真人候选。")
+
+
+def _ai_text_context(conversation_id: str) -> list[tuple[str, str]]:
+    rows = get_db().execute(
+        """SELECT sender_id, content, metadata_json FROM messages
+           WHERE conversation_id = ? AND message_type = 'text'
+           ORDER BY id DESC LIMIT 12""",
+        (conversation_id,),
+    ).fetchall()
+    context = []
+    for row in reversed(rows):
+        try:
+            metadata = json.loads(row["metadata_json"])
+        except (TypeError, json.JSONDecodeError):
+            metadata = {}
+        if metadata.get("kind") == "ai_reply":
+            context.append(("assistant", row["content"]))
+        elif row["sender_id"] is not None:
+            context.append(("user", row["content"]))
+    return context
+
+
+def _store_ai_reply(conversation_id: str) -> None:
+    try:
+        reply = complete_ai_reply(_ai_text_context(conversation_id))
+    except AiFallbackFailure as error:
+        raise ValidationError("你的消息已保存，但 AI 候场搭子暂时没能回复，请稍后再试。") from error
+    get_db().execute(
+        """INSERT INTO messages
+           (conversation_id, sender_id, message_type, content, metadata_json, created_at)
+           VALUES (?, NULL, 'text', ?, ?, ?)""",
+        (conversation_id, reply, json.dumps({"kind": "ai_reply"}), utcnow()),
+    )
+    get_db().commit()
+
+
 def send_message(conversation_id: str, sender_id: str, content: str) -> None:
     _ensure_interactive(conversation_id, sender_id)
     content = content.strip()
     if not content or len(content) > 500:
         raise ValidationError("消息需为 1–500 个字符。")
+    ai_fallback = is_ai_fallback_conversation(conversation_id)
+    if ai_fallback:
+        _ensure_ai_reply_budget(conversation_id)
     get_db().execute(
         "INSERT INTO messages (conversation_id, sender_id, message_type, content, metadata_json, created_at) VALUES (?, ?, 'text', ?, '{}', ?)",
         (conversation_id, sender_id, content, utcnow()),
     )
     get_db().commit()
+    if ai_fallback:
+        _store_ai_reply(conversation_id)
 
 
 def use_tool(conversation_id: str, user_id: str, tool: str) -> str:
     _ensure_interactive(conversation_id, user_id)
+    if is_ai_fallback_conversation(conversation_id):
+        raise ValidationError("AI 候场会话不提供真人破冰与解锁工具，请直接发送文字。")
     if tool == "dice":
         point = random.randint(1, 6)
         content = f"摇骰子结果：{point} 点｜{DICE_TOPICS[point]}"
@@ -464,6 +579,8 @@ def block_counterpart(blocker_id: str, conversation_id: str) -> None:
     row = _conversation_row(conversation_id)
     if not row or row["type"] != "direct":
         raise ValidationError("只能拉黑一对一会话中的对方。")
+    if row["counterpart_type"] == "ai":
+        raise ValidationError("AI 候场搭子不是真人账户，不能使用拉黑真人操作。")
     _ensure_member(conversation_id, blocker_id)
     other = next(member for member in _members(conversation_id) if member["user_id"] != blocker_id)
     get_db().execute(

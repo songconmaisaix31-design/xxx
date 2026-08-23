@@ -12,6 +12,12 @@ class Config:
     DEMO_MODE = os.environ.get("DEMO_MODE", "1") == "1"
     REAL_USER_ONLY = os.environ.get("REAL_USER_ONLY", "0") == "1"
     DATA_SOURCE_TIMEOUT_SECONDS = 4.0
+    AI_FALLBACK_ENABLED = os.environ.get("AI_FALLBACK_ENABLED", "0") == "1"
+    AI_FALLBACK_API_KEY = os.environ.get("AI_FALLBACK_API_KEY", "")
+    AI_FALLBACK_BASE_URL = os.environ.get("AI_FALLBACK_BASE_URL", "")
+    AI_FALLBACK_MODEL = os.environ.get("AI_FALLBACK_MODEL", "")
+    AI_FALLBACK_TIMEOUT_SECONDS = 8.0
+    AI_FALLBACK_MAX_REPLIES = 30
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "0") == "1"

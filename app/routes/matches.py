@@ -4,7 +4,8 @@ import secrets
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 
-from ..services.chat import start_direct_conversation
+from ..services.ai_fallback import ai_fallback_available
+from ..services.chat import start_ai_fallback_conversation, start_direct_conversation
 from ..services.matching import ranked_matches
 from ..services.users import ValidationError, current_user, get_user, login_required
 
@@ -76,7 +77,11 @@ def _start_attempt(user_id: str, match: dict, seen_ids: list[str]) -> dict:
 def index():
     user = current_user()
     matches = ranked_matches(user["id"])
-    return render_template("matches.html", candidate_count=len(matches))
+    return render_template(
+        "matches.html",
+        candidate_count=len(matches),
+        ai_fallback_available=ai_fallback_available(),
+    )
 
 
 @bp.post("/matches/search/start")
@@ -85,6 +90,15 @@ def search_start():
     user = current_user()
     matches = ranked_matches(user["id"])
     if not matches:
+        if ai_fallback_available():
+            try:
+                conversation_id = start_ai_fallback_conversation(user["id"])
+            except ValidationError as error:
+                flash(str(error), "error")
+            else:
+                session.pop(MATCH_FLOW_SESSION_KEY, None)
+                flash("当前没有符合条件的真人候选，已进入明确标注的 AI 候场互动。", "info")
+                return redirect(url_for("chat.detail", conversation_id=conversation_id))
         flash("暂时没有符合硬性筛选条件的候选人。我们不会为了填满结果而放宽你的偏好。", "info")
         return redirect(url_for("matches.index"))
 
