@@ -11,7 +11,8 @@
 | Cleanup baseline | `cb6a2ab7229ec616eb4fb0f3bb05a3e42ec176af` |
 | Snapshot tag | `pre-cleanup-2026-08-31` at the cleanup baseline |
 | Supported runtime | Local Flask development server with local/temporary SQLite |
-| Rename / Release | Deferred until independent QA passes |
+| Canonical repository | `https://github.com/songconmaisaix31-design/tongpin-real-tags` |
+| Rename / Release | Repository rename complete; competition Tag/Release still requires independently confirmed competition SHA |
 
 The repository is maintained as an evidenced portfolio implementation. It is not a production-ready social network, and maintenance must not add features merely to improve the feature list.
 
@@ -57,7 +58,7 @@ Cleanup verification used Python 3.13.13 with Flask 3.1.3. `python -m flask --ap
 ## Maintenance constraints
 
 - No unverified provider, production, user, security, or scale claims.
-- No repository rename, competition Tag/Release, merge, deployment, archive, or remote-history rewrite before independent QA.
+- No further repository rename, competition Tag/Release, merge, deployment, archive, or remote-history rewrite before independent QA.
 - Keep Fixture, Mock, research, historical deployment, and current implementation evidence clearly separated.
 - Production remains NO-GO until the applicable security, privacy, persistence, moderation, operations, and provider-integration gaps are independently closed.
 

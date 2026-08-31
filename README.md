@@ -4,6 +4,8 @@
 
 `PORTFOLIO / MAINTENANCE` · 纯爱战神黑客松全场第二 · Flask / Jinja2 / SQLite
 
+Canonical repository: <https://github.com/songconmaisaix31-design/tongpin-real-tags>
+
 > 当前仓库是可本地运行、可自动验证的黑客松原型，不是生产社交服务。第三方数据连接使用确定性 Mock；页面里的“已认证”是原型内部的来源元数据，不代表平台完成了真实账号核验。
 
 ## 产品主线
@@ -45,6 +47,9 @@
 需要 Python 3.10+。应用依赖只有 `requirements.txt` 中声明的 Flask；完整测试还需要支持内置 test runner 的 Node.js。
 
 ```powershell
+git clone https://github.com/songconmaisaix31-design/tongpin-real-tags.git
+Set-Location tongpin-real-tags
+
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe run.py
@@ -53,6 +58,9 @@ python -m venv .venv
 macOS / Linux：
 
 ```bash
+git clone https://github.com/songconmaisaix31-design/tongpin-real-tags.git
+cd tongpin-real-tags
+
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 .venv/bin/python run.py
@@ -121,7 +129,7 @@ AI 工具参与了发散、实现辅助和文档整理。AI 产出、团队构�
 ## 维护状态
 
 - 当前定位是作品集展示与有限维护，不进行无验证的功能扩张。
-- 仓库暂不改名；`tongpin-real-tags` 只是独立 QA 通过后的目标名称。
+- 仓库已改名为 `tongpin-real-tags`；当前链接和克隆命令使用 canonical URL，旧 `xxx` 地址仅作为历史重定向保留。
 - 本次不创建新的比赛 Tag 或 Release。开始快照由 `pre-cleanup-2026-08-31` 保留，比赛版本仍需独立 QA 确认。
 - 生产公开上线仍为 NO-GO；详见 [STATUS.md](STATUS.md) 与 [生产缺口](docs/PRODUCTION_GAPS_AND_ROADMAP.md)。
 
