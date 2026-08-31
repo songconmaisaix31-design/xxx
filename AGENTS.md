@@ -19,4 +19,3 @@
 - Prefer the existing dependencies in `requirements.txt`; do not introduce new packages for cleanup.
 - Before claiming completion, run all Python tests, the existing Node test, a credential-free startup smoke, link checks, `git diff --check`, secret filename/signature checks, and a check for added files at least 10 MB.
 - Keep public history summaries concise and free of absolute paths, secret values, personal data, and raw agent logs.
-

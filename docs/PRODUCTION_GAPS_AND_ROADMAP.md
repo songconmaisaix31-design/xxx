@@ -549,7 +549,7 @@ _面向产品负责人、技术负责人、安全、隐私、测试与运维 · 
 - `compileall` 阶段没有包含 `run.py` 和 `tools/`
 - `docs/HARNESS_ENGINEERING.md` 曾把会写本地库的 `process-events` 放进“不写本地库”的完整回归段落
 - PRD 中存在指向缺失 `ui/web-app.html` 的链接
-- `design-qa.md` 包含开发机绝对路径
+- 旧版设计 QA 曾引用开发机路径；整理后的 `docs/design/DESIGN_QA.md` 仅使用仓库相对路径
 - 图像资产与前端交接中的部分文件/类名说明已落后于当前实现
 
 验收门：
