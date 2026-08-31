@@ -5,7 +5,7 @@
 ## 纸张点阵纹理
 
 - 项目路径：`app/static/img/paper-dot-grid.png`
-- 内置生成原件：`C:\Users\HUAYUE\.codex\generated_images\01a0287d-4e35-7ec1-bf52-9ba0b5a9446f\exec-2ae87ce0-c6cd-4477-9dd3-fb61e28b704a.png`
+- 生成原件未纳入仓库；仓库只保留下列最终资产和可复现提示词。
 - 用途：页面低对比背景纹理
 - 最终提示词：
 
@@ -14,7 +14,7 @@
 ## 品牌标记与 favicon
 
 - 项目路径：`app/static/img/brand-mark.png`
-- 内置生成原件：`C:\Users\HUAYUE\.codex\generated_images\01a0287d-4e35-7ec1-bf52-9ba0b5a9446f\exec-82f553e6-d799-475e-8819-366d1010884d.png`
+- 生成原件未纳入仓库；仓库只保留下列最终资产和可复现提示词。
 - 用途：页头品牌识别、浏览器标签图标
 - 最终提示词：
 

@@ -8,7 +8,7 @@
 
 ### V2 视觉重构说明
 
-当前界面已经升级为高反差的新粗野主义编辑板风格，完整规范见根目录 `brand-spec.md`。V2 仍然是传统 Flask 多页面应用：视觉层使用分层 CSS 和无依赖渐进增强脚本，所有核心跳转继续由普通链接完成，所有写操作继续由服务端表单完成。
+当前界面已经升级为高反差的新粗野主义编辑板风格，完整规范见 `docs/brand/BRAND_SPEC.md`。V2 仍然是传统 Flask 多页面应用：视觉层使用分层 CSS 和无依赖渐进增强脚本，所有核心跳转继续由普通链接完成，所有写操作继续由服务端表单完成。
 
 | 层 | 文件 | 责任 |
 | --- | --- | --- |
@@ -89,7 +89,7 @@ current_user  # dict 或 None
 tag_id, category, name, value, source, verified, visibility, updated_at
 ```
 
-来源标记请保留：`duolingo`、`keep`、`derived`、`self`。`verified=true` 表示经第三方来源认证；所有 MVP 行为标签的 `visibility` 均为 `self_only`。在“我的标签”页展示来源徽标是产品真实性设计的一部分。当前后端在 L3 会话仍会返回对方全部标签，这与 `self_only` 契约冲突，属于 [P0 生产缺口](PRODUCTION_GAPS_AND_ROADMAP.md#p0-10-对齐标签可见性与真实披露)；前端不得进一步扩大披露范围，后端修复后应只渲染明确标记为可解锁且已获同意的标签。
+来源标记请保留：`duolingo`、`keep`、`derived`、`self`。当前 Fixture 中的 `verified=true` 只是原型内部元数据，不是第三方账号实况认证；所有 MVP 行为标签的 `visibility` 均为 `self_only`。在“我的标签”页展示来源徽标是产品真实性设计的一部分。当前后端在 L3 会话仍会返回对方全部标签，这与 `self_only` 契约冲突，属于 [P0 生产缺口](../PRODUCTION_GAPS_AND_ROADMAP.md#p0-10-对齐标签可见性与真实披露)；前端不得进一步扩大披露范围，后端修复后应只渲染明确标记为可解锁且已获同意的标签。
 
 `connections` 是按数据源索引的对象，例如 `connections.get('duolingo')`。授权表单当前必须提交隐藏值 `authorization_code=demo-authorized`；真实接入时前端改为 OAuth 回调后提交服务端所需的授权码，页面结构不需要改为 SPA。失败时 flash 中会含稳定错误码，例如 `authorization_denied` 或 `invalid_token`。
 
@@ -341,7 +341,7 @@ V2 核心令牌位于 `app/static/css/brutalist-foundation.css` 的 `:root`；`a
 - `paper-dot-grid.png` 是低对比真实纹理，只服务于纸面质感。
 - `brand-mark.png` 同时用于页头和 favicon；替换时必须保持 1:1、高对比与小尺寸清晰度。
 - 不要用 emoji、字符、内联 SVG、CSS/div 绘画替代可见品牌或插画资产。
-- 完整生成方式与提示词见 `docs/IMAGE_ASSET_PROMPTS.md`。
+- 完整生成方式与提示词见 `docs/brand/IMAGE_ASSET_PROMPTS.md`。
 
 ### 8.7 后续扩展规则
 
@@ -376,4 +376,4 @@ MVP 限制：Mock OAuth，不含 WebSocket/SSE 实时推送、地图瓦片/路�
 - [x] 各种失败显示后端 flash，不在前端吞掉失败或伪造成功状态。
 - [x] 移动端下导航、筛选表单、消息发送区和活动卡保持可操作，键盘焦点可见。
 
-验证证据：`design-qa.md`、`docs/qa/mobile-montage-pass2.png` 和 `./harness.cmd --no-color`。
+验证证据：`docs/design/DESIGN_QA.md`、`docs/qa/mobile-montage-pass2.png` 和 `./harness.cmd --no-color`。
