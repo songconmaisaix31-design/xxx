@@ -3,8 +3,9 @@
 ## Scope and stack
 
 - This repository is a Flask 3.1 application using Jinja2 server-rendered pages, Python `sqlite3`, HTML/CSS, and small native JavaScript enhancements.
+- The canonical GitHub repository is `https://github.com/songconmaisaix31-design/tongpin-real-tags`; the former `songconmaisaix31-design/xxx` URL is a legacy redirect only.
 - Keep the runnable structure under `app/`, with `run.py` as the development entry point and `tests/` plus `tools/harness_cli.py` as the verification surfaces.
-- Repository cleanup must preserve behavior. Do not add product features, change architecture, deploy, rename the repository, or create a competition Release.
+- Repository cleanup must preserve behavior. Do not add product features, change architecture, deploy, rename the repository again, or create a competition Release.
 
 ## Truth and privacy boundaries
 

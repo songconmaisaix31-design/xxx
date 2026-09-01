@@ -2,7 +2,9 @@
 
 ## Product identity
 
-- Working product name: 同频：真实标签 (repository rename is deferred until independent QA passes).
+- Product name: 同频：真实标签.
+- Canonical repository: `https://github.com/songconmaisaix31-design/tongpin-real-tags` (repository ID `1342494025`).
+- The former `https://github.com/songconmaisaix31-design/xxx` URL redirects to the same repository ID; use the canonical URL for current links and clones.
 - Status: `PORTFOLIO / MAINTENANCE`.
 - Competition: 纯爱战神黑客松, second place.
 - Core story: behavior-derived tags support anonymous matching, followed by progressive identity unlock through interaction.
